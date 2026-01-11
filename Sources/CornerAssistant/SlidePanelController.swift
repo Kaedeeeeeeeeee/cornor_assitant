@@ -38,6 +38,14 @@ final class SlidePanelController {
     func stop() {
         removeMonitors()
     }
+
+    func prepareEditingCommand() {
+        panelState.focusActiveWebView()
+    }
+
+    func performEditingCommand(_ action: Selector, sender: Any?) {
+        panelState.performEditingCommand(action, sender: sender)
+    }
 }
 
 // MARK: - Setup & Events
@@ -139,11 +147,12 @@ private extension SlidePanelController {
         let visibleFrame = shownFrame(for: screen)
         let hiddenFrame = concealedFrame(for: screen)
 
+        NSRunningApplication.current.activate(options: [.activateIgnoringOtherApps, .activateAllWindows])
+        NSApp.activate(ignoringOtherApps: true)
         window.setFrame(hiddenFrame, display: false)
         window.alphaValue = 1
         window.makeKeyAndOrderFront(nil)
         window.makeFirstResponder(hostingController.view)
-        NSApp.activate(ignoringOtherApps: true)
         panelState.requestAddressFocus()
 
         NSAnimationContext.runAnimationGroup { context in

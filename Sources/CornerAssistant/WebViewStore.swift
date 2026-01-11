@@ -2,7 +2,7 @@ import SwiftUI
 import WebKit
 
 @MainActor
-final class WebViewStore: NSObject, ObservableObject, WKNavigationDelegate {
+final class WebViewStore: NSObject, ObservableObject, WKNavigationDelegate, WKUIDelegate {
     let webView: WKWebView
 
     var onTitleChange: ((String) -> Void)?
@@ -12,6 +12,7 @@ final class WebViewStore: NSObject, ObservableObject, WKNavigationDelegate {
         webView = WKWebView(frame: .zero, configuration: WKWebViewConfiguration())
         super.init()
         webView.navigationDelegate = self
+        webView.uiDelegate = self
         webView.allowsBackForwardNavigationGestures = true
         webView.setValue(false, forKey: "drawsBackground")
         normalizeScrollView()
@@ -35,6 +36,14 @@ final class WebViewStore: NSObject, ObservableObject, WKNavigationDelegate {
         if let url = webView.url {
             onURLChange?(url)
         }
+    }
+
+    func webView(_ webView: WKWebView,
+                 requestMediaCapturePermissionFor origin: WKSecurityOrigin,
+                 initiatedByFrame frame: WKFrameInfo,
+                 type: WKMediaCaptureType,
+                 decisionHandler: @escaping (WKPermissionDecision) -> Void) {
+        decisionHandler(.prompt)
     }
 
     private func normalizeScrollView() {

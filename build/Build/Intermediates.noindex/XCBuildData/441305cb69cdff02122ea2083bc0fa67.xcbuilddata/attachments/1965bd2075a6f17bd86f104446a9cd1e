@@ -1,0 +1,106 @@
+{
+  "" : {
+    "const-values" : "/Users/user/project/slidepad/build/Build/Intermediates.noindex/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/CornerAssistantApp-primary.swiftconstvalues",
+    "dependencies" : "/Users/user/project/slidepad/build/Build/Intermediates.noindex/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/CornerAssistantApp-primary.d",
+    "diagnostics" : "/Users/user/project/slidepad/build/Build/Intermediates.noindex/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/CornerAssistantApp-primary.dia",
+    "emit-module-dependencies" : "/Users/user/project/slidepad/build/Build/Intermediates.noindex/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/CornerAssistantApp-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/user/project/slidepad/build/Build/Intermediates.noindex/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/CornerAssistantApp-primary-emit-module.dia",
+    "pch" : "/Users/user/project/slidepad/build/Build/Intermediates.noindex/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/CornerAssistantApp-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/user/project/slidepad/build/Build/Intermediates.noindex/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/CornerAssistantApp-primary.swiftdeps"
+  },
+  "/Users/user/project/slidepad/CornerAssistantApp/CornerAssistantApp/AppLanguage.swift" : {
+    "index-unit-output-path" : "/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/AppLanguage.o",
+    "llvm-bc" : "/Users/user/project/slidepad/build/Build/Intermediates.noindex/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/AppLanguage.bc",
+    "object" : "/Users/user/project/slidepad/build/Build/Intermediates.noindex/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/AppLanguage.o"
+  },
+  "/Users/user/project/slidepad/CornerAssistantApp/CornerAssistantApp/BingSearchProvider.swift" : {
+    "index-unit-output-path" : "/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/BingSearchProvider.o",
+    "llvm-bc" : "/Users/user/project/slidepad/build/Build/Intermediates.noindex/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/BingSearchProvider.bc",
+    "object" : "/Users/user/project/slidepad/build/Build/Intermediates.noindex/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/BingSearchProvider.o"
+  },
+  "/Users/user/project/slidepad/CornerAssistantApp/CornerAssistantApp/BrowserTab.swift" : {
+    "index-unit-output-path" : "/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/BrowserTab.o",
+    "llvm-bc" : "/Users/user/project/slidepad/build/Build/Intermediates.noindex/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/BrowserTab.bc",
+    "object" : "/Users/user/project/slidepad/build/Build/Intermediates.noindex/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/BrowserTab.o"
+  },
+  "/Users/user/project/slidepad/CornerAssistantApp/CornerAssistantApp/CornerAssistantApp.swift" : {
+    "index-unit-output-path" : "/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/CornerAssistantApp.o",
+    "llvm-bc" : "/Users/user/project/slidepad/build/Build/Intermediates.noindex/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/CornerAssistantApp.bc",
+    "object" : "/Users/user/project/slidepad/build/Build/Intermediates.noindex/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/CornerAssistantApp.o"
+  },
+  "/Users/user/project/slidepad/CornerAssistantApp/CornerAssistantApp/GoogleSearchProvider.swift" : {
+    "index-unit-output-path" : "/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/GoogleSearchProvider.o",
+    "llvm-bc" : "/Users/user/project/slidepad/build/Build/Intermediates.noindex/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/GoogleSearchProvider.bc",
+    "object" : "/Users/user/project/slidepad/build/Build/Intermediates.noindex/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/GoogleSearchProvider.o"
+  },
+  "/Users/user/project/slidepad/CornerAssistantApp/CornerAssistantApp/HotCorner.swift" : {
+    "index-unit-output-path" : "/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/HotCorner.o",
+    "llvm-bc" : "/Users/user/project/slidepad/build/Build/Intermediates.noindex/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/HotCorner.bc",
+    "object" : "/Users/user/project/slidepad/build/Build/Intermediates.noindex/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/HotCorner.o"
+  },
+  "/Users/user/project/slidepad/CornerAssistantApp/CornerAssistantApp/HotCornerStore.swift" : {
+    "index-unit-output-path" : "/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/HotCornerStore.o",
+    "llvm-bc" : "/Users/user/project/slidepad/build/Build/Intermediates.noindex/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/HotCornerStore.bc",
+    "object" : "/Users/user/project/slidepad/build/Build/Intermediates.noindex/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/HotCornerStore.o"
+  },
+  "/Users/user/project/slidepad/CornerAssistantApp/CornerAssistantApp/LaunchAtLoginManager.swift" : {
+    "index-unit-output-path" : "/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/LaunchAtLoginManager.o",
+    "llvm-bc" : "/Users/user/project/slidepad/build/Build/Intermediates.noindex/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/LaunchAtLoginManager.bc",
+    "object" : "/Users/user/project/slidepad/build/Build/Intermediates.noindex/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/LaunchAtLoginManager.o"
+  },
+  "/Users/user/project/slidepad/CornerAssistantApp/CornerAssistantApp/LocalizationManager.swift" : {
+    "index-unit-output-path" : "/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/LocalizationManager.o",
+    "llvm-bc" : "/Users/user/project/slidepad/build/Build/Intermediates.noindex/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/LocalizationManager.bc",
+    "object" : "/Users/user/project/slidepad/build/Build/Intermediates.noindex/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/LocalizationManager.o"
+  },
+  "/Users/user/project/slidepad/CornerAssistantApp/CornerAssistantApp/PinnedSite.swift" : {
+    "index-unit-output-path" : "/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/PinnedSite.o",
+    "llvm-bc" : "/Users/user/project/slidepad/build/Build/Intermediates.noindex/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/PinnedSite.bc",
+    "object" : "/Users/user/project/slidepad/build/Build/Intermediates.noindex/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/PinnedSite.o"
+  },
+  "/Users/user/project/slidepad/CornerAssistantApp/CornerAssistantApp/PinnedSiteStore.swift" : {
+    "index-unit-output-path" : "/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/PinnedSiteStore.o",
+    "llvm-bc" : "/Users/user/project/slidepad/build/Build/Intermediates.noindex/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/PinnedSiteStore.bc",
+    "object" : "/Users/user/project/slidepad/build/Build/Intermediates.noindex/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/PinnedSiteStore.o"
+  },
+  "/Users/user/project/slidepad/CornerAssistantApp/CornerAssistantApp/SearchProvider.swift" : {
+    "index-unit-output-path" : "/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/SearchProvider.o",
+    "llvm-bc" : "/Users/user/project/slidepad/build/Build/Intermediates.noindex/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/SearchProvider.bc",
+    "object" : "/Users/user/project/slidepad/build/Build/Intermediates.noindex/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/SearchProvider.o"
+  },
+  "/Users/user/project/slidepad/CornerAssistantApp/CornerAssistantApp/SlidePanelController.swift" : {
+    "index-unit-output-path" : "/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/SlidePanelController.o",
+    "llvm-bc" : "/Users/user/project/slidepad/build/Build/Intermediates.noindex/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/SlidePanelController.bc",
+    "object" : "/Users/user/project/slidepad/build/Build/Intermediates.noindex/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/SlidePanelController.o"
+  },
+  "/Users/user/project/slidepad/CornerAssistantApp/CornerAssistantApp/SlidePanelView.swift" : {
+    "index-unit-output-path" : "/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/SlidePanelView.o",
+    "llvm-bc" : "/Users/user/project/slidepad/build/Build/Intermediates.noindex/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/SlidePanelView.bc",
+    "object" : "/Users/user/project/slidepad/build/Build/Intermediates.noindex/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/SlidePanelView.o"
+  },
+  "/Users/user/project/slidepad/CornerAssistantApp/CornerAssistantApp/SlidePanelViewModel.swift" : {
+    "index-unit-output-path" : "/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/SlidePanelViewModel.o",
+    "llvm-bc" : "/Users/user/project/slidepad/build/Build/Intermediates.noindex/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/SlidePanelViewModel.bc",
+    "object" : "/Users/user/project/slidepad/build/Build/Intermediates.noindex/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/SlidePanelViewModel.o"
+  },
+  "/Users/user/project/slidepad/CornerAssistantApp/CornerAssistantApp/SuggestionStore.swift" : {
+    "index-unit-output-path" : "/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/SuggestionStore.o",
+    "llvm-bc" : "/Users/user/project/slidepad/build/Build/Intermediates.noindex/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/SuggestionStore.bc",
+    "object" : "/Users/user/project/slidepad/build/Build/Intermediates.noindex/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/SuggestionStore.o"
+  },
+  "/Users/user/project/slidepad/CornerAssistantApp/CornerAssistantApp/UnevenRoundedRect.swift" : {
+    "index-unit-output-path" : "/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/UnevenRoundedRect.o",
+    "llvm-bc" : "/Users/user/project/slidepad/build/Build/Intermediates.noindex/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/UnevenRoundedRect.bc",
+    "object" : "/Users/user/project/slidepad/build/Build/Intermediates.noindex/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/UnevenRoundedRect.o"
+  },
+  "/Users/user/project/slidepad/CornerAssistantApp/CornerAssistantApp/WebViewStore.swift" : {
+    "index-unit-output-path" : "/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/WebViewStore.o",
+    "llvm-bc" : "/Users/user/project/slidepad/build/Build/Intermediates.noindex/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/WebViewStore.bc",
+    "object" : "/Users/user/project/slidepad/build/Build/Intermediates.noindex/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/WebViewStore.o"
+  },
+  "/Users/user/project/slidepad/build/Build/Intermediates.noindex/CornerAssistantApp.build/Release/CornerAssistantApp.build/DerivedSources/GeneratedAssetSymbols.swift" : {
+    "index-unit-output-path" : "/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "llvm-bc" : "/Users/user/project/slidepad/build/Build/Intermediates.noindex/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/GeneratedAssetSymbols.bc",
+    "object" : "/Users/user/project/slidepad/build/Build/Intermediates.noindex/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/GeneratedAssetSymbols.o"
+  }
+}

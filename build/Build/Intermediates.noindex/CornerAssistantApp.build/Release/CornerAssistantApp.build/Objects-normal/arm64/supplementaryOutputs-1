@@ -1,0 +1,12 @@
+{
+  "/Users/user/project/slidepad/CornerAssistantApp/CornerAssistantApp/AppLanguage.swift" : {
+    "abi-baseline-json" : "/Users/user/project/slidepad/build/Build/Intermediates.noindex/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/CornerAssistantApp.abi.json",
+    "const-values" : "/Users/user/project/slidepad/build/Build/Intermediates.noindex/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/CornerAssistantApp-primary.swiftconstvalues",
+    "dependencies" : "/Users/user/project/slidepad/build/Build/Intermediates.noindex/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/CornerAssistantApp-primary.d",
+    "diagnostics" : "/Users/user/project/slidepad/build/Build/Intermediates.noindex/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/CornerAssistantApp-primary.dia",
+    "objc-header" : "/Users/user/project/slidepad/build/Build/Intermediates.noindex/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/CornerAssistantApp-Swift.h",
+    "swiftdoc" : "/Users/user/project/slidepad/build/Build/Intermediates.noindex/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/CornerAssistantApp.swiftdoc",
+    "swiftmodule" : "/Users/user/project/slidepad/build/Build/Intermediates.noindex/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/CornerAssistantApp.swiftmodule",
+    "swiftsourceinfo" : "/Users/user/project/slidepad/build/Build/Intermediates.noindex/CornerAssistantApp.build/Release/CornerAssistantApp.build/Objects-normal/arm64/CornerAssistantApp.swiftsourceinfo"
+  }
+}

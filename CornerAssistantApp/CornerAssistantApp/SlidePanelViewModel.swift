@@ -5,18 +5,15 @@ import Combine
 final class SlidePanelViewModel: ObservableObject {
     @Published private(set) var tabs: [BrowserTab]
     @Published private(set) var pinnedSites: [PinnedSite] {
-        didSet { pinnedStore.save(pinnedSites) }
+        didSet { PinnedSiteStore.save(pinnedSites) }
     }
     @Published var activeTabID: UUID
     @Published var showingLauncher: Bool
 
     private var pinnedTabIDs: [String: UUID] = [:] // pinnedSiteID -> tabID
-    private let pinnedStore: PinnedSiteStore
 
-    init(initialPinnedSites: [PinnedSite]? = nil,
-         pinnedStore: PinnedSiteStore = .shared) {
-        self.pinnedStore = pinnedStore
-        let storedSites = pinnedStore.load()
+    init(initialPinnedSites: [PinnedSite]? = nil) {
+        let storedSites = PinnedSiteStore.load()
         let sites = storedSites.isEmpty ? (initialPinnedSites ?? PinnedSite.defaults) : storedSites
 
         var tabMappings: [String: UUID] = [:]
@@ -49,7 +46,6 @@ final class SlidePanelViewModel: ObservableObject {
         _activeTabID = Published(initialValue: initialActiveID)
         _showingLauncher = Published(initialValue: initialLauncherVisible)
 
-        pinnedStore.save(sites)
     }
 
     var activeTab: BrowserTab {
@@ -146,7 +142,7 @@ final class SlidePanelViewModel: ObservableObject {
             let title = tab.title.trimmingCharacters(in: .whitespacesAndNewlines)
             if !title.isEmpty { return title }
             if let host = url.host, !host.isEmpty { return host }
-            return "Pinned"
+            return LocalizationManager.shared.localized("tab.pinned_fallback")
         }()
 
         let site = PinnedSite(name: displayName, url: url.absoluteString)

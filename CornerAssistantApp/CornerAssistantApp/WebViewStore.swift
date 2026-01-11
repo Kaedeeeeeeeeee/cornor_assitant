@@ -17,14 +17,10 @@ final class WebViewStore: NSObject, ObservableObject, WKNavigationDelegate, WKUI
         temp.stopLoading()
         return agent ?? "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_0) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15"
     }()
-    private static let sharedProcessPool = WKProcessPool()
-    private static let sharedDataStore = WKWebsiteDataStore.default()
 
     override init() {
         let configuration = WKWebViewConfiguration()
         configuration.preferences.javaScriptCanOpenWindowsAutomatically = true
-        configuration.processPool = Self.sharedProcessPool
-        configuration.websiteDataStore = Self.sharedDataStore
 
         webView = WKWebView(frame: .zero, configuration: configuration)
         super.init()
@@ -78,7 +74,7 @@ final class WebViewStore: NSObject, ObservableObject, WKNavigationDelegate, WKUI
             backing: .buffered,
             defer: false
         )
-        window.title = "Authentication"
+        window.title = LocalizationManager.shared.localized("auth.window_title")
         window.center()
         window.contentView = popupWebView
         window.makeKeyAndOrderFront(nil)
@@ -99,7 +95,7 @@ final class WebViewStore: NSObject, ObservableObject, WKNavigationDelegate, WKUI
                  completionHandler: @escaping () -> Void) {
         let alert = NSAlert()
         alert.messageText = message
-        alert.addButton(withTitle: "OK")
+        alert.addButton(withTitle: LocalizationManager.shared.localized("common.ok"))
         alert.runModal()
         completionHandler()
     }
@@ -110,8 +106,8 @@ final class WebViewStore: NSObject, ObservableObject, WKNavigationDelegate, WKUI
                  completionHandler: @escaping (Bool) -> Void) {
         let alert = NSAlert()
         alert.messageText = message
-        alert.addButton(withTitle: "OK")
-        alert.addButton(withTitle: "Cancel")
+        alert.addButton(withTitle: LocalizationManager.shared.localized("common.ok"))
+        alert.addButton(withTitle: LocalizationManager.shared.localized("common.cancel"))
         let response = alert.runModal()
         completionHandler(response == .alertFirstButtonReturn)
     }
@@ -128,14 +124,22 @@ final class WebViewStore: NSObject, ObservableObject, WKNavigationDelegate, WKUI
         inputField.stringValue = defaultText ?? ""
         alert.accessoryView = inputField
 
-        alert.addButton(withTitle: "OK")
-        alert.addButton(withTitle: "Cancel")
+        alert.addButton(withTitle: LocalizationManager.shared.localized("common.ok"))
+        alert.addButton(withTitle: LocalizationManager.shared.localized("common.cancel"))
         let response = alert.runModal()
         if response == .alertFirstButtonReturn {
             completionHandler(inputField.stringValue)
         } else {
             completionHandler(nil)
         }
+    }
+
+    func webView(_ webView: WKWebView,
+                 requestMediaCapturePermissionFor origin: WKSecurityOrigin,
+                 initiatedByFrame frame: WKFrameInfo,
+                 type: WKMediaCaptureType,
+                 decisionHandler: @escaping (WKPermissionDecision) -> Void) {
+        decisionHandler(.prompt)
     }
 
     // MARK: - Helpers

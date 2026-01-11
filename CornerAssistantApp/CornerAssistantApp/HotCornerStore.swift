@@ -1,25 +1,18 @@
 import Foundation
 
-final class HotCornerStore {
-    static let shared = HotCornerStore()
+enum HotCornerStore {
+    private static let key = "CornerAssistant.HotCorner"
 
-    private let defaults: UserDefaults
-    private let key = "CornerAssistant.HotCorner"
-
-    init(defaults: UserDefaults = .standard) {
-        self.defaults = defaults
-    }
-
-    var current: HotCorner {
+    static var current: HotCorner {
         get {
-            if let raw = defaults.string(forKey: key),
+            if let raw = UserDefaults.standard.string(forKey: key),
                let corner = HotCorner(rawValue: raw) {
                 return corner
             }
             return .bottomLeft
         }
         set {
-            defaults.set(newValue.rawValue, forKey: key)
+            UserDefaults.standard.set(newValue.rawValue, forKey: key)
         }
     }
 }

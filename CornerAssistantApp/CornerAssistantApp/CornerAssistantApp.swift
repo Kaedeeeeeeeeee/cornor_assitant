@@ -1,5 +1,6 @@
 import SwiftUI
 import AppKit
+import Combine
 
 @main
 struct CornerAssistantApp: App {
@@ -8,6 +9,7 @@ struct CornerAssistantApp: App {
     var body: some Scene {
         Settings {
             SettingsView()
+                .environmentObject(LocalizationManager.shared)
         }
     }
 }
@@ -18,17 +20,35 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem?
     private var statusMenu: NSMenu?
     private var cornerMenuItems: [HotCorner: NSMenuItem] = [:]
-    private let hotCornerStore = HotCornerStore.shared
+    private var launchAtLoginMenuItem: NSMenuItem?
+    private var localizationCancellable: AnyCancellable?
+    private var appMenu: NSMenu?
+    private var appMenuBarItem: NSMenuItem?
+    private var quitMenuItem: NSMenuItem?
+    private var editMenu: NSMenu?
+    private var editMenuItem: NSMenuItem?
+    private var cutMenuItem: NSMenuItem?
+    private var copyMenuItem: NSMenuItem?
+    private var pasteMenuItem: NSMenuItem?
+    private var selectAllMenuItem: NSMenuItem?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         configureApplication()
-        let controller = SlidePanelController(hotCorner: hotCornerStore.current)
+        LaunchAtLoginManager.shared.synchronize()
+        updateLaunchMenuState()
+        let controller = SlidePanelController(hotCorner: HotCornerStore.current)
         controller.start()
         self.controller = controller
-        updateCornerMenuSelection()
+        applyLocalization()
+
+        localizationCancellable = LocalizationManager.shared.$currentLanguage
+            .sink { [weak self] _ in
+                self?.applyLocalization()
+            }
     }
 
     func applicationWillTerminate(_ notification: Notification) {
+        localizationCancellable?.cancel()
         controller?.stop()
     }
 
@@ -37,25 +57,83 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let mainMenu = NSMenu()
         let appMenuItem = NSMenuItem()
         mainMenu.addItem(appMenuItem)
+        appMenuBarItem = appMenuItem
 
-        let appMenu = NSMenu(title: "CornerAssistant")
-        let quitTitle = "退出 CornerAssistant"
+        let appMenu = NSMenu()
         let quitItem = NSMenuItem(
-            title: quitTitle,
+            title: "",
             action: #selector(NSApplication.terminate(_:)),
             keyEquivalent: "q"
         )
         appMenu.addItem(quitItem)
         appMenuItem.submenu = appMenu
+        self.appMenu = appMenu
+        self.quitMenuItem = quitItem
+
+        // 添加编辑菜单以支持标准编辑快捷键
+        let editMenuItem = NSMenuItem()
+        mainMenu.addItem(editMenuItem)
+        self.editMenuItem = editMenuItem
+        
+        let editMenu = NSMenu(title: LocalizationManager.shared.localized("menu.edit"))
+        editMenuItem.submenu = editMenu
+        self.editMenu = editMenu
+        
+        // Cut (Command+X)
+        let cutItem = NSMenuItem(
+            title: LocalizationManager.shared.localized("menu.cut"),
+            action: #selector(NSText.cut(_:)),
+            keyEquivalent: "x"
+        )
+        // 不需要显式设置 keyEquivalentModifierMask，默认就是 .command
+        cutItem.target = nil // nil target 让事件路由到响应链
+        editMenu.addItem(cutItem)
+        self.cutMenuItem = cutItem
+        
+        // Copy (Command+C)
+        let copyItem = NSMenuItem(
+            title: LocalizationManager.shared.localized("menu.copy"),
+            action: #selector(NSText.copy(_:)),
+            keyEquivalent: "c"
+        )
+        copyItem.target = nil
+        editMenu.addItem(copyItem)
+        self.copyMenuItem = copyItem
+        
+        // Paste (Command+V)
+        let pasteItem = NSMenuItem(
+            title: LocalizationManager.shared.localized("menu.paste"),
+            action: #selector(NSText.paste(_:)),
+            keyEquivalent: "v"
+        )
+        pasteItem.target = nil
+        editMenu.addItem(pasteItem)
+        self.pasteMenuItem = pasteItem
+        
+        editMenu.addItem(.separator())
+        
+        // Select All (Command+A)
+        let selectAllItem = NSMenuItem(
+            title: LocalizationManager.shared.localized("menu.select_all"),
+            action: #selector(NSText.selectAll(_:)),
+            keyEquivalent: "a"
+        )
+        selectAllItem.target = nil
+        editMenu.addItem(selectAllItem)
+        self.selectAllMenuItem = selectAllItem
 
         NSApp.mainMenu = mainMenu
 
         let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-        statusItem.button?.image = NSImage(systemSymbolName: "rectangle.leftthird.inset.fill", accessibilityDescription: "CornerAssistant")
+        let appName = LocalizationManager.shared.localized("app.name")
+        if let image = NSImage(named: "MenuBarIcon") {
+            image.isTemplate = true
+            image.accessibilityDescription = appName
+            statusItem.button?.image = image
+        }
         statusItem.button?.target = self
         statusItem.button?.action = #selector(statusItemClicked(_:))
         statusItem.button?.sendAction(on: [.leftMouseUp, .rightMouseUp])
-        statusItem.button?.toolTip = "Toggle CornerAssistant"
         self.statusItem = statusItem
         statusMenu = makeStatusMenu()
     }
@@ -71,6 +149,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             guard let button = statusItem?.button,
                   let statusMenu else { return }
             updateCornerMenuSelection()
+            updateLaunchMenuState()
             statusMenu.popUp(positioning: nil, at: NSPoint(x: 0, y: button.bounds.height), in: button)
         } else {
             controller.togglePanel()
@@ -82,19 +161,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
               let corner = HotCorner(rawValue: raw),
               let controller else { return }
 
-        hotCornerStore.current = corner
+        HotCornerStore.current = corner
         controller.updateHotCorner(corner)
         updateCornerMenuSelection()
     }
 
     private func makeStatusMenu() -> NSMenu {
+        let localization = LocalizationManager.shared
         let menu = NSMenu()
+        menu.appearance = NSAppearance(named: .aqua)
 
-        let cornerMenuItem = NSMenuItem(title: "Hot Corner", action: nil, keyEquivalent: "")
+        let cornerMenuItem = NSMenuItem(title: localization.localized("status.hot_corner"), action: nil, keyEquivalent: "")
         let cornerSubmenu = NSMenu()
+        cornerSubmenu.appearance = NSAppearance(named: .aqua)
         cornerMenuItems.removeAll()
         for corner in HotCorner.allCases {
-            let item = NSMenuItem(title: corner.displayName,
+            let item = NSMenuItem(title: corner.localizedName(using: localization),
                                   action: #selector(selectHotCorner(_:)),
                                   keyEquivalent: "")
             item.target = self
@@ -105,8 +187,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         cornerMenuItem.submenu = cornerSubmenu
         menu.addItem(cornerMenuItem)
 
+        let launchItem = NSMenuItem(title: localization.localized("status.launch_at_login"), action: #selector(toggleLaunchAtLogin(_:)), keyEquivalent: "")
+        launchItem.target = self
+        menu.addItem(launchItem)
+        launchAtLoginMenuItem = launchItem
+
         menu.addItem(.separator())
-        let quitItem = NSMenuItem(title: "Quit CornerAssistant",
+        let quitTitle = localization.localized("status.quit")
+        let quitItem = NSMenuItem(title: quitTitle,
                                   action: #selector(NSApplication.terminate(_:)),
                                   keyEquivalent: "q")
         menu.addItem(quitItem)
@@ -115,23 +203,88 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func updateCornerMenuSelection() {
-        let current = hotCornerStore.current
+        let current = HotCornerStore.current
         for (corner, item) in cornerMenuItems {
             item.state = (corner == current) ? .on : .off
         }
     }
+
+    @objc private func toggleLaunchAtLogin(_ sender: NSMenuItem) {
+        let manager = LaunchAtLoginManager.shared
+        if manager.isEnabled {
+            manager.disable()
+        } else {
+            manager.enable()
+        }
+        updateLaunchMenuState()
+    }
+
+    private func updateLaunchMenuState() {
+        let enabled = LaunchAtLoginManager.shared.isEnabled
+        launchAtLoginMenuItem?.state = enabled ? .on : .off
+    }
+
+    private func applyLocalization() {
+        let localization = LocalizationManager.shared
+        let appName = localization.localized("app.name")
+
+        appMenu?.title = appName
+        appMenuBarItem?.title = appName
+        let quitFormat = localization.localized("menu.quit")
+        quitMenuItem?.title = String(format: quitFormat, appName)
+
+        // 更新编辑菜单本地化
+        editMenu?.title = localization.localized("menu.edit")
+        editMenuItem?.title = localization.localized("menu.edit")
+        cutMenuItem?.title = localization.localized("menu.cut")
+        copyMenuItem?.title = localization.localized("menu.copy")
+        pasteMenuItem?.title = localization.localized("menu.paste")
+        selectAllMenuItem?.title = localization.localized("menu.select_all")
+
+        statusItem?.button?.toolTip = localization.localized("status.tooltip")
+        statusItem?.button?.setAccessibilityLabel(appName)
+        if let image = NSImage(named: "MenuBarIcon") {
+            image.isTemplate = true
+            image.accessibilityDescription = appName
+            statusItem?.button?.image = image
+        }
+
+        statusMenu = makeStatusMenu()
+        updateCornerMenuSelection()
+        updateLaunchMenuState()
+    }
 }
 
-
 struct SettingsView: View {
+    @EnvironmentObject private var localization: LocalizationManager
+
+    private var languageBinding: Binding<AppLanguage> {
+        Binding(
+            get: { localization.currentLanguage },
+            set: { localization.use(language: $0) }
+        )
+    }
+
     var body: some View {
         Form {
-            Text("CornerAssistant")
-                .font(.title2)
-            Text("将光标移动到屏幕左下角以展开面板。点击面板外部即可收起。")
-                .foregroundColor(.secondary)
+            Section {
+                Text(localization.localized("app.name"))
+                    .font(.title2)
+                Text(localization.localized("app.description"))
+                    .foregroundColor(.secondary)
+            }
+
+            Section(header: Text(localization.localized("settings.language"))) {
+                Picker("", selection: languageBinding) {
+                    ForEach(AppLanguage.allCases) { language in
+                        Text(localization.localized(language.displayKey))
+                            .tag(language)
+                    }
+                }
+                .pickerStyle(.radioGroup)
+            }
         }
         .padding()
-        .frame(width: 320)
+        .frame(width: 360)
     }
 }

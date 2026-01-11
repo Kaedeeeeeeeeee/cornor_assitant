@@ -4,6 +4,7 @@ import Combine
 import AppKit
 
 struct SlidePanelView: View {
+    @EnvironmentObject private var localization: LocalizationManager
     @ObservedObject private var state: SlidePanelState
     @StateObject private var viewModel: SlidePanelViewModel
     @StateObject private var suggestionStore: SuggestionStore
@@ -22,10 +23,12 @@ struct SlidePanelView: View {
     var body: some View {
         HStack(alignment: .top, spacing: 0) {
             sidebar
-            Color(nsColor: .separatorColor)
-                .frame(width: 1)
-                .frame(maxHeight: .infinity)
             contentArea
+                .clipShape(UnevenRoundedRect(topLeft: 18, bottomLeft: 18))
+                .overlay(
+                    UnevenRoundedRect(topLeft: 18, bottomLeft: 18)
+                        .strokeBorder(Color(nsColor: .separatorColor), lineWidth: 1)
+                )
         }
         .frame(minWidth: 520, maxWidth: .infinity, minHeight: 560, maxHeight: .infinity)
         .background(Color(nsColor: .windowBackgroundColor))
@@ -39,8 +42,8 @@ struct SlidePanelView: View {
                 isAddressFocused = true
             }
         }
-        .onChange(of: isAddressFocused) { focused in
-            if !focused {
+        .onChange(of: isAddressFocused) {
+            if !isAddressFocused {
                 suggestionStore.clear()
             }
         }
@@ -72,7 +75,7 @@ struct SlidePanelView: View {
                         openPinned(site)
                     }
                     .contextMenu {
-                        Button("从固定栏移除") {
+                        Button(localization.localized("context.remove_pinned")) {
                             viewModel.unpin(site: site)
                         }
                     }
@@ -93,26 +96,25 @@ struct SlidePanelView: View {
                             select(tab: tab)
                         }
                         .contextMenu {
-                            Button("关闭标签页") {
+                            Button(localization.localized("context.close_tab")) {
                                 viewModel.close(tab: tab)
                             }
-                            Button("固定到固定栏") {
+                            Button(localization.localized("context.pin_tab")) {
                                 viewModel.pin(tab: tab)
                             }
                             .disabled(!viewModel.canPin(tab: tab))
                         }
                     }
+                    SidebarButton(
+                        isActive: viewModel.showingLauncher,
+                        iconURL: nil,
+                        fallbackSystemName: "plus",
+                        accessibilityLabel: localization.localized("sidebar.new_tab")
+                    ) {
+                        createNewTab()
+                    }
                 }
                 .padding(.bottom, 12)
-            }
-            Spacer()
-            SidebarButton(
-                isActive: viewModel.showingLauncher,
-                iconURL: nil,
-                fallbackSystemName: "plus",
-                accessibilityLabel: "新建标签"
-            ) {
-                createNewTab()
             }
         }
         .padding(.bottom, 14)
@@ -318,6 +320,7 @@ private struct SidebarButton: View {
 // MARK: - Launcher
 
 private struct LauncherView: View {
+    @EnvironmentObject private var localization: LocalizationManager
     @Binding var text: String
     @FocusState.Binding var isFocused: Bool
     let suggestions: [String]
@@ -346,8 +349,8 @@ private struct LauncherView: View {
         .padding(.horizontal, 24)
         .padding(.bottom, 40)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .onChange(of: isFocused) { focused in
-            if !focused {
+        .onChange(of: isFocused) {
+            if !isFocused {
                 onFocusLost()
             }
         }
@@ -357,11 +360,13 @@ private struct LauncherView: View {
         HStack(spacing: 12) {
             Image(systemName: "magnifyingglass")
                 .foregroundColor(Color.secondary.opacity(0.7))
-            TextField("搜索或输入网址", text: $text, onCommit: onSubmit)
+            TextField(localization.localized("launcher.placeholder"), text: $text, onCommit: onSubmit)
                 .textFieldStyle(.plain)
                 .focused($isFocused)
                 .submitLabel(.go)
-                .onChange(of: text, perform: onChange)
+                .onChange(of: text) {
+                    onChange(text)
+                }
                 .onSubmit(onSubmit)
             if !text.isEmpty {
                 Button {
@@ -372,7 +377,7 @@ private struct LauncherView: View {
                         .imageScale(.small)
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel("清除输入")
+                .accessibilityLabel(localization.localized("launcher.clear"))
             }
         }
         .padding(.horizontal, 20)

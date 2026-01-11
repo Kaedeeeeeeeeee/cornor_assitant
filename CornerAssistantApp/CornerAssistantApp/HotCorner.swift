@@ -6,12 +6,16 @@ enum HotCorner: String, CaseIterable {
     case bottomLeft
     case bottomRight
 
-    var displayName: String {
+    func localizedName(using localization: LocalizationManager) -> String {
         switch self {
-        case .topLeft: return "Top Left"
-        case .topRight: return "Top Right"
-        case .bottomLeft: return "Bottom Left"
-        case .bottomRight: return "Bottom Right"
+        case .topLeft:
+            return localization.localized("hot_corner.top_left")
+        case .topRight:
+            return localization.localized("hot_corner.top_right")
+        case .bottomLeft:
+            return localization.localized("hot_corner.bottom_left")
+        case .bottomRight:
+            return localization.localized("hot_corner.bottom_right")
         }
     }
 }

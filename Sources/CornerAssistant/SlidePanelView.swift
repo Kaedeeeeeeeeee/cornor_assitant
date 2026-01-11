@@ -132,10 +132,13 @@ struct SlidePanelView: View {
                 )
                 .transition(.opacity.combined(with: .move(edge: .bottom)))
             } else {
-                WebViewContainer(webView: viewModel.activeTab.webViewStore.webView)
+                WebViewContainer(state: state, webView: viewModel.activeTab.webViewStore.webView)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .background(Color(nsColor: .windowBackgroundColor))
                     .transition(.opacity.combined(with: .move(edge: .trailing)))
+                    .onDisappear {
+                        state.updateActiveWebView(nil)
+                    }
             }
         }
         .animation(.easeInOut(duration: 0.2), value: viewModel.showingLauncher)
@@ -203,13 +206,34 @@ struct SlidePanelView: View {
 // MARK: - WebView Hosting
 
 private struct WebViewContainer: NSViewRepresentable {
+    let state: SlidePanelState
     let webView: WKWebView
 
-    func makeNSView(context: Context) -> WKWebView {
-        webView
+    final class Coordinator {
+        var didFocus = false
     }
 
-    func updateNSView(_ nsView: WKWebView, context: Context) {}
+    func makeCoordinator() -> Coordinator {
+        Coordinator()
+    }
+
+    func makeNSView(context: Context) -> WKWebView {
+        state.updateActiveWebView(webView)
+        return webView
+    }
+
+    func updateNSView(_ nsView: WKWebView, context: Context) {
+        if state.activeWebView !== nsView {
+            state.updateActiveWebView(nsView)
+        }
+
+        if !context.coordinator.didFocus, let window = nsView.window {
+            window.makeFirstResponder(nsView)
+            context.coordinator.didFocus = true
+        } else if nsView.window == nil {
+            context.coordinator.didFocus = false
+        }
+    }
 }
 
 // MARK: - Focus coordination
@@ -217,9 +241,52 @@ private struct WebViewContainer: NSViewRepresentable {
 final class SlidePanelState: ObservableObject {
     private let focusSubject = PassthroughSubject<Void, Never>()
     fileprivate lazy var focusEvents: AnyPublisher<Void, Never> = focusSubject.eraseToAnyPublisher()
+    private weak var activeWebViewRef: WKWebView?
+
+    var activeWebView: WKWebView? {
+        activeWebViewRef
+    }
 
     func requestAddressFocus() {
         focusSubject.send(())
+    }
+
+    func updateActiveWebView(_ webView: WKWebView?) {
+        activeWebViewRef = webView
+    }
+
+    func focusActiveWebView() {
+        guard let webView = activeWebViewRef,
+              let window = webView.window else { return }
+
+        if window.firstResponder !== webView {
+            window.makeFirstResponder(webView)
+        }
+    }
+
+    func performEditingCommand(_ action: Selector, sender: Any?) {
+        guard let webView = activeWebViewRef else { return }
+
+        if webView.tryToPerform(action, with: sender) {
+            return
+        }
+
+        if let responder = findResponder(in: webView, capableOf: action) {
+            responder.perform(action, with: sender)
+        }
+    }
+
+    private func findResponder(in view: NSView, capableOf action: Selector) -> NSResponder? {
+        if view.responds(to: action) {
+            return view
+        }
+
+        for subview in view.subviews {
+            if let responder = findResponder(in: subview, capableOf: action) {
+                return responder
+            }
+        }
+        return view.nextResponder?.responds(to: action) == true ? view.nextResponder : nil
     }
 }
 

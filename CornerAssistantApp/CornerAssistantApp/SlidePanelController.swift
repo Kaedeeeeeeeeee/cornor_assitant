@@ -2,6 +2,29 @@ import AppKit
 import SwiftUI
 import QuartzCore
 
+// MARK: - Custom Window Class for Keyboard Events
+
+/// 自定义窗口类，确保能够正确处理键盘事件和快捷键
+final class KeyboardAwareWindow: NSWindow {
+    override var canBecomeKey: Bool {
+        return true
+    }
+    
+    override var canBecomeMain: Bool {
+        return true
+    }
+    
+    override func performKeyEquivalent(with event: NSEvent) -> Bool {
+        // 首先尝试让菜单系统处理快捷键
+        if NSApp.mainMenu?.performKeyEquivalent(with: event) == true {
+            return true
+        }
+        
+        // 然后尝试让响应链处理
+        return super.performKeyEquivalent(with: event)
+    }
+}
+
 @MainActor
 final class SlidePanelController {
     private enum Constants {
@@ -16,17 +39,22 @@ final class SlidePanelController {
     }
 
     private let window: NSWindow
-    private let hostingController: NSHostingController<SlidePanelView>
+    private let hostingController: NSHostingController<AnyView>
     private let panelState = SlidePanelState()
     private var moveMonitor: Any?
     private var clickMonitor: Any?
+    private var keyboardMonitor: Any?
     private var isExpanded = false
     private var targetScreen: NSScreen?
     private var hotCorner: HotCorner
 
     init(hotCorner: HotCorner) {
         self.hotCorner = hotCorner
-        hostingController = NSHostingController(rootView: SlidePanelView(state: panelState))
+        let rootView: AnyView = AnyView(
+            SlidePanelView(state: panelState)
+                .environmentObject(LocalizationManager.shared)
+        )
+        hostingController = NSHostingController(rootView: rootView)
         window = SlidePanelController.makeWindow(hostingController: hostingController)
     }
 
@@ -70,8 +98,8 @@ final class SlidePanelController {
 }
 
 private extension SlidePanelController {
-    static func makeWindow(hostingController: NSHostingController<SlidePanelView>) -> NSWindow {
-        let window = NSWindow(
+    static func makeWindow(hostingController: NSHostingController<AnyView>) -> NSWindow {
+        let window = KeyboardAwareWindow(
             contentRect: .zero,
             styleMask: [.titled, .fullSizeContentView],
             backing: .buffered,
@@ -90,6 +118,8 @@ private extension SlidePanelController {
         window.backgroundColor = .windowBackgroundColor
         window.contentViewController = hostingController
         window.isReleasedWhenClosed = false
+        // 确保窗口能够接收键盘事件
+        window.acceptsMouseMovedEvents = true
         return window
     }
 
@@ -115,6 +145,44 @@ private extension SlidePanelController {
                 self?.handleMouseDown()
             }
         }
+        
+        // 添加键盘事件监听器，捕获编辑快捷键
+        keyboardMonitor = NSEvent.addLocalMonitorForEvents(matching: [.keyDown]) { [weak self] event in
+            guard let self = self, self.isExpanded else { return event }
+            
+            // 检查是否是 Command+X/C/V/A
+            if event.modifierFlags.contains(.command) {
+                let keyCode = event.keyCode
+                let chars = event.charactersIgnoringModifiers?.lowercased()
+                
+                // Command+X (剪切)
+                if chars == "x" || keyCode == 7 {
+                    if NSApp.sendAction(#selector(NSText.cut(_:)), to: nil, from: self) {
+                        return nil
+                    }
+                }
+                // Command+C (复制)
+                else if chars == "c" || keyCode == 8 {
+                    if NSApp.sendAction(#selector(NSText.copy(_:)), to: nil, from: self) {
+                        return nil
+                    }
+                }
+                // Command+V (粘贴)
+                else if chars == "v" || keyCode == 9 {
+                    if NSApp.sendAction(#selector(NSText.paste(_:)), to: nil, from: self) {
+                        return nil
+                    }
+                }
+                // Command+A (全选)
+                else if chars == "a" || keyCode == 0 {
+                    if NSApp.sendAction(#selector(NSText.selectAll(_:)), to: nil, from: self) {
+                        return nil
+                    }
+                }
+            }
+            
+            return event
+        }
     }
 
     func removeMonitors() {
@@ -125,6 +193,10 @@ private extension SlidePanelController {
         if let clickMonitor {
             NSEvent.removeMonitor(clickMonitor)
             self.clickMonitor = nil
+        }
+        if let keyboardMonitor {
+            NSEvent.removeMonitor(keyboardMonitor)
+            self.keyboardMonitor = nil
         }
     }
 
@@ -163,10 +235,16 @@ private extension SlidePanelController {
 
         window.setFrame(hiddenFrame, display: false)
         window.alphaValue = 1
-        window.makeKeyAndOrderFront(nil)
-        window.makeFirstResponder(hostingController.view)
         NSApp.activate(ignoringOtherApps: true)
-        panelState.requestAddressFocus()
+        window.makeKeyAndOrderFront(nil)
+        
+        // 确保窗口成为 key window 并能够接收键盘事件
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            self.window.makeKey()
+            self.window.makeFirstResponder(self.hostingController.view)
+            self.panelState.requestAddressFocus()
+        }
 
         NSAnimationContext.runAnimationGroup({ context in
             context.duration = Constants.animationDuration
