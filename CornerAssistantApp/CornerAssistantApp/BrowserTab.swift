@@ -38,8 +38,12 @@ final class BrowserTab: ObservableObject, Identifiable {
             self.url = url
             self.addressText = url.absoluteString
             if let host = url.host {
-                self.faviconURL = URL(string: "https://icons.duckduckgo.com/ip3/\(host).ico")
+                self.faviconURL = URL(string: "https://www.google.com/s2/favicons?domain=\(host)&sz=128")
             }
+        }
+
+        webViewStore.onFaviconChange = { [weak self] url in
+            self?.faviconURL = url
         }
 
         localizationCancellable = LocalizationManager.shared.$currentLanguage

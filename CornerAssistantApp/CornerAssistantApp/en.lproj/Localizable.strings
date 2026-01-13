@@ -1,10 +1,10 @@
-"app.name" = "CornerAssistant";
+"app.name" = "Peek";
 "app.description" = "Move the cursor to the selected hot corner to reveal the panel. Click outside to hide it.";
 "menu.quit" = "Quit %@";
-"status.tooltip" = "Toggle CornerAssistant";
+"status.tooltip" = "Toggle Peek";
 "status.hot_corner" = "Hot Corner";
 "status.launch_at_login" = "Launch at Login";
-"status.quit" = "Quit CornerAssistant";
+"status.quit" = "Quit Peek";
 "context.remove_pinned" = "Remove from Pinned";
 "context.close_tab" = "Close Tab";
 "context.pin_tab" = "Add to Pinned Bar";

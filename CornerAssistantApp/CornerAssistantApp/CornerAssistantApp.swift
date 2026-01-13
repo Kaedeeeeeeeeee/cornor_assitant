@@ -126,11 +126,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         let appName = LocalizationManager.shared.localized("app.name")
-        if let image = NSImage(named: "MenuBarIcon") {
-            image.isTemplate = true
-            image.accessibilityDescription = appName
-            statusItem.button?.image = image
-        }
+        let image = createMenuBarIcon()
+        image.accessibilityDescription = appName
+        statusItem.button?.image = image
         statusItem.button?.target = self
         statusItem.button?.action = #selector(statusItemClicked(_:))
         statusItem.button?.sendAction(on: [.leftMouseUp, .rightMouseUp])
@@ -243,15 +241,39 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         statusItem?.button?.toolTip = localization.localized("status.tooltip")
         statusItem?.button?.setAccessibilityLabel(appName)
-        if let image = NSImage(named: "MenuBarIcon") {
-            image.isTemplate = true
-            image.accessibilityDescription = appName
-            statusItem?.button?.image = image
-        }
+        let image = createMenuBarIcon()
+        image.accessibilityDescription = appName
+        statusItem?.button?.image = image
 
         statusMenu = makeStatusMenu()
         updateCornerMenuSelection()
         updateLaunchMenuState()
+    }
+
+    private func createMenuBarIcon() -> NSImage {
+        let size = NSSize(width: 22, height: 22)
+        let image = NSImage(size: size, flipped: false) { rect in
+            NSColor.black.set()
+            
+            // 外框：正方形，圆角更加圆滑
+            // Use a 16x16 square centered in 22x22
+            let frameRect = NSRect(x: 3, y: 3, width: 16, height: 16)
+            let framePath = NSBezierPath(roundedRect: frameRect, xRadius: 4.5, yRadius: 4.5)
+            framePath.lineWidth = 1.5
+            framePath.stroke()
+            
+            // 内部：左侧胶囊形状，代表侧边栏
+            // Update to match App Icon: Fatter and shifted left
+            // Previous: x: 6, width: 4
+            // New: x: 4.5, width: 6.5 (More prominent)
+            let pillRect = NSRect(x: 4.5, y: 6, width: 6.5, height: 10)
+            let pillPath = NSBezierPath(roundedRect: pillRect, xRadius: 3.25, yRadius: 3.25)
+            pillPath.fill()
+            
+            return true
+        }
+        image.isTemplate = true
+        return image
     }
 }
 

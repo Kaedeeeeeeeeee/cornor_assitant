@@ -8,6 +8,7 @@ final class WebViewStore: NSObject, ObservableObject, WKNavigationDelegate, WKUI
 
     var onTitleChange: ((String) -> Void)?
     var onURLChange: ((URL) -> Void)?
+    var onFaviconChange: ((URL) -> Void)?
 
     private var popupWindows: [ObjectIdentifier: NSWindow] = [:]
 
@@ -46,6 +47,21 @@ final class WebViewStore: NSObject, ObservableObject, WKNavigationDelegate, WKUI
         onTitleChange?(webView.title ?? "")
         if let url = webView.url {
             onURLChange?(url)
+        }
+        fetchFavicon()
+    }
+    
+    private func fetchFavicon() {
+        let script = """
+        (function() {
+            var icon = document.querySelector('link[rel="icon"]') || document.querySelector('link[rel="shortcut icon"]');
+            return icon ? icon.href : null;
+        })()
+        """
+        webView.evaluateJavaScript(script) { [weak self] result, _ in
+            if let urlString = result as? String, let url = URL(string: urlString) {
+                self?.onFaviconChange?(url)
+            }
         }
     }
 

@@ -87,23 +87,14 @@ struct SlidePanelView: View {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 10) {
                     ForEach(viewModel.regularTabs) { tab in
-                        SidebarButton(
+                        TabItemView(
+                            tab: tab,
                             isActive: tab.id == viewModel.activeTabID,
-                            iconURL: tab.faviconURL,
-                            fallbackSystemName: "globe",
-                            accessibilityLabel: tab.title
-                        ) {
-                            select(tab: tab)
-                        }
-                        .contextMenu {
-                            Button(localization.localized("context.close_tab")) {
-                                viewModel.close(tab: tab)
-                            }
-                            Button(localization.localized("context.pin_tab")) {
-                                viewModel.pin(tab: tab)
-                            }
-                            .disabled(!viewModel.canPin(tab: tab))
-                        }
+                            canPin: viewModel.canPin(tab: tab),
+                            onSelect: { select(tab: tab) },
+                            onClose: { viewModel.close(tab: tab) },
+                            onPin: { viewModel.pin(tab: tab) }
+                        )
                     }
                     SidebarButton(
                         isActive: viewModel.showingLauncher,
@@ -260,6 +251,36 @@ final class SlidePanelState: ObservableObject {
 }
 
 // MARK: - Sidebar
+
+private struct TabItemView: View {
+    @ObservedObject var tab: BrowserTab
+    let isActive: Bool
+    let canPin: Bool
+    let onSelect: () -> Void
+    let onClose: () -> Void
+    let onPin: () -> Void
+    @EnvironmentObject private var localization: LocalizationManager
+
+    var body: some View {
+        SidebarButton(
+            isActive: isActive,
+            iconURL: tab.faviconURL,
+            fallbackSystemName: "globe",
+            accessibilityLabel: tab.title
+        ) {
+            onSelect()
+        }
+        .contextMenu {
+            Button(localization.localized("context.close_tab")) {
+                onClose()
+            }
+            Button(localization.localized("context.pin_tab")) {
+                onPin()
+            }
+            .disabled(!canPin)
+        }
+    }
+}
 
 private struct SidebarButton: View {
     let isActive: Bool

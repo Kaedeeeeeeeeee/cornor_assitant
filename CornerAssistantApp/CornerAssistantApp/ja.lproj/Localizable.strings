@@ -1,10 +1,10 @@
-"app.name" = "CornerAssistant";
+"app.name" = "Peek";
 "app.description" = "選択したホットコーナーにカーソルを移動するとパネルが開きます。パネルの外をクリックすると閉じます。";
 "menu.quit" = "%@ を終了";
-"status.tooltip" = "CornerAssistant を切り替える";
+"status.tooltip" = "Peek を切り替える";
 "status.hot_corner" = "ホットコーナー";
 "status.launch_at_login" = "ログイン時に起動";
-"status.quit" = "CornerAssistant を終了";
+"status.quit" = "Peek を終了";
 "context.remove_pinned" = "固定から削除";
 "context.close_tab" = "タブを閉じる";
 "context.pin_tab" = "固定欄に追加";

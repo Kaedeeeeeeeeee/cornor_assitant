@@ -125,9 +125,6 @@ final class SlidePanelViewModel: ObservableObject {
         guard let index = tabs.firstIndex(where: { $0.id == activeTabID }) else { return }
         tabs[index].url = url
         tabs[index].addressText = addressText ?? url.absoluteString
-        if let host = url.host {
-            tabs[index].faviconURL = URL(string: "https://icons.duckduckgo.com/ip3/\(host).ico")
-        }
     }
 
     func canPin(tab: BrowserTab) -> Bool {
@@ -145,7 +142,7 @@ final class SlidePanelViewModel: ObservableObject {
             return LocalizationManager.shared.localized("tab.pinned_fallback")
         }()
 
-        let site = PinnedSite(name: displayName, url: url.absoluteString)
+        let site = PinnedSite(name: displayName, url: url.absoluteString, customFaviconURL: tab.faviconURL?.absoluteString)
         pinnedSites.append(site)
         pinnedTabIDs[site.id] = tab.id
     }

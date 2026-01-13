@@ -5,9 +5,12 @@ struct PinnedSite: Identifiable, Codable, Equatable {
     let name: String
     let url: String
 
-    init(name: String, url: String) {
+    let customFaviconURL: String?
+
+    init(name: String, url: String, customFaviconURL: String? = nil) {
         self.name = name
         self.url = url
+        self.customFaviconURL = customFaviconURL
         self.id = url.lowercased()
     }
 
@@ -16,26 +19,32 @@ struct PinnedSite: Identifiable, Codable, Equatable {
     }
 
     var faviconURL: URL? {
+        if let custom = customFaviconURL, let url = URL(string: custom) {
+            return url
+        }
         guard let host else { return nil }
-        return URL(string: "https://icons.duckduckgo.com/ip3/\(host).ico")
+        return URL(string: "https://www.google.com/s2/favicons?domain=\(host)&sz=128")
     }
 
     private enum CodingKeys: String, CodingKey {
         case name
         case url
+        case customFaviconURL
     }
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let name = try container.decode(String.self, forKey: .name)
         let url = try container.decode(String.self, forKey: .url)
-        self.init(name: name, url: url)
+        let customFaviconURL = try container.decodeIfPresent(String.self, forKey: .customFaviconURL)
+        self.init(name: name, url: url, customFaviconURL: customFaviconURL)
     }
 
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(name, forKey: .name)
         try container.encode(url, forKey: .url)
+        try container.encodeIfPresent(customFaviconURL, forKey: .customFaviconURL)
     }
 }
 

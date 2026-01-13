@@ -1,10 +1,10 @@
-"app.name" = "CornerAssistant";
+"app.name" = "Peek";
 "app.description" = "将光标移动到选定的热角以展开面板。点击面板外部即可收起。";
 "menu.quit" = "退出 %@";
-"status.tooltip" = "切换 CornerAssistant";
+"status.tooltip" = "切换 Peek";
 "status.hot_corner" = "热角设置";
 "status.launch_at_login" = "开机自动启动";
-"status.quit" = "退出 CornerAssistant";
+"status.quit" = "退出 Peek";
 "context.remove_pinned" = "从固定栏移除";
 "context.close_tab" = "关闭标签页";
 "context.pin_tab" = "固定到固定栏";
