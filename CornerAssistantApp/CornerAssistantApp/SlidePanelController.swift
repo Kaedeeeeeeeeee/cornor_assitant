@@ -25,17 +25,34 @@ final class KeyboardAwareWindow: NSWindow {
     }
 }
 
+// MARK: - Resize Direction
+
+/// 拖拽调整方向
+private enum ResizeDirection {
+    case horizontal  // 水平方向（调整宽度）
+    case vertical    // 垂直方向（调整高度）
+    case diagonal    // 对角线方向（同时调整宽度和高度）
+    case none
+}
+
 @MainActor
 final class SlidePanelController {
     private enum Constants {
         static let hotspotWidth: CGFloat = 12
         static let hotspotHeight: CGFloat = 140
-        static let windowWidth: CGFloat = 528
-        static let windowHeight: CGFloat = 750
+        static let defaultWindowWidth: CGFloat = 528
+        static let defaultWindowHeight: CGFloat = 750
+        static let minWindowWidth: CGFloat = 320
+        static let maxWindowWidth: CGFloat = 900
+        static let minWindowHeight: CGFloat = 400
+        static let maxWindowHeight: CGFloat = 1200
         static let animationDuration: TimeInterval = 0.18
         static let horizontalMargin: CGFloat = 14
         static let verticalMargin: CGFloat = 10
         static let offscreenPadding: CGFloat = 12
+        static let widthUserDefaultsKey = "SlidePanelWindowWidth"
+        static let heightUserDefaultsKey = "SlidePanelWindowHeight"
+        static let resizeEdgeWidth: CGFloat = 20  // 拖拽边缘宽度
     }
 
     private let window: NSWindow
@@ -47,15 +64,305 @@ final class SlidePanelController {
     private var isExpanded = false
     private var targetScreen: NSScreen?
     private var hotCorner: HotCorner
+    
+    // 边缘拖拽相关
+    private var localMouseMonitor: Any?
+    private var isResizing = false
+    private var resizeDirection: ResizeDirection = .none
+    private var resizeStartLocation: CGPoint = .zero
+    private var resizeStartFrame: CGRect = .zero
+    private var currentResizeZone: ResizeDirection = .none
+    
+    /// 当前窗口宽度（可动态调整）
+    private var currentWindowWidth: CGFloat
+    
+    /// 当前窗口高度（可动态调整）
+    private var currentWindowHeight: CGFloat
 
     init(hotCorner: HotCorner) {
         self.hotCorner = hotCorner
+        self.currentWindowWidth = SlidePanelController.loadSavedWidth()
+        self.currentWindowHeight = SlidePanelController.loadSavedHeight()
         let rootView: AnyView = AnyView(
             SlidePanelView(state: panelState)
                 .environmentObject(LocalizationManager.shared)
         )
         hostingController = NSHostingController(rootView: rootView)
         window = SlidePanelController.makeWindow(hostingController: hostingController)
+    }
+    
+    private static func loadSavedWidth() -> CGFloat {
+        let saved = UserDefaults.standard.double(forKey: Constants.widthUserDefaultsKey)
+        if saved > 0 {
+            return max(Constants.minWindowWidth, min(Constants.maxWindowWidth, saved))
+        }
+        return Constants.defaultWindowWidth
+    }
+    
+    private static func loadSavedHeight() -> CGFloat {
+        let saved = UserDefaults.standard.double(forKey: Constants.heightUserDefaultsKey)
+        if saved > 0 {
+            return max(Constants.minWindowHeight, min(Constants.maxWindowHeight, saved))
+        }
+        return Constants.defaultWindowHeight
+    }
+    
+    private func saveCurrentSize() {
+        UserDefaults.standard.set(currentWindowWidth, forKey: Constants.widthUserDefaultsKey)
+        UserDefaults.standard.set(currentWindowHeight, forKey: Constants.heightUserDefaultsKey)
+    }
+    
+    /// 根据 HotCorner 判断水平拖拽应该在哪一边
+    private func isHorizontalHandleOnRightEdge() -> Bool {
+        switch hotCorner {
+        case .topLeft, .bottomLeft:
+            return true  // 窗口在左边，拖拽右边缘
+        case .topRight, .bottomRight:
+            return false // 窗口在右边，拖拽左边缘
+        }
+    }
+    
+    /// 根据 HotCorner 判断垂直拖拽应该在哪一边
+    private func isVerticalHandleOnTopEdge() -> Bool {
+        switch hotCorner {
+        case .bottomLeft, .bottomRight:
+            return true  // 窗口在下边，拖拽上边缘
+        case .topLeft, .topRight:
+            return false // 窗口在上边，拖拽下边缘
+        }
+    }
+    
+    /// 获取最大允许高度（考虑屏幕可用高度）
+    private func getMaxAllowedHeight() -> CGFloat {
+        guard let screen = targetScreen ?? NSScreen.main else {
+            return Constants.maxWindowHeight
+        }
+        let availableHeight = screen.visibleFrame.height - (Constants.verticalMargin * 2)
+        return min(Constants.maxWindowHeight, availableHeight)
+    }
+    
+    /// 检查屏幕坐标是否在拖拽区域内，返回拖拽方向
+    private func getResizeDirection(at screenPoint: CGPoint) -> ResizeDirection {
+        guard isExpanded else { return .none }
+        
+        let windowFrame = window.frame
+        let edgeWidth = Constants.resizeEdgeWidth
+        
+        // 检查点是否在窗口内或边缘附近
+        let expandedFrame = windowFrame.insetBy(dx: -5, dy: -5)
+        guard expandedFrame.contains(screenPoint) else { return .none }
+        
+        // 首先检查角落区域（对角线拖拽）- 优先级最高
+        let cornerRect = getCornerResizeRect(for: windowFrame)
+        if cornerRect.contains(screenPoint) {
+            return .diagonal
+        }
+        
+        // 检查水平边缘（排除角落区域）
+        let horizontalEdgeRect: CGRect
+        if isHorizontalHandleOnRightEdge() {
+            // 右边缘，排除上下角落
+            let yOffset = isVerticalHandleOnTopEdge() ? 0 : edgeWidth
+            let heightReduction = edgeWidth  // 只减去一个角落的高度
+            horizontalEdgeRect = CGRect(
+                x: windowFrame.maxX - edgeWidth,
+                y: windowFrame.minY + yOffset,
+                width: edgeWidth,
+                height: windowFrame.height - heightReduction
+            )
+        } else {
+            // 左边缘，排除上下角落
+            let yOffset = isVerticalHandleOnTopEdge() ? 0 : edgeWidth
+            let heightReduction = edgeWidth
+            horizontalEdgeRect = CGRect(
+                x: windowFrame.minX,
+                y: windowFrame.minY + yOffset,
+                width: edgeWidth,
+                height: windowFrame.height - heightReduction
+            )
+        }
+        if horizontalEdgeRect.contains(screenPoint) {
+            return .horizontal
+        }
+        
+        // 检查垂直边缘（排除角落区域）
+        let verticalEdgeRect: CGRect
+        if isVerticalHandleOnTopEdge() {
+            // 上边缘，排除左右角落
+            let xOffset = isHorizontalHandleOnRightEdge() ? 0 : edgeWidth
+            let widthReduction = edgeWidth
+            verticalEdgeRect = CGRect(
+                x: windowFrame.minX + xOffset,
+                y: windowFrame.maxY - edgeWidth,
+                width: windowFrame.width - widthReduction,
+                height: edgeWidth
+            )
+        } else {
+            // 下边缘，排除左右角落
+            let xOffset = isHorizontalHandleOnRightEdge() ? 0 : edgeWidth
+            let widthReduction = edgeWidth
+            verticalEdgeRect = CGRect(
+                x: windowFrame.minX + xOffset,
+                y: windowFrame.minY,
+                width: windowFrame.width - widthReduction,
+                height: edgeWidth
+            )
+        }
+        if verticalEdgeRect.contains(screenPoint) {
+            return .vertical
+        }
+        
+        return .none
+    }
+    
+    /// 获取角落拖拽区域（根据 HotCorner 决定是哪个角）
+    private func getCornerResizeRect(for windowFrame: CGRect) -> CGRect {
+        let size = Constants.resizeEdgeWidth
+        
+        switch hotCorner {
+        case .bottomLeft:
+            // 窗口在左下角，可拖拽的角落在右上角
+            return CGRect(
+                x: windowFrame.maxX - size,
+                y: windowFrame.maxY - size,
+                width: size,
+                height: size
+            )
+        case .bottomRight:
+            // 窗口在右下角，可拖拽的角落在左上角
+            return CGRect(
+                x: windowFrame.minX,
+                y: windowFrame.maxY - size,
+                width: size,
+                height: size
+            )
+        case .topLeft:
+            // 窗口在左上角，可拖拽的角落在右下角
+            return CGRect(
+                x: windowFrame.maxX - size,
+                y: windowFrame.minY,
+                width: size,
+                height: size
+            )
+        case .topRight:
+            // 窗口在右上角，可拖拽的角落在左下角
+            return CGRect(
+                x: windowFrame.minX,
+                y: windowFrame.minY,
+                width: size,
+                height: size
+            )
+        }
+    }
+    
+    /// 获取对应拖拽方向的光标
+    private func cursorForDirection(_ direction: ResizeDirection) -> NSCursor {
+        switch direction {
+        case .horizontal:
+            return .resizeLeftRight
+        case .vertical:
+            return .resizeUpDown
+        case .diagonal:
+            // 根据角落位置返回正确的对角线光标
+            return getDiagonalCursor()
+        case .none:
+            return .arrow
+        }
+    }
+    
+    /// 获取对角线拖拽的光标
+    private func getDiagonalCursor() -> NSCursor {
+        // 根据角落方向选择合适的光标
+        // bottomLeft 窗口拖拽右上角 -> 需要 NESW (↗↙) 光标
+        // topRight 窗口拖拽左下角 -> 需要 NESW (↗↙) 光标
+        // bottomRight 窗口拖拽左上角 -> 需要 NWSE (↖↘) 光标
+        // topLeft 窗口拖拽右下角 -> 需要 NWSE (↖↘) 光标
+        switch hotCorner {
+        case .bottomLeft, .topRight:
+            return Self.neswCursor  // ↗↙
+        case .bottomRight, .topLeft:
+            return Self.nwseCursor  // ↖↘
+        }
+    }
+    
+    /// NWSE 方向的对角线光标（↖↘）- 尝试使用系统光标
+    private static let nwseCursor: NSCursor = {
+        // 尝试使用系统私有 API 获取原生光标
+        if let cursor = NSCursor.perform(NSSelectorFromString("_windowResizeNorthWestSouthEastCursor"))?.takeUnretainedValue() as? NSCursor {
+            return cursor
+        }
+        // 回退到自定义光标
+        return createDiagonalCursor(nwse: true)
+    }()
+    
+    /// NESW 方向的对角线光标（↗↙）- 尝试使用系统光标
+    private static let neswCursor: NSCursor = {
+        // 尝试使用系统私有 API 获取原生光标
+        if let cursor = NSCursor.perform(NSSelectorFromString("_windowResizeNorthEastSouthWestCursor"))?.takeUnretainedValue() as? NSCursor {
+            return cursor
+        }
+        // 回退到自定义光标
+        return createDiagonalCursor(nwse: false)
+    }()
+    
+    /// 创建自定义对角线光标（作为回退方案）
+    private static func createDiagonalCursor(nwse: Bool) -> NSCursor {
+        let size = NSSize(width: 16, height: 16)
+        let image = NSImage(size: size, flipped: false) { rect in
+            // 白色描边（背景）
+            NSColor.white.setStroke()
+            let bgPath = NSBezierPath()
+            bgPath.lineWidth = 3.0
+            
+            if nwse {
+                // NWSE: ↖↘
+                bgPath.move(to: NSPoint(x: 2, y: 14))
+                bgPath.line(to: NSPoint(x: 14, y: 2))
+            } else {
+                // NESW: ↗↙
+                bgPath.move(to: NSPoint(x: 14, y: 14))
+                bgPath.line(to: NSPoint(x: 2, y: 2))
+            }
+            bgPath.stroke()
+            
+            // 黑色前景
+            NSColor.black.setStroke()
+            let path = NSBezierPath()
+            path.lineWidth = 1.5
+            
+            if nwse {
+                // NWSE: ↖↘
+                path.move(to: NSPoint(x: 2, y: 14))
+                path.line(to: NSPoint(x: 14, y: 2))
+                // 左上箭头
+                path.move(to: NSPoint(x: 2, y: 14))
+                path.line(to: NSPoint(x: 6, y: 14))
+                path.move(to: NSPoint(x: 2, y: 14))
+                path.line(to: NSPoint(x: 2, y: 10))
+                // 右下箭头
+                path.move(to: NSPoint(x: 14, y: 2))
+                path.line(to: NSPoint(x: 10, y: 2))
+                path.move(to: NSPoint(x: 14, y: 2))
+                path.line(to: NSPoint(x: 14, y: 6))
+            } else {
+                // NESW: ↗↙
+                path.move(to: NSPoint(x: 14, y: 14))
+                path.line(to: NSPoint(x: 2, y: 2))
+                // 右上箭头
+                path.move(to: NSPoint(x: 14, y: 14))
+                path.line(to: NSPoint(x: 10, y: 14))
+                path.move(to: NSPoint(x: 14, y: 14))
+                path.line(to: NSPoint(x: 14, y: 10))
+                // 左下箭头
+                path.move(to: NSPoint(x: 2, y: 2))
+                path.line(to: NSPoint(x: 6, y: 2))
+                path.move(to: NSPoint(x: 2, y: 2))
+                path.line(to: NSPoint(x: 2, y: 6))
+            }
+            path.stroke()
+            return true
+        }
+        return NSCursor(image: image, hotSpot: NSPoint(x: 8, y: 8))
     }
 
     func start() {
@@ -118,7 +425,7 @@ private extension SlidePanelController {
         window.backgroundColor = .windowBackgroundColor
         window.contentViewController = hostingController
         window.isReleasedWhenClosed = false
-        // 确保窗口能够接收键盘事件
+        // 确保窗口能够接收鼠标移动事件
         window.acceptsMouseMovedEvents = true
         return window
     }
@@ -132,18 +439,28 @@ private extension SlidePanelController {
     }
 
     func installEventMonitors() {
+        // 全局鼠标移动监听（用于触发面板展开）
         moveMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.mouseMoved]) { [weak self] _ in
             Task { @MainActor [weak self] in
-                self?.handleMouseMove()
+                self?.handleGlobalMouseMove()
             }
         }
 
+        // 全局点击监听（用于点击外部关闭面板）
         clickMonitor = NSEvent.addGlobalMonitorForEvents(
             matching: [.leftMouseDown, .rightMouseDown, .otherMouseDown]
         ) { [weak self] _ in
             Task { @MainActor [weak self] in
-                self?.handleMouseDown()
+                self?.handleGlobalMouseDown()
             }
+        }
+        
+        // 本地鼠标事件监听（用于边缘拖拽 - 在事件传递给视图之前拦截）
+        localMouseMonitor = NSEvent.addLocalMonitorForEvents(
+            matching: [.mouseMoved, .leftMouseDown, .leftMouseDragged, .leftMouseUp]
+        ) { [weak self] event in
+            guard let self = self else { return event }
+            return self.handleLocalMouseEvent(event)
         }
         
         // 添加键盘事件监听器，捕获编辑快捷键
@@ -184,6 +501,170 @@ private extension SlidePanelController {
             return event
         }
     }
+    
+    /// 处理本地鼠标事件（用于边缘拖拽）
+    func handleLocalMouseEvent(_ event: NSEvent) -> NSEvent? {
+        let screenPoint = NSEvent.mouseLocation
+        
+        switch event.type {
+        case .mouseMoved:
+            let direction = getResizeDirection(at: screenPoint)
+            currentResizeZone = direction
+            
+            if direction != .none {
+                let cursor = cursorForDirection(direction)
+                cursor.set()
+                // 延迟再次设置，覆盖 SwiftUI 可能重置的光标
+                DispatchQueue.main.async {
+                    if self.currentResizeZone != .none {
+                        self.cursorForDirection(self.currentResizeZone).set()
+                    }
+                }
+            }
+            return event  // 传递事件
+            
+        case .leftMouseDown:
+            let direction = getResizeDirection(at: screenPoint)
+            if direction != .none {
+                // 开始拖拽
+                isResizing = true
+                resizeDirection = direction
+                resizeStartLocation = screenPoint
+                resizeStartFrame = window.frame
+                cursorForDirection(direction).set()
+                return nil  // 消费事件，不传递
+            }
+            return event
+            
+        case .leftMouseDragged:
+            if isResizing {
+                performResize(currentLocation: screenPoint)
+                return nil  // 消费事件
+            }
+            return event
+            
+        case .leftMouseUp:
+            if isResizing {
+                isResizing = false
+                resizeDirection = .none
+                saveCurrentSize()
+                // 重置光标
+                let direction = getResizeDirection(at: screenPoint)
+                if direction == .none {
+                    NSCursor.arrow.set()
+                } else {
+                    cursorForDirection(direction).set()
+                }
+                return nil  // 消费事件
+            }
+            return event
+            
+        default:
+            return event
+        }
+    }
+    
+    /// 执行窗口大小调整
+    func performResize(currentLocation: CGPoint) {
+        var newWidth = resizeStartFrame.width
+        var newHeight = resizeStartFrame.height
+        var newX = resizeStartFrame.origin.x
+        var newY = resizeStartFrame.origin.y
+        
+        switch resizeDirection {
+        case .horizontal:
+            let deltaX = currentLocation.x - resizeStartLocation.x
+            
+            if isHorizontalHandleOnRightEdge() {
+                // 窗口在左侧，拖拽右边缘
+                newWidth = resizeStartFrame.width + deltaX
+            } else {
+                // 窗口在右侧，拖拽左边缘
+                newWidth = resizeStartFrame.width - deltaX
+                newX = resizeStartFrame.origin.x + deltaX
+            }
+            
+            // 限制宽度范围
+            newWidth = max(Constants.minWindowWidth, min(Constants.maxWindowWidth, newWidth))
+            
+            // 如果宽度被限制，需要调整 x 坐标
+            if !isHorizontalHandleOnRightEdge() {
+                let actualDelta = resizeStartFrame.width - newWidth
+                newX = resizeStartFrame.origin.x + actualDelta
+            }
+            
+            currentWindowWidth = newWidth
+            
+        case .vertical:
+            let deltaY = currentLocation.y - resizeStartLocation.y
+            
+            if isVerticalHandleOnTopEdge() {
+                // 窗口在下边，拖拽上边缘
+                newHeight = resizeStartFrame.height + deltaY
+            } else {
+                // 窗口在上边，拖拽下边缘
+                newHeight = resizeStartFrame.height - deltaY
+                newY = resizeStartFrame.origin.y + deltaY
+            }
+            
+            // 限制高度范围（考虑屏幕可用高度）
+            let maxAllowedHeight = getMaxAllowedHeight()
+            newHeight = max(Constants.minWindowHeight, min(maxAllowedHeight, newHeight))
+            
+            // 如果高度被限制，需要调整 y 坐标
+            if !isVerticalHandleOnTopEdge() {
+                let actualDelta = resizeStartFrame.height - newHeight
+                newY = resizeStartFrame.origin.y + actualDelta
+            }
+            
+            currentWindowHeight = newHeight
+            
+        case .diagonal:
+            // 同时调整宽度和高度
+            let deltaX = currentLocation.x - resizeStartLocation.x
+            let deltaY = currentLocation.y - resizeStartLocation.y
+            
+            // 水平方向
+            if isHorizontalHandleOnRightEdge() {
+                newWidth = resizeStartFrame.width + deltaX
+            } else {
+                newWidth = resizeStartFrame.width - deltaX
+                newX = resizeStartFrame.origin.x + deltaX
+            }
+            
+            // 垂直方向
+            if isVerticalHandleOnTopEdge() {
+                newHeight = resizeStartFrame.height + deltaY
+            } else {
+                newHeight = resizeStartFrame.height - deltaY
+                newY = resizeStartFrame.origin.y + deltaY
+            }
+            
+            // 限制宽度范围
+            newWidth = max(Constants.minWindowWidth, min(Constants.maxWindowWidth, newWidth))
+            if !isHorizontalHandleOnRightEdge() {
+                let actualDelta = resizeStartFrame.width - newWidth
+                newX = resizeStartFrame.origin.x + actualDelta
+            }
+            
+            // 限制高度范围（考虑屏幕可用高度）
+            let maxAllowedHeight = getMaxAllowedHeight()
+            newHeight = max(Constants.minWindowHeight, min(maxAllowedHeight, newHeight))
+            if !isVerticalHandleOnTopEdge() {
+                let actualDelta = resizeStartFrame.height - newHeight
+                newY = resizeStartFrame.origin.y + actualDelta
+            }
+            
+            currentWindowWidth = newWidth
+            currentWindowHeight = newHeight
+            
+        case .none:
+            return
+        }
+        
+        let newFrame = CGRect(x: newX, y: newY, width: newWidth, height: newHeight)
+        window.setFrame(newFrame, display: true)
+    }
 
     func removeMonitors() {
         if let moveMonitor {
@@ -198,9 +679,13 @@ private extension SlidePanelController {
             NSEvent.removeMonitor(keyboardMonitor)
             self.keyboardMonitor = nil
         }
+        if let localMouseMonitor {
+            NSEvent.removeMonitor(localMouseMonitor)
+            self.localMouseMonitor = nil
+        }
     }
 
-    func handleMouseMove() {
+    func handleGlobalMouseMove() {
         guard !isExpanded else { return }
 
         let location = NSEvent.mouseLocation
@@ -212,8 +697,10 @@ private extension SlidePanelController {
         }
     }
 
-    func handleMouseDown() {
+    func handleGlobalMouseDown() {
         guard isExpanded else { return }
+        guard !isResizing else { return }  // 如果正在拖拽，不要关闭
+        
         let location = NSEvent.mouseLocation
 
         if !window.frame.contains(location) {
@@ -259,6 +746,11 @@ private extension SlidePanelController {
     func collapse() {
         guard isExpanded else { return }
         isExpanded = false
+        
+        // 重置拖拽状态
+        isResizing = false
+        resizeDirection = .none
+        currentResizeZone = .none
 
         guard let screen = targetScreen ?? window.screen ?? NSScreen.main else {
             window.orderOut(nil)
@@ -316,8 +808,8 @@ private extension SlidePanelController {
 
     func shownFrame(for screen: NSScreen) -> CGRect {
         let availableHeight = screen.visibleFrame.height - (Constants.verticalMargin * 2)
-        let height = min(Constants.windowHeight, availableHeight)
-        let width = Constants.windowWidth
+        let height = min(currentWindowHeight, availableHeight)
+        let width = currentWindowWidth
 
         let x: CGFloat
         let y: CGFloat
