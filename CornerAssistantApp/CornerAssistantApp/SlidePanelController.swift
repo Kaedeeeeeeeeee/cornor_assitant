@@ -25,6 +25,26 @@ final class KeyboardAwareWindow: NSWindow {
     }
 }
 
+private final class ResizeCursorOverlayView: NSView {
+    var cursorRectProvider: (() -> [(CGRect, NSCursor)])?
+
+    override func resetCursorRects() {
+        discardCursorRects()
+        guard let provider = cursorRectProvider else { return }
+        for (rect, cursor) in provider() where !rect.isEmpty {
+            addCursorRect(rect, cursor: cursor)
+        }
+    }
+
+    override func hitTest(_ point: NSPoint) -> NSView? {
+        nil
+    }
+
+    override var acceptsFirstResponder: Bool {
+        false
+    }
+}
+
 // MARK: - Resize Direction
 
 /// 拖拽调整方向
@@ -42,9 +62,9 @@ final class SlidePanelController {
         static let hotspotHeight: CGFloat = 140
         static let defaultWindowWidth: CGFloat = 528
         static let defaultWindowHeight: CGFloat = 750
-        static let minWindowWidth: CGFloat = 320
+        static let minWindowWidth: CGFloat = 576
         static let maxWindowWidth: CGFloat = 900
-        static let minWindowHeight: CGFloat = 400
+        static let minWindowHeight: CGFloat = 600
         static let maxWindowHeight: CGFloat = 1200
         static let animationDuration: TimeInterval = 0.18
         static let horizontalMargin: CGFloat = 14
@@ -53,10 +73,12 @@ final class SlidePanelController {
         static let widthUserDefaultsKey = "SlidePanelWindowWidth"
         static let heightUserDefaultsKey = "SlidePanelWindowHeight"
         static let resizeEdgeWidth: CGFloat = 20  // 拖拽边缘宽度
+        static let resizeEdgeWidthExit: CGFloat = 28  // 光标提示的宽度，减少抖动
     }
 
     private let window: NSWindow
     private let hostingController: NSHostingController<AnyView>
+    private let resizeCursorOverlay = ResizeCursorOverlayView()
     private let panelState = SlidePanelState()
     private var moveMonitor: Any?
     private var clickMonitor: Any?
@@ -71,7 +93,6 @@ final class SlidePanelController {
     private var resizeDirection: ResizeDirection = .none
     private var resizeStartLocation: CGPoint = .zero
     private var resizeStartFrame: CGRect = .zero
-    private var currentResizeZone: ResizeDirection = .none
     
     /// 当前窗口宽度（可动态调整）
     private var currentWindowWidth: CGFloat
@@ -88,7 +109,11 @@ final class SlidePanelController {
                 .environmentObject(LocalizationManager.shared)
         )
         hostingController = NSHostingController(rootView: rootView)
-        window = SlidePanelController.makeWindow(hostingController: hostingController)
+        window = SlidePanelController.makeWindow(
+            hostingController: hostingController,
+            resizeCursorOverlay: resizeCursorOverlay
+        )
+        configureResizeCursorOverlay()
     }
     
     private static func loadSavedWidth() -> CGFloat {
@@ -110,6 +135,13 @@ final class SlidePanelController {
     private func saveCurrentSize() {
         UserDefaults.standard.set(currentWindowWidth, forKey: Constants.widthUserDefaultsKey)
         UserDefaults.standard.set(currentWindowHeight, forKey: Constants.heightUserDefaultsKey)
+    }
+
+    private func configureResizeCursorOverlay() {
+        resizeCursorOverlay.cursorRectProvider = { [weak self] in
+            guard let self = self else { return [] }
+            return self.makeResizeCursorRects(in: self.resizeCursorOverlay.bounds)
+        }
     }
     
     /// 根据 HotCorner 判断水平拖拽应该在哪一边
@@ -142,18 +174,17 @@ final class SlidePanelController {
     }
     
     /// 检查屏幕坐标是否在拖拽区域内，返回拖拽方向
-    private func getResizeDirection(at screenPoint: CGPoint) -> ResizeDirection {
+    private func getResizeDirection(at screenPoint: CGPoint, edgeWidth: CGFloat) -> ResizeDirection {
         guard isExpanded else { return .none }
         
         let windowFrame = window.frame
-        let edgeWidth = Constants.resizeEdgeWidth
         
         // 检查点是否在窗口内或边缘附近
         let expandedFrame = windowFrame.insetBy(dx: -5, dy: -5)
         guard expandedFrame.contains(screenPoint) else { return .none }
         
         // 首先检查角落区域（对角线拖拽）- 优先级最高
-        let cornerRect = getCornerResizeRect(for: windowFrame)
+        let cornerRect = getCornerResizeRect(for: windowFrame, size: edgeWidth)
         if cornerRect.contains(screenPoint) {
             return .diagonal
         }
@@ -216,9 +247,7 @@ final class SlidePanelController {
     }
     
     /// 获取角落拖拽区域（根据 HotCorner 决定是哪个角）
-    private func getCornerResizeRect(for windowFrame: CGRect) -> CGRect {
-        let size = Constants.resizeEdgeWidth
-        
+    private func getCornerResizeRect(for windowFrame: CGRect, size: CGFloat) -> CGRect {
         switch hotCorner {
         case .bottomLeft:
             // 窗口在左下角，可拖拽的角落在右上角
@@ -253,6 +282,62 @@ final class SlidePanelController {
                 height: size
             )
         }
+    }
+
+    private func makeResizeCursorRects(in bounds: CGRect) -> [(CGRect, NSCursor)] {
+        guard isExpanded else { return [] }
+
+        let edgeWidth = Constants.resizeEdgeWidthExit
+        var rects: [(CGRect, NSCursor)] = []
+
+        let cornerRect = getCornerResizeRect(for: bounds, size: edgeWidth)
+        rects.append((cornerRect, getDiagonalCursor()))
+
+        let horizontalEdgeRect: CGRect
+        if isHorizontalHandleOnRightEdge() {
+            let yOffset = isVerticalHandleOnTopEdge() ? 0 : edgeWidth
+            let heightReduction = edgeWidth
+            horizontalEdgeRect = CGRect(
+                x: bounds.maxX - edgeWidth,
+                y: bounds.minY + yOffset,
+                width: edgeWidth,
+                height: bounds.height - heightReduction
+            )
+        } else {
+            let yOffset = isVerticalHandleOnTopEdge() ? 0 : edgeWidth
+            let heightReduction = edgeWidth
+            horizontalEdgeRect = CGRect(
+                x: bounds.minX,
+                y: bounds.minY + yOffset,
+                width: edgeWidth,
+                height: bounds.height - heightReduction
+            )
+        }
+        rects.append((horizontalEdgeRect, .resizeLeftRight))
+
+        let verticalEdgeRect: CGRect
+        if isVerticalHandleOnTopEdge() {
+            let xOffset = isHorizontalHandleOnRightEdge() ? 0 : edgeWidth
+            let widthReduction = edgeWidth
+            verticalEdgeRect = CGRect(
+                x: bounds.minX + xOffset,
+                y: bounds.maxY - edgeWidth,
+                width: bounds.width - widthReduction,
+                height: edgeWidth
+            )
+        } else {
+            let xOffset = isHorizontalHandleOnRightEdge() ? 0 : edgeWidth
+            let widthReduction = edgeWidth
+            verticalEdgeRect = CGRect(
+                x: bounds.minX + xOffset,
+                y: bounds.minY,
+                width: bounds.width - widthReduction,
+                height: edgeWidth
+            )
+        }
+        rects.append((verticalEdgeRect, .resizeUpDown))
+
+        return rects
     }
     
     /// 获取对应拖拽方向的光标
@@ -365,6 +450,15 @@ final class SlidePanelController {
         return NSCursor(image: image, hotSpot: NSPoint(x: 8, y: 8))
     }
 
+    private func updateResizeCursor(for direction: ResizeDirection) {
+        switch direction {
+        case .none:
+            NSCursor.arrow.set()
+        default:
+            cursorForDirection(direction).set()
+        }
+    }
+
     func start() {
         prepareInitialFrame()
         installEventMonitors()
@@ -398,6 +492,7 @@ final class SlidePanelController {
         guard let screen = targetScreen ?? NSScreen.main else { return }
         let frame = concealedFrame(for: screen)
         window.setFrame(frame, display: false)
+        window.invalidateCursorRects(for: resizeCursorOverlay)
         if isExpanded {
             expand(on: screen)
         }
@@ -405,13 +500,29 @@ final class SlidePanelController {
 }
 
 private extension SlidePanelController {
-    static func makeWindow(hostingController: NSHostingController<AnyView>) -> NSWindow {
+    static func makeWindow(
+        hostingController: NSHostingController<AnyView>,
+        resizeCursorOverlay: ResizeCursorOverlayView
+    ) -> NSWindow {
         let window = KeyboardAwareWindow(
             contentRect: .zero,
             styleMask: [.titled, .fullSizeContentView],
             backing: .buffered,
             defer: true
         )
+
+        let containerController = NSViewController()
+        let containerView = NSView(frame: .zero)
+        containerController.view = containerView
+        containerController.addChild(hostingController)
+
+        hostingController.view.frame = containerView.bounds
+        hostingController.view.autoresizingMask = [.width, .height]
+        containerView.addSubview(hostingController.view)
+
+        resizeCursorOverlay.frame = containerView.bounds
+        resizeCursorOverlay.autoresizingMask = [.width, .height]
+        containerView.addSubview(resizeCursorOverlay, positioned: .above, relativeTo: hostingController.view)
 
         window.titleVisibility = .hidden
         window.titlebarAppearsTransparent = true
@@ -423,7 +534,7 @@ private extension SlidePanelController {
         window.level = .floating
         window.hasShadow = true
         window.backgroundColor = .windowBackgroundColor
-        window.contentViewController = hostingController
+        window.contentViewController = containerController
         window.isReleasedWhenClosed = false
         // 确保窗口能够接收鼠标移动事件
         window.acceptsMouseMovedEvents = true
@@ -508,30 +619,22 @@ private extension SlidePanelController {
         
         switch event.type {
         case .mouseMoved:
-            let direction = getResizeDirection(at: screenPoint)
-            currentResizeZone = direction
-            
-            if direction != .none {
-                let cursor = cursorForDirection(direction)
-                cursor.set()
-                // 延迟再次设置，覆盖 SwiftUI 可能重置的光标
-                DispatchQueue.main.async {
-                    if self.currentResizeZone != .none {
-                        self.cursorForDirection(self.currentResizeZone).set()
-                    }
-                }
+            if isResizing {
+                updateResizeCursor(for: resizeDirection)
+                return event
             }
+
             return event  // 传递事件
             
         case .leftMouseDown:
-            let direction = getResizeDirection(at: screenPoint)
+            let direction = getResizeDirection(at: screenPoint, edgeWidth: Constants.resizeEdgeWidth)
             if direction != .none {
                 // 开始拖拽
                 isResizing = true
                 resizeDirection = direction
                 resizeStartLocation = screenPoint
                 resizeStartFrame = window.frame
-                cursorForDirection(direction).set()
+                updateResizeCursor(for: direction)
                 return nil  // 消费事件，不传递
             }
             return event
@@ -548,13 +651,8 @@ private extension SlidePanelController {
                 isResizing = false
                 resizeDirection = .none
                 saveCurrentSize()
-                // 重置光标
-                let direction = getResizeDirection(at: screenPoint)
-                if direction == .none {
-                    NSCursor.arrow.set()
-                } else {
-                    cursorForDirection(direction).set()
-                }
+                updateResizeCursor(for: .none)
+                window.invalidateCursorRects(for: resizeCursorOverlay)
                 return nil  // 消费事件
             }
             return event
@@ -566,6 +664,9 @@ private extension SlidePanelController {
     
     /// 执行窗口大小调整
     func performResize(currentLocation: CGPoint) {
+        let maxAllowedHeight = getMaxAllowedHeight()
+        
+        // 使用拖拽开始时的 frame 作为基准
         var newWidth = resizeStartFrame.width
         var newHeight = resizeStartFrame.height
         var newX = resizeStartFrame.origin.x
@@ -573,86 +674,62 @@ private extension SlidePanelController {
         
         switch resizeDirection {
         case .horizontal:
-            let deltaX = currentLocation.x - resizeStartLocation.x
-            
             if isHorizontalHandleOnRightEdge() {
                 // 窗口在左侧，拖拽右边缘
-                newWidth = resizeStartFrame.width + deltaX
+                // 新宽度 = 鼠标 X - 窗口左边缘
+                newWidth = currentLocation.x - resizeStartFrame.origin.x
+                newWidth = max(Constants.minWindowWidth, min(Constants.maxWindowWidth, newWidth))
+                // X 坐标保持不变
             } else {
                 // 窗口在右侧，拖拽左边缘
-                newWidth = resizeStartFrame.width - deltaX
-                newX = resizeStartFrame.origin.x + deltaX
-            }
-            
-            // 限制宽度范围
-            newWidth = max(Constants.minWindowWidth, min(Constants.maxWindowWidth, newWidth))
-            
-            // 如果宽度被限制，需要调整 x 坐标
-            if !isHorizontalHandleOnRightEdge() {
-                let actualDelta = resizeStartFrame.width - newWidth
-                newX = resizeStartFrame.origin.x + actualDelta
+                // 右边缘固定
+                let rightEdge = resizeStartFrame.origin.x + resizeStartFrame.width
+                newWidth = rightEdge - currentLocation.x
+                newWidth = max(Constants.minWindowWidth, min(Constants.maxWindowWidth, newWidth))
+                newX = rightEdge - newWidth
             }
             
             currentWindowWidth = newWidth
             
         case .vertical:
-            let deltaY = currentLocation.y - resizeStartLocation.y
-            
             if isVerticalHandleOnTopEdge() {
-                // 窗口在下边，拖拽上边缘
-                newHeight = resizeStartFrame.height + deltaY
+                // 窗口在下边（bottomLeft/bottomRight），拖拽上边缘
+                // 底边缘固定，新高度 = 鼠标 Y - 窗口底部
+                newHeight = currentLocation.y - resizeStartFrame.origin.y
+                newHeight = max(Constants.minWindowHeight, min(maxAllowedHeight, newHeight))
+                // Y 坐标保持 resizeStartFrame.origin.y 不变
             } else {
-                // 窗口在上边，拖拽下边缘
-                newHeight = resizeStartFrame.height - deltaY
-                newY = resizeStartFrame.origin.y + deltaY
-            }
-            
-            // 限制高度范围（考虑屏幕可用高度）
-            let maxAllowedHeight = getMaxAllowedHeight()
-            newHeight = max(Constants.minWindowHeight, min(maxAllowedHeight, newHeight))
-            
-            // 如果高度被限制，需要调整 y 坐标
-            if !isVerticalHandleOnTopEdge() {
-                let actualDelta = resizeStartFrame.height - newHeight
-                newY = resizeStartFrame.origin.y + actualDelta
+                // 窗口在上边（topLeft/topRight），拖拽下边缘
+                // 顶边缘固定
+                let topEdge = resizeStartFrame.origin.y + resizeStartFrame.height
+                newHeight = topEdge - currentLocation.y
+                newHeight = max(Constants.minWindowHeight, min(maxAllowedHeight, newHeight))
+                newY = topEdge - newHeight
             }
             
             currentWindowHeight = newHeight
             
         case .diagonal:
-            // 同时调整宽度和高度
-            let deltaX = currentLocation.x - resizeStartLocation.x
-            let deltaY = currentLocation.y - resizeStartLocation.y
-            
             // 水平方向
             if isHorizontalHandleOnRightEdge() {
-                newWidth = resizeStartFrame.width + deltaX
+                newWidth = currentLocation.x - resizeStartFrame.origin.x
+                newWidth = max(Constants.minWindowWidth, min(Constants.maxWindowWidth, newWidth))
             } else {
-                newWidth = resizeStartFrame.width - deltaX
-                newX = resizeStartFrame.origin.x + deltaX
+                let rightEdge = resizeStartFrame.origin.x + resizeStartFrame.width
+                newWidth = rightEdge - currentLocation.x
+                newWidth = max(Constants.minWindowWidth, min(Constants.maxWindowWidth, newWidth))
+                newX = rightEdge - newWidth
             }
             
             // 垂直方向
             if isVerticalHandleOnTopEdge() {
-                newHeight = resizeStartFrame.height + deltaY
+                newHeight = currentLocation.y - resizeStartFrame.origin.y
+                newHeight = max(Constants.minWindowHeight, min(maxAllowedHeight, newHeight))
             } else {
-                newHeight = resizeStartFrame.height - deltaY
-                newY = resizeStartFrame.origin.y + deltaY
-            }
-            
-            // 限制宽度范围
-            newWidth = max(Constants.minWindowWidth, min(Constants.maxWindowWidth, newWidth))
-            if !isHorizontalHandleOnRightEdge() {
-                let actualDelta = resizeStartFrame.width - newWidth
-                newX = resizeStartFrame.origin.x + actualDelta
-            }
-            
-            // 限制高度范围（考虑屏幕可用高度）
-            let maxAllowedHeight = getMaxAllowedHeight()
-            newHeight = max(Constants.minWindowHeight, min(maxAllowedHeight, newHeight))
-            if !isVerticalHandleOnTopEdge() {
-                let actualDelta = resizeStartFrame.height - newHeight
-                newY = resizeStartFrame.origin.y + actualDelta
+                let topEdge = resizeStartFrame.origin.y + resizeStartFrame.height
+                newHeight = topEdge - currentLocation.y
+                newHeight = max(Constants.minWindowHeight, min(maxAllowedHeight, newHeight))
+                newY = topEdge - newHeight
             }
             
             currentWindowWidth = newWidth
@@ -724,6 +801,7 @@ private extension SlidePanelController {
         window.alphaValue = 1
         NSApp.activate(ignoringOtherApps: true)
         window.makeKeyAndOrderFront(nil)
+        window.invalidateCursorRects(for: resizeCursorOverlay)
         
         // 确保窗口成为 key window 并能够接收键盘事件
         DispatchQueue.main.async { [weak self] in
@@ -750,7 +828,7 @@ private extension SlidePanelController {
         // 重置拖拽状态
         isResizing = false
         resizeDirection = .none
-        currentResizeZone = .none
+        updateResizeCursor(for: .none)
 
         guard let screen = targetScreen ?? window.screen ?? NSScreen.main else {
             window.orderOut(nil)
