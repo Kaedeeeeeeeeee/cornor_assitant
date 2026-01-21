@@ -30,3 +30,6 @@
 "menu.copy" = "Copy";
 "menu.paste" = "Paste";
 "menu.select_all" = "Select All";
+"status.language" = "Language";
+"pin.window" = "Pin window (prevent auto-collapse)";
+"pin.unpin_window" = "Unpin window";

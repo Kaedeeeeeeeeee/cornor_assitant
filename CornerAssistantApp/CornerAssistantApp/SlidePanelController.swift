@@ -777,6 +777,8 @@ private extension SlidePanelController {
     func handleGlobalMouseDown() {
         guard isExpanded else { return }
         guard !isResizing else { return }  // 如果正在拖拽，不要关闭
+        // 如果窗口被固定，点击外部不收起
+        guard !panelState.isPinned else { return }
         
         let location = NSEvent.mouseLocation
 

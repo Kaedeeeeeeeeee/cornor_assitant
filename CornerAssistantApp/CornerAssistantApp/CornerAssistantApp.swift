@@ -164,6 +164,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         updateCornerMenuSelection()
     }
 
+    @objc private func selectLanguage(_ sender: NSMenuItem) {
+        guard let raw = sender.representedObject as? String,
+              let language = AppLanguage(rawValue: raw) else { return }
+        
+        LocalizationManager.shared.use(language: language)
+    }
+
     private func makeStatusMenu() -> NSMenu {
         let localization = LocalizationManager.shared
         let menu = NSMenu()
@@ -189,6 +196,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         launchItem.target = self
         menu.addItem(launchItem)
         launchAtLoginMenuItem = launchItem
+
+        // 语言切换
+        let languageMenuItem = NSMenuItem(title: localization.localized("status.language"), action: nil, keyEquivalent: "")
+        let languageSubmenu = NSMenu()
+        languageSubmenu.appearance = NSAppearance(named: .aqua)
+        
+        for language in AppLanguage.allCases {
+            let item = NSMenuItem(title: localization.localized(language.displayKey),
+                                  action: #selector(selectLanguage(_:)),
+                                  keyEquivalent: "")
+            item.target = self
+            item.representedObject = language.rawValue
+            item.state = (language == localization.currentLanguage) ? .on : .off
+            languageSubmenu.addItem(item)
+        }
+        languageMenuItem.submenu = languageSubmenu
+        menu.addItem(languageMenuItem)
 
         menu.addItem(.separator())
         let quitTitle = localization.localized("status.quit")

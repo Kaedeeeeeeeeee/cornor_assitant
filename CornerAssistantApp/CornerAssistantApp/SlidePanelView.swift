@@ -63,7 +63,14 @@ struct SlidePanelView: View {
 
     private var sidebar: some View {
         VStack(spacing: 8) {
-            Spacer().frame(height: 24)
+            // 图钉按钮放在侧边栏最上方
+            PinButton(isPinned: $state.isPinned)
+                .padding(.top, 12)
+            
+            Divider()
+                .frame(width: 18)
+                .padding(.vertical, 4)
+            
             VStack(spacing: 12) {
                 ForEach(viewModel.pinnedSites) { site in
                     SidebarButton(
@@ -244,6 +251,9 @@ private struct WebViewContainer: NSViewRepresentable {
 final class SlidePanelState: ObservableObject {
     private let focusSubject = PassthroughSubject<Void, Never>()
     fileprivate lazy var focusEvents: AnyPublisher<Void, Never> = focusSubject.eraseToAnyPublisher()
+    
+    /// 窗口是否被固定（固定后点击外部不会收起）
+    @Published var isPinned: Bool = false
 
     func requestAddressFocus() {
         focusSubject.send(())
@@ -335,6 +345,41 @@ private struct SidebarButton: View {
         } catch {
             return nil
         }
+    }
+}
+
+// MARK: - Pin Button
+
+private struct PinButton: View {
+    @EnvironmentObject private var localization: LocalizationManager
+    @Binding var isPinned: Bool
+    @State private var isHovering = false
+    
+    var body: some View {
+        Button {
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                isPinned.toggle()
+            }
+        } label: {
+            ZStack {
+                // 背景：只在悬停时显示
+                Circle()
+                    .fill(isHovering ? Color.secondary.opacity(0.1) : Color.clear)
+                    .frame(width: 28, height: 28)
+                
+                // 图钉图标
+                Image(systemName: isPinned ? "pin.fill" : "pin")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(isPinned ? .accentColor : .secondary)
+                    .rotationEffect(.degrees(isPinned ? 0 : 45))
+            }
+        }
+        .buttonStyle(.plain)
+        .onHover { hovering in
+            isHovering = hovering
+        }
+        .help(isPinned ? localization.localized("pin.unpin_window") : localization.localized("pin.window"))
+        .accessibilityLabel(isPinned ? localization.localized("pin.unpin_window") : localization.localized("pin.window"))
     }
 }
 

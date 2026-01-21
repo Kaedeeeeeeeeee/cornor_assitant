@@ -30,3 +30,6 @@
 "menu.copy" = "复制";
 "menu.paste" = "粘贴";
 "menu.select_all" = "全选";
+"status.language" = "语言";
+"pin.window" = "固定窗口（防止自动收起）";
+"pin.unpin_window" = "取消固定窗口";
