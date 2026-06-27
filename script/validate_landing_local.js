@@ -11,6 +11,7 @@ const landingDir = path.join(rootDir, "CornerAssistantApp", "landing-page");
 let port = Number(process.env.PEEK_LANDING_PORT || 0);
 let baseURL = "";
 const forbiddenCopy = ["Bing", "selected text", "Selected text", "选中文字", "macOS 14", "Sonoma"];
+const disabledCtaTerms = ["Coming soon", "即将登陆", "近日公開"];
 
 const viewports = [
   { name: "desktop", width: 1440, height: 1000 },
@@ -100,6 +101,12 @@ async function validatePage(page, pageName, url) {
       missingImages: imageStates.filter((image) => !image.ok),
       forbiddenHits: forbidden.filter((term) => bodyText.includes(term)),
       h1: document.querySelector("h1")?.textContent?.trim() || "",
+      storeButtons: [...document.querySelectorAll("a.store-button")].map((button) => ({
+        href: button.getAttribute("href") || "",
+        ariaDisabled: button.getAttribute("aria-disabled") || "",
+        disabledClass: button.classList.contains("is-disabled"),
+        text: button.textContent || "",
+      })),
     };
   }, forbiddenCopy);
 
@@ -115,8 +122,23 @@ async function validatePage(page, pageName, url) {
   if (consoleErrors.length > 0) {
     fail(`${pageName} console errors: ${consoleErrors.join(" | ")}`);
   }
+  validateStoreButtons(result.storeButtons, pageName);
 
   return result;
+}
+
+function validateStoreButtons(buttons, context) {
+  for (const button of buttons) {
+    const isDisabled = button.href === "#" && button.ariaDisabled === "true" && button.disabledClass;
+    const isActive = button.href.startsWith("https://apps.apple.com/") && button.ariaDisabled !== "true" && !button.disabledClass;
+    if (!isDisabled && !isActive) {
+      fail(`${context} has invalid App Store CTA state: ${JSON.stringify(button)}`);
+    }
+    if (isActive) {
+      const hit = disabledCtaTerms.find((term) => button.text.includes(term));
+      if (hit) fail(`${context} active App Store CTA still contains disabled copy: ${hit}`);
+    }
+  }
 }
 
 async function validateLanguageSwitching(page) {
@@ -135,6 +157,12 @@ async function validateLanguageSwitching(page) {
       htmlLang: document.documentElement.lang,
       h1: document.querySelector("h1")?.textContent?.trim() || "",
       activeLanguage: document.querySelector(".language-switcher button[aria-pressed='true']")?.getAttribute("data-lang"),
+      storeButtons: [...document.querySelectorAll("a.store-button")].map((button) => ({
+        href: button.getAttribute("href") || "",
+        ariaDisabled: button.getAttribute("aria-disabled") || "",
+        disabledClass: button.classList.contains("is-disabled"),
+        text: button.textContent || "",
+      })),
     }));
 
     if (state.htmlLang !== expectation.htmlLang) {
@@ -146,6 +174,7 @@ async function validateLanguageSwitching(page) {
     if (state.activeLanguage !== expectation.lang) {
       fail(`language ${expectation.lang} was not marked active`);
     }
+    validateStoreButtons(state.storeButtons, `language ${expectation.lang}`);
   }
 }
 

@@ -456,6 +456,10 @@
   - dry-run 已验证会校验并列出将设置的 variable 名称，不打印 token 值。
   - 无效 GA4 ID 会失败，避免写入错误 repository variable。
   - 2026-06-28 02:28 JST 已验证脚本语法、dry-run、错误 token 拦截和默认 readiness 检查。
+- 2026-06-28 已新增 `script/configure_app_store_url.py`：
+  - dry-run 已验证会接受 `https://apps.apple.com/.../app/.../id...` 格式并列出将更新的文件。
+  - 无效 host 会失败，避免把非 App Store 链接写入 landing CTA。
+  - `script/validate_landing_local.js` 已扩展 CTA 状态校验：disabled CTA 必须保持 `href="#"` / `aria-disabled="true"` / `is-disabled`，active CTA 必须指向 `https://apps.apple.com/` 且不能保留 coming-soon 文案。
 - 2026-06-28 02:18 JST Pages workflow `28296237761` 成功；公网 `script/validate_landing_public.py` 通过；默认 readiness 结果为 `{"manual": 4, "ok": 9, "skipped": 2}`。
 
 ## 2. 首发完成定义
@@ -504,6 +508,7 @@
 - [x] 在 GitHub 仓库中启用 GitHub Actions Pages 发布源。
 - [x] 合并/推送后验证 Pages 公网 URL。
 - [ ] App Store URL 出来后，把 CTA 从 “Coming soon” 改成真实链接。
+  - 已新增 `script/configure_app_store_url.py`；拿到真实 `https://apps.apple.com/.../app/.../id...` URL 后先 dry-run，再写入 landing 并运行本地校验。
 
 ### Phase B: SEO 基础
 
@@ -821,6 +826,7 @@ xcodebuild archive \
 - [x] `script/validate_privacy_alignment.py`：验证 PrivacyInfo、Xcode 权限、App Store App Privacy 口径和 landing privacy 文案一致。
 - [x] `script/validate_landing_public.py`：验证公网 landing SEO、sitemap、manifest、analytics config 和禁用宣传词。
 - [x] `script/check_external_readiness.py`：复查公网 URL、GitHub Pages/variables、GA4 配置状态，并可选复查 export/截图权限阻塞。
+- [x] `script/configure_app_store_url.py`：真实 App Store URL 出来后激活 landing CTA、更新三语言 CTA 文案和 JSON-LD，并复跑本地 landing 校验。
 - [x] 搜索 URL 构造、空查询处理、查询 trim/encode。
 - [x] URL 输入规范化：完整 HTTP/HTTPS URL、裸域名、路径、localhost、普通搜索词。
 - [x] 搜索建议模型：最小输入长度、debounce、clear。
@@ -1057,6 +1063,15 @@ PEEK_BING_SITE_VERIFICATION=... \
 
 确认输出无误后去掉 `--dry-run`，可追加 `--rerun-pages --check-after` 触发 Pages workflow 并复查公网状态。脚本只设置非空变量，会验证格式，并且不会在日志里打印 token 值。
 
+App Store URL 回填：
+
+```bash
+PEEK_APP_STORE_URL=https://apps.apple.com/.../app/.../id... \
+  ./script/configure_app_store_url.py --dry-run
+```
+
+确认输出无误后去掉 `--dry-run`。脚本会要求 URL 使用 `https://apps.apple.com`、包含 `/app/` 和 `/id...`，然后激活首页两个 Mac App Store CTA、更新三语言 CTA 文案、写入 JSON-LD `installUrl` / offer URL，并运行 `script/validate_landing_local.js`。
+
 外部依赖状态复查：
 
 ```bash
@@ -1085,7 +1100,7 @@ PEEK_CHECK_EXPORT=1 PEEK_CHECK_SCREENSHOT=1 ./script/check_external_readiness.py
     - Bing Webmaster Tools 当前需要 Microsoft 登录。
     - GitHub Pages workflow 已支持通过 `PEEK_GOOGLE_SITE_VERIFICATION` / `PEEK_BING_SITE_VERIFICATION` repository variables 注入验证 meta，可用 `script/configure_landing_variables.sh` 设置。
 12. Upload build to App Store Connect。
-13. 回填真实 App Store URL 到 landing CTA。
+13. 回填真实 App Store URL 到 landing CTA：用 `PEEK_APP_STORE_URL=... ./script/configure_app_store_url.py --dry-run` 先验证，再去掉 `--dry-run` 写入。
 14. Submit for Review。
 
 ## 8. 参考链接
