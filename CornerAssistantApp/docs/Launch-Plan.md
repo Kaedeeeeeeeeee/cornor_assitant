@@ -91,6 +91,7 @@
   - `error: exportArchive Unable to process request - PLA Update available`
   - `error: exportArchive No profiles for 'com.shifeng.peek' were found`
   - 需要登录 Apple Developer/App Store Connect 接受 Program License Agreement 更新，并创建/刷新 `com.shifeng.peek` 的 App Store provisioning profile。
+- 2026-06-27 23:29 JST 再次执行 `xcodebuild -exportArchive`，失败原因仍为同一组 Apple 后台阻塞。
 
 2026-06-27 源码发布风险收口：
 
@@ -134,6 +135,22 @@
   - 图片加载正常。
   - Privacy page 英文/日文切换正常。
   - 未发现 `Bing`、`macOS 14`、`Sonoma`、selected-text/选中文字等禁用公开宣传。
+
+2026-06-27 对比度修复后重新部署：
+
+- 已提交并推送 commit：`d19795d fix: improve landing page contrast`。
+- GitHub Actions workflow `Deploy Peek landing page` 成功：
+  - Run ID: `28291958776`
+- 公网 CSS 已确认更新：
+  - `--accent: #0064d2`
+- 公网 URL 再次验证：
+  - 首页、隐私页、支持页、`robots.txt`、`sitemap.xml` 均返回 200。
+- 公网 Lighthouse 已执行：
+  - Performance: 98
+  - Accessibility: 100
+  - Best Practices: 100
+  - SEO: 100
+  - `color-contrast` 已通过。
 
 ## 2. 首发完成定义
 
@@ -182,7 +199,7 @@
 
 ### Phase B: SEO 基础
 
-状态：本地基础和公网验证已完成；Search Console/Webmaster Tools 待后台操作。
+状态：本地基础和公网验证已完成；Lighthouse 已完成；Search Console/Webmaster Tools 待登录后台操作。
 
 - [x] 设置 canonical host：`https://kaedeeeeeeeeee.github.io/cornor_assitant/`。
 - [x] 首页、隐私页、支持页设置独立 title 和 meta description。
@@ -203,7 +220,14 @@
   - Google Search Console。
   - Bing Webmaster Tools。
   - Sitemap URL。
-- [ ] 部署后跑 Lighthouse/PageSpeed，记录性能和 SEO 分数。
+- [x] 部署后跑 Lighthouse，记录性能和 SEO 分数。
+- [ ] PageSpeed Insights 在线报告可后续补充，不阻塞首发。
+
+搜索引擎提交说明：
+
+- `robots.txt` 已公开声明 sitemap：`https://kaedeeeeeeeeee.github.io/cornor_assitant/sitemap.xml`。
+- Google Search Console 和 Bing Webmaster Tools 需要登录对应账号后提交 sitemap；不要使用旧式匿名 sitemap ping 端点作为上线证据。
+- 提交 sitemap 会改变站长工具账号状态，执行前需要确认使用哪个 Google/Microsoft 账号。
 
 首发关键词方向：
 
@@ -295,6 +319,7 @@
   - 用菜单栏图标或热角展示面板。
   - 只截取 app 窗口或经过清理的完整桌面。
   - 采集完成后保存到 `CornerAssistantApp/docs/app-store-screenshots/` 或外部素材目录，再决定是否提交进仓库。
+- Mac App Store 官方接受 16:10 截图：1280x800、1440x900、2560x1600、2880x1800；建议首发使用 2880x1800 或 2560x1600。
 
 ### Phase E: App Build Readiness
 
@@ -546,9 +571,10 @@ xcodebuild \
 5. 在 App Store Connect 创建 Peek app record。
 6. 补 GA4 Measurement ID，或者明确首发先不开启 analytics。
 7. 准备截图并上传 App Store metadata。
-8. Upload build to App Store Connect。
-9. 回填真实 App Store URL 到 landing CTA。
-10. Submit for Review。
+8. 在 Google Search Console / Bing Webmaster Tools 提交 sitemap。
+9. Upload build to App Store Connect。
+10. 回填真实 App Store URL 到 landing CTA。
+11. Submit for Review。
 
 ## 8. 参考链接
 

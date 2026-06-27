@@ -12,7 +12,7 @@
 | Bundle ID | `com.shifeng.peek` |
 | SKU 建议 | `peek-macos-001` |
 | 发布者/版权 | Zhang Shifeng |
-| 分类建议 | Productivity 或 Utilities |
+| 分类 | Productivity |
 | 价格 | US$5.99，一次买断 |
 | 系统要求 | macOS 15.0 或更高版本 |
 | 支持邮箱 | `f.shera.09@gmail.com` |
@@ -260,7 +260,8 @@ Support contact: f.shera.09@gmail.com
 - 使用真实 Release build 或接近最终的 signed build。
 - 不出现 Xcode、终端、测试日志、个人账号或隐私信息。
 - 不展示 selected-text search、搜索引擎选择、macOS 14 兼容等未发布能力。
-- 推荐尺寸：16:10 macOS 截图，例如 2880x1800 或 2560x1600。
+- Mac App Store 官方接受 16:10 截图：1280x800、1440x900、2560x1600、2880x1800。
+- 推荐首发使用 2880x1800 或 2560x1600。
 
 ## 上架前核对
 
