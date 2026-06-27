@@ -189,6 +189,7 @@
   - 2026-06-28 01:48 JST 再次执行 `./script/launch_verify.sh`，通过。
   - 2026-06-28 02:04 JST 再次执行 `./script/launch_verify.sh`，通过。
   - 2026-06-28 02:13 JST 再次执行 `./script/launch_verify.sh`，通过。
+  - 2026-06-28 02:28 JST 再次执行 `./script/launch_verify.sh`，通过。
 
 2026-06-28 Landing 本地验收收口：
 
@@ -436,6 +437,10 @@
 - 2026-06-28 02:11 JST 脚本已扩展 Google/Bing verification meta 检查：
   - 默认模式：`{"manual": 4, "ok": 9, "skipped": 2}`。
 - 2026-06-28 02:13 JST 扩展模式复查结果：`{"blocked": 2, "manual": 4, "ok": 9}`。
+- 2026-06-28 已新增 `script/configure_landing_variables.sh`：
+  - dry-run 已验证会校验并列出将设置的 variable 名称，不打印 token 值。
+  - 无效 GA4 ID 会失败，避免写入错误 repository variable。
+  - 2026-06-28 02:28 JST 已验证脚本语法、dry-run、错误 token 拦截和默认 readiness 检查。
 - 2026-06-28 02:18 JST Pages workflow `28296237761` 成功；公网 `script/validate_landing_public.py` 通过；默认 readiness 结果为 `{"manual": 4, "ok": 9, "skipped": 2}`。
 
 ## 2. 首发完成定义
@@ -478,7 +483,7 @@
 - [x] 增加 landing-only analytics loader。
 - [ ] 配置真实 GA4 Measurement ID。
   - 当前 loader 已就绪，但默认不加载任何 analytics。
-  - 拿到 ID 后在 GitHub repository variable 中设置 `PEEK_GA_MEASUREMENT_ID`，然后手动 rerun `Deploy Peek landing page` workflow 或推送 landing 变更。
+  - 拿到 ID 后用 `script/configure_landing_variables.sh` 设置 GitHub repository variable `PEEK_GA_MEASUREMENT_ID`，然后手动 rerun `Deploy Peek landing page` workflow 或加 `--rerun-pages`。
   - 2026-06-28 01:24 JST 通过 GitHub API 复查：repository actions variables 为空，`PEEK_GA_MEASUREMENT_ID` 仍未设置。
 - [x] 增加 GitHub Pages Actions workflow。
 - [x] 在 GitHub 仓库中启用 GitHub Actions Pages 发布源。
@@ -502,6 +507,10 @@
   - Google Search Console：GitHub repository variable `PEEK_GOOGLE_SITE_VERIFICATION`。
   - Bing Webmaster Tools：GitHub repository variable `PEEK_BING_SITE_VERIFICATION`。
   - token 只在部署产物中注入，不写死到仓库源码。
+- [x] 增加 GitHub landing variables 配置脚本：
+  - `script/configure_landing_variables.sh`
+  - 支持 `PEEK_GA_MEASUREMENT_ID`、`PEEK_GOOGLE_SITE_VERIFICATION`、`PEEK_BING_SITE_VERIFICATION`。
+  - 支持 `--dry-run`、`--rerun-pages`、`--check-after`。
 - [x] 部署后检查：
   - 首页、隐私页、支持页返回 200。
   - `robots.txt` 返回 200。
@@ -529,10 +538,18 @@
 - Google Search Console 和 Bing Webmaster Tools 需要登录对应账号后提交 sitemap；不要使用旧式匿名 sitemap ping 端点作为上线证据。
 - 提交 sitemap 会改变站长工具账号状态，执行前需要确认使用哪个 Google/Microsoft 账号。
 - Search Console 当前下一步是完成 `https://kaedeeeeeeeeee.github.io/cornor_assitant/` 的所有权验证；GitHub Pages 可优先使用 HTML meta tag 验证方式。
-- 拿到验证 token 后，在 GitHub repository variables 中设置：
+- 拿到验证 token 后，用 `script/configure_landing_variables.sh` 设置 GitHub repository variables：
   - `PEEK_GOOGLE_SITE_VERIFICATION`：Google meta tag 的 `content` 值。
   - `PEEK_BING_SITE_VERIFICATION`：Bing `msvalidate.01` meta tag 的 `content` 值。
-  - 设置后手动 rerun `Deploy Peek landing page` workflow 或推送 landing/workflow 变更，再运行 `./script/check_external_readiness.py` 复查 meta 是否出现在公网首页。
+  - 推荐命令：
+
+```bash
+PEEK_GOOGLE_SITE_VERIFICATION=... \
+PEEK_BING_SITE_VERIFICATION=... \
+  ./script/configure_landing_variables.sh --rerun-pages --check-after
+```
+
+  - 脚本会校验 token 格式，不在日志里打印 token 值。设置后运行 `./script/check_external_readiness.py` 复查 meta 是否出现在公网首页。
 
 首发关键词方向：
 
@@ -1011,6 +1028,17 @@ App Store Connect metadata 导出：
 
 默认输出到 `/tmp/peek-app-store-metadata`。登录 App Store Connect 并创建 app record 后，从该目录复制三语言 metadata、审核备注和基础字段；截图、真实联系电话、价格层级确认、DSA 和 build selection 仍需在后台手工完成。
 
+Landing repository variables 配置：
+
+```bash
+PEEK_GA_MEASUREMENT_ID=G-... \
+PEEK_GOOGLE_SITE_VERIFICATION=... \
+PEEK_BING_SITE_VERIFICATION=... \
+  ./script/configure_landing_variables.sh --dry-run
+```
+
+确认输出无误后去掉 `--dry-run`，可追加 `--rerun-pages --check-after` 触发 Pages workflow 并复查公网状态。脚本只设置非空变量，会验证格式，并且不会在日志里打印 token 值。
+
 外部依赖状态复查：
 
 ```bash
@@ -1032,12 +1060,12 @@ PEEK_CHECK_EXPORT=1 PEEK_CHECK_SCREENSHOT=1 ./script/check_external_readiness.py
 6. 运行 `./script/export_app_store_metadata.py`，从 `/tmp/peek-app-store-metadata` 复制 metadata 和审核备注。
 7. 填写 App Store Connect 年龄分级、内容权利、App Privacy、真实审核联系电话和其他后台表单。
 8. 如果覆盖 EU 地区，完成 DSA trader status；如果暂不覆盖 EU，先调整 availability。
-9. 补 GA4 Measurement ID：在 GitHub repository variable 设置 `PEEK_GA_MEASUREMENT_ID`，或者明确首发先不开启 analytics。
+9. 补 GA4 Measurement ID：用 `script/configure_landing_variables.sh` 设置 `PEEK_GA_MEASUREMENT_ID`，或者明确首发先不开启 analytics。
 10. 准备截图并上传 App Store metadata。
 11. 在 Google Search Console / Bing Webmaster Tools 验证站点并提交 sitemap。
     - Search Console 当前需要为 `f.shera.09@gmail.com` 完成属性所有权验证。
     - Bing Webmaster Tools 当前需要 Microsoft 登录。
-    - GitHub Pages workflow 已支持通过 `PEEK_GOOGLE_SITE_VERIFICATION` / `PEEK_BING_SITE_VERIFICATION` repository variables 注入验证 meta。
+    - GitHub Pages workflow 已支持通过 `PEEK_GOOGLE_SITE_VERIFICATION` / `PEEK_BING_SITE_VERIFICATION` repository variables 注入验证 meta，可用 `script/configure_landing_variables.sh` 设置。
 12. Upload build to App Store Connect。
 13. 回填真实 App Store URL 到 landing CTA。
 14. Submit for Review。
