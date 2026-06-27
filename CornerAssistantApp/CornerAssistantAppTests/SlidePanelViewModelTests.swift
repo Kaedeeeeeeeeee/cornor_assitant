@@ -50,6 +50,31 @@ final class SlidePanelViewModelTests: XCTestCase {
         XCTAssertFalse(viewModel.showingLauncher)
     }
 
+    func testCloseLastRegularTabCreatesReplacementLauncherTab() {
+        let viewModel = makeViewModel(initialPinnedSites: [])
+        let originalTabID = viewModel.activeTab.id
+
+        viewModel.close(tab: viewModel.activeTab)
+
+        XCTAssertEqual(viewModel.tabs.count, 1)
+        XCTAssertEqual(viewModel.regularTabs.count, 1)
+        XCTAssertNotEqual(viewModel.activeTab.id, originalTabID)
+        XCTAssertTrue(viewModel.showingLauncher)
+        XCTAssertNil(viewModel.activeTab.url)
+    }
+
+    func testPinnedTabsAreNotClosedByRegularClose() {
+        let site = PinnedSite(name: "Docs", url: "https://docs.example/")
+        let viewModel = makeViewModel(initialPinnedSites: [site])
+        let pinnedTab = viewModel.activeTab
+
+        viewModel.close(tab: pinnedTab)
+
+        XCTAssertEqual(viewModel.tabs.map(\.id), [pinnedTab.id])
+        XCTAssertEqual(viewModel.activeTabID, pinnedTab.id)
+        XCTAssertTrue(viewModel.isPinnedActive(site))
+    }
+
     func testPinAndUnpinRegularTab() throws {
         let recorder = PinnedSiteSaveRecorder()
         let viewModel = makeViewModel(initialPinnedSites: [], recorder: recorder)
@@ -75,6 +100,23 @@ final class SlidePanelViewModelTests: XCTestCase {
         XCTAssertEqual(recorder.saves.last, [])
     }
 
+    func testCannotPinDuplicateURLCaseInsensitive() throws {
+        let site = PinnedSite(name: "Docs", url: "https://example.com/")
+        let recorder = PinnedSiteSaveRecorder()
+        let viewModel = makeViewModel(initialPinnedSites: [site], recorder: recorder)
+
+        viewModel.addTab()
+        let tab = viewModel.activeTab
+        let duplicateURL = try XCTUnwrap(URL(string: "https://EXAMPLE.com/"))
+        viewModel.updateActiveTabURL(duplicateURL, addressText: duplicateURL.absoluteString)
+
+        XCTAssertFalse(viewModel.canPin(tab: tab))
+        viewModel.pin(tab: tab)
+
+        XCTAssertEqual(viewModel.pinnedSites, [site])
+        XCTAssertTrue(recorder.saves.isEmpty)
+    }
+
     func testActivatePinnedSiteSelectsExistingPinnedTab() {
         let one = PinnedSite(name: "One", url: "https://one.example/")
         let two = PinnedSite(name: "Two", url: "https://two.example/")
@@ -88,6 +130,20 @@ final class SlidePanelViewModelTests: XCTestCase {
         XCTAssertFalse(viewModel.showingLauncher)
         XCTAssertEqual(targetTab.addressText, two.url)
         XCTAssertEqual(targetTab.url?.absoluteString, two.url)
+    }
+
+    func testActivatePinnedSiteCreatesTabWhenMappingIsMissing() {
+        let one = PinnedSite(name: "One", url: "https://one.example/")
+        let added = PinnedSite(name: "Added", url: "https://added.example/")
+        let viewModel = makeViewModel(initialPinnedSites: [one])
+
+        let activatedTab = viewModel.activatePinned(site: added)
+
+        XCTAssertEqual(viewModel.tabs.first?.id, activatedTab.id)
+        XCTAssertEqual(viewModel.activeTabID, activatedTab.id)
+        XCTAssertEqual(activatedTab.addressText, added.url)
+        XCTAssertEqual(activatedTab.url?.absoluteString, added.url)
+        XCTAssertFalse(viewModel.showingLauncher)
     }
 
     func testPinnedAndRegularTabReordering() {

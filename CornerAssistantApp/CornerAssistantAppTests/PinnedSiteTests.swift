@@ -1,6 +1,7 @@
 import XCTest
 @testable import Peek
 
+@MainActor
 final class PinnedSiteTests: XCTestCase {
     func testPinnedSiteIDUsesLowercasedURL() {
         let site = PinnedSite(name: "Docs", url: "https://EXAMPLE.com/Docs")
@@ -25,6 +26,13 @@ final class PinnedSiteTests: XCTestCase {
         XCTAssertEqual(site.faviconURL?.absoluteString, "https://www.google.com/s2/favicons?domain=example.com&sz=128")
     }
 
+    func testPinnedSiteWithoutHostHasNoFavicon() {
+        let site = PinnedSite(name: "Invalid", url: "not a url")
+
+        XCTAssertNil(site.host)
+        XCTAssertNil(site.faviconURL)
+    }
+
     func testPinnedSiteCodableDerivesIDFromURL() throws {
         let original = PinnedSite(name: "Docs", url: "https://EXAMPLE.com/Docs")
         let data = try JSONEncoder().encode(original)
@@ -33,5 +41,14 @@ final class PinnedSiteTests: XCTestCase {
         XCTAssertEqual(decoded.name, original.name)
         XCTAssertEqual(decoded.url, original.url)
         XCTAssertEqual(decoded.id, "https://example.com/docs")
+    }
+
+    func testDefaultPinnedSitesAreHTTPSWebDestinations() {
+        XCTAssertEqual(PinnedSite.defaults.map(\.name), ["ChatGPT", "Notion", "Slack"])
+        for site in PinnedSite.defaults {
+            let url = URL(string: site.url)
+            XCTAssertEqual(url?.scheme, "https")
+            XCTAssertNotNil(url?.host)
+        }
     }
 }

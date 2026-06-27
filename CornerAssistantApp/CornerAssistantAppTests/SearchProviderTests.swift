@@ -1,6 +1,7 @@
 import XCTest
 @testable import Peek
 
+@MainActor
 final class SearchProviderTests: XCTestCase {
     private let provider = GoogleSearchProvider()
 
@@ -18,16 +19,35 @@ final class SearchProviderTests: XCTestCase {
         XCTAssertNil(provider.searchURL(for: "   "))
     }
 
+    func testSearchURLPreservesUnicodeAndSymbolsAsQueryItem() throws {
+        let url = try XCTUnwrap(provider.searchURL(for: "  Peek 日本語 & macOS  "))
+        let components = try XCTUnwrap(URLComponents(url: url, resolvingAgainstBaseURL: false))
+
+        XCTAssertEqual(components.queryItems, [URLQueryItem(name: "q", value: "Peek 日本語 & macOS")])
+    }
+
     func testNormalizedURLKeepsExplicitHTTPSURL() {
         let url = provider.normalizedURL(from: "https://example.com/docs?tab=peek")
 
         XCTAssertEqual(url?.absoluteString, "https://example.com/docs?tab=peek")
     }
 
+    func testNormalizedURLKeepsExplicitHTTPURL() {
+        let url = provider.normalizedURL(from: "http://example.com/docs")
+
+        XCTAssertEqual(url?.absoluteString, "http://example.com/docs")
+    }
+
     func testNormalizedURLAddsHTTPSForHostLikeInput() {
         let url = provider.normalizedURL(from: "example.com")
 
         XCTAssertEqual(url?.absoluteString, "https://example.com")
+    }
+
+    func testNormalizedURLTrimsHostLikeInput() {
+        let url = provider.normalizedURL(from: "  example.com/docs  ")
+
+        XCTAssertEqual(url?.absoluteString, "https://example.com/docs")
     }
 
     func testNormalizedURLAllowsLocalhost() {

@@ -99,6 +99,9 @@
 - 2026-06-28 01:07 JST 再次执行 `xcodebuild -exportArchive`，失败原因仍为：
   - `error: exportArchive No Accounts`
   - `error: exportArchive No profiles for 'com.shifeng.peek' were found`
+- 2026-06-28 01:26 JST 再次执行 `xcodebuild -exportArchive`，失败原因仍为：
+  - `error: exportArchive No Accounts`
+  - `error: exportArchive No profiles for 'com.shifeng.peek' were found`
 
 2026-06-27 源码发布风险收口：
 
@@ -182,7 +185,7 @@
   - Debug-only 面板命令和 hot corner smoke 命令没有进入 Release archive。
   - 公网 landing 关键 URL 均可达。
   - 公网 landing SEO 和 analytics config 校验。
-  - 2026-06-28 01:19 JST 再次执行 `./script/launch_verify.sh`，通过。
+  - 2026-06-28 01:25 JST 再次执行 `./script/launch_verify.sh`，通过。
 
 2026-06-28 Landing 本地验收收口：
 
@@ -213,6 +216,10 @@
   - 成功定位 Peek 面板窗口：`window id=8433 bounds=0,281 528x750`。
   - 截图阶段失败：`could not create image from window`。
   - 结论：脚本可复跑，但当前会话仍缺少可用 Screen Recording/可见桌面截图能力；需要在已授权的可见桌面会话中重跑。
+- 2026-06-28 01:26 JST 再次执行 `./script/capture_app_store_screenshot.sh`：
+  - 成功定位 Peek 面板窗口：`window id=8513 bounds=0,281 528x750`。
+  - 截图阶段仍失败：`could not create image from window`。
+  - 脚本提示需要给终端/Codex 宿主授予 Screen Recording 权限后重试。
 
 2026-06-28 App Store metadata 校验收口：
 
@@ -257,11 +264,14 @@
   - 三语言 `Localizable.strings` key 集合一致且值非空。
   - 首发关键 UI 文案 key 存在。
   - 四个 hot corner raw value 保持稳定。
-  - 标签模型：新建、切换、关闭。
-  - 固定网站模型：打开、添加、移除、排序。
+  - 搜索/URL 模型：空查询、trim、unicode 和符号查询、HTTP/HTTPS URL、裸域名、路径、localhost、普通搜索词。
+  - 标签模型：新建、切换、关闭、关闭最后一个普通标签后自动补新 launcher tab。
+  - 固定网站模型：打开、添加、移除、排序、重复 URL 防护、固定 tab 不被普通关闭、缺失 tab mapping 时创建新固定 tab。
+  - 默认固定网站：ChatGPT、Notion、Slack 都是 HTTPS web destination。
   - 搜索建议模型：最小输入长度、debounce 后填充、clear。
 - `xcodebuild ... -only-testing:CornerAssistantAppTests test` 已通过：
-  - 22 tests passed, 0 failures。
+  - 2026-06-28 01:23 JST 通过。
+  - 当前 `CornerAssistantAppTests` 共 31 个 `func test...`。
 - `script/qa_smoke.sh` 已重新验证通过：
   - 当前 smoke 会先验证菜单栏 status item 存在。
   - 当前 smoke 会逐个切换 Debug-only hot corner 命令并验证真实 Peek 面板窗口位于对应屏幕边角。
@@ -275,7 +285,10 @@
 - 2026-06-28 01:07 JST 再次执行 `xcodebuild -exportArchive`，失败原因仍为：
   - `error: exportArchive No Accounts`
   - `error: exportArchive No profiles for 'com.shifeng.peek' were found`
-- 2026-06-28 01:19 JST 再次执行 `./script/launch_verify.sh`，通过。
+- 2026-06-28 01:26 JST 再次执行 `xcodebuild -exportArchive`，失败原因仍为：
+  - `error: exportArchive No Accounts`
+  - `error: exportArchive No profiles for 'com.shifeng.peek' were found`
+- 2026-06-28 01:25 JST 再次执行 `./script/launch_verify.sh`，通过。
 - 2026-06-28 01:15 JST 再次执行 UI test target，失败原因仍为当前 macOS 会话认证状态：
   - `Failed to initialize for UI testing`
   - `System authentication is running`
@@ -357,6 +370,16 @@
   - SEO: 100
 - 首页 JSON-LD `applicationCategory` 已从 `UtilitiesApplication` 调整为 `Productivity`，与 App Store 分类保持一致。
 
+2026-06-28 01:24 JST GitHub Pages / analytics 复查：
+
+- `gh auth status` 显示当前 GitHub CLI 已登录 `Kaedeeeeeeeeee`。
+- `gh api repos/Kaedeeeeeeeeee/cornor_assitant/pages` 确认：
+  - `build_type = workflow`
+  - `html_url = https://kaedeeeeeeeeee.github.io/cornor_assitant/`
+  - `cname = null`
+- `gh run list --workflow pages.yml --limit 5` 最近 3 次 workflow 都是 `success`。
+- `gh api repos/Kaedeeeeeeeeee/cornor_assitant/actions/variables` 返回 `total_count = 0`；当前未设置 `PEEK_GA_MEASUREMENT_ID`。
+
 ## 2. 首发完成定义
 
 首发上线不是只把页面放出去，也不是只上传一个 build。完成定义如下：
@@ -398,6 +421,7 @@
 - [ ] 配置真实 GA4 Measurement ID。
   - 当前 loader 已就绪，但默认不加载任何 analytics。
   - 拿到 ID 后在 GitHub repository variable 中设置 `PEEK_GA_MEASUREMENT_ID`，然后手动 rerun `Deploy Peek landing page` workflow 或推送 landing 变更。
+  - 2026-06-28 01:24 JST 通过 GitHub API 复查：repository actions variables 为空，`PEEK_GA_MEASUREMENT_ID` 仍未设置。
 - [x] 增加 GitHub Pages Actions workflow。
 - [x] 在 GitHub 仓库中启用 GitHub Actions Pages 发布源。
 - [x] 合并/推送后验证 Pages 公网 URL。
@@ -656,6 +680,7 @@ xcodebuild archive \
 - [ ] 用 Xcode Organizer 或 `xcodebuild -exportArchive` 走 App Store distribution。
   - 已新增 `export_options_app_store.plist`。
   - 当前 export 被 Xcode account/profile 阻塞：`No Accounts`，且没有 `com.shifeng.peek` profile。
+  - 2026-06-28 01:26 JST 已复查，阻塞仍未解除。
   - 登录账号后仍需确认 Apple Developer PLA 是否已接受。
 - [x] 发布前一键验证脚本：
 
@@ -663,7 +688,7 @@ xcodebuild archive \
 ./script/launch_verify.sh
 ```
 
-  - 2026-06-28 01:19 JST 已通过。
+  - 2026-06-28 01:25 JST 已通过。
 - [ ] 上传 App Store Connect：
   - Xcode Organizer。
   - 或 Transporter。
@@ -692,11 +717,11 @@ xcodebuild archive \
 - [x] `script/validate_privacy_alignment.py`：验证 PrivacyInfo、Xcode 权限、App Store App Privacy 口径和 landing privacy 文案一致。
 - [x] `script/validate_landing_public.py`：验证公网 landing SEO、sitemap、manifest、analytics config 和禁用宣传词。
 - [x] 搜索 URL 构造、空查询处理、查询 trim/encode。
-- [x] URL 输入规范化：完整 URL、裸域名、localhost、普通搜索词。
+- [x] URL 输入规范化：完整 HTTP/HTTPS URL、裸域名、路径、localhost、普通搜索词。
 - [x] 搜索建议模型：最小输入长度、debounce、clear。
-- [x] 标签模型：新建、切换、关闭、排序。
+- [x] 标签模型：新建、切换、关闭、关闭最后普通标签后自动补新 launcher tab、排序。
 - [x] 固定网站模型：id 生成、favicon fallback、custom favicon、Codable 还原。
-- [x] 固定网站 view model：添加、打开、移除、排序。
+- [x] 固定网站 view model：添加、打开、移除、排序、重复 URL 防护、固定 tab 关闭保护。
 - [x] 首发三语言 key 集合一致、关键 UI 文案存在、hot corner 选项稳定。
 - [x] 四个热角设置：Debug smoke 已验证真实面板窗口落在对应屏幕边角。
 - [x] Xcode unit test target 可通过 CLI 运行。
