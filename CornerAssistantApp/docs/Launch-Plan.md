@@ -197,6 +197,7 @@
   - 2026-06-28 03:17 JST 再次执行 `./script/launch_verify.sh`，通过；本轮仅更新计划文档和 QA 证据。
   - 2026-06-28 03:22 JST 再次执行 `./script/launch_verify.sh`，通过；当前测试已覆盖三语言切换和语言偏好持久化。
   - 2026-06-28 03:28 JST 再次执行 `./script/launch_verify.sh`，通过；当前测试已覆盖面板布局、固定防收起和外部点击自动收起策略。
+  - 2026-06-28 03:32 JST 再次执行 `./script/launch_verify.sh`，通过；当前测试已覆盖 Launch at Login 管理逻辑。
 
 2026-06-28 Landing 本地验收收口：
 
@@ -299,6 +300,7 @@
 2026-06-28 QA 自动化覆盖扩展：
 
 - 已新增：
+  - `CornerAssistantAppTests/LaunchAtLoginManagerTests.swift`
   - `CornerAssistantAppTests/LaunchReadinessTests.swift`
   - `CornerAssistantAppTests/SlidePanelLayoutTests.swift`
   - `CornerAssistantAppTests/SlidePanelViewModelTests.swift`
@@ -315,6 +317,7 @@
   - 四个 hot corner raw value 保持稳定。
   - 面板布局：保存尺寸 clamp、四个 hot corner hotspot rect、四个显示 frame、隐藏 frame 方向、可见高度限制。
   - 固定窗口/自动收起策略：未展开、正在 resize、窗口固定、点击窗口内都不会自动收起；未固定且点击窗口外会收起。
+  - Launch at Login 管理逻辑：状态读取、注册、注销、同步委托，以及底层 ServiceManagement 错误不会逃逸到 UI 调用链。
   - 三语言 settings/language/hot corner 菜单文案存在。
   - Hot corner 默认值为 `bottomLeft`，保存/读取有效值正常，非法值会回退到默认值。
   - App Store 首发关键 build settings 保持一致：bundle id、product name、display name、AppIcon、Productivity 分类、version `1.0 (1)`、macOS 15.0。
@@ -330,7 +333,8 @@
   - 2026-06-28 03:21 JST `LaunchReadinessTests` 定向复跑通过；新增语言切换/持久化覆盖。
   - 2026-06-28 03:22 JST `xcodebuild ... -skip-testing:CornerAssistantAppUITests test` 通过。
   - 2026-06-28 03:27 JST `SlidePanelLayoutTests` 定向复跑通过；完整 unit test target 通过。
-  - 当前 `CornerAssistantAppTests` 共 44 个 `func test...`。
+  - 2026-06-28 03:31 JST `LaunchAtLoginManagerTests` 定向复跑通过；完整 unit test target 通过。
+  - 当前 `CornerAssistantAppTests` 共 49 个 `func test...`。
 - `script/qa_smoke.sh` 已重新验证通过：
   - 当前 smoke 会先验证菜单栏 status item 存在。
   - 当前 smoke 会确认启动后默认没有可见 Peek 面板窗口。
@@ -909,6 +913,7 @@ xcodebuild archive \
 - [x] 固定网站移除。
   - 自动覆盖：`SlidePanelViewModelTests` 和 `PinnedSiteTests` 验证 pinned site 添加、打开、移除、排序、重复 URL 防护、固定 tab 关闭保护和 favicon fallback。
 - [ ] Launch at Login。
+  - 自动覆盖：`LaunchAtLoginManagerTests` 验证 `SMAppService` 包装层的状态读取、注册、注销、同步委托和错误吞吐；真实系统登录项注册仍需在干净 macOS 用户会话里人工确认。
 - [x] App 语言切换：简体中文、英语、日语。
   - 自动覆盖：`LaunchReadinessTests.testLocalizationManagerSwitchesAndPersistsLaunchLanguages` 验证三语言切换、bundle 文案更新和偏好持久化。
 - [ ] WebKit 常见登录页面：
