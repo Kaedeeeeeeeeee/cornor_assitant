@@ -58,10 +58,47 @@
   - `LSMinimumSystemVersion = 15.0`
   - `PrivacyInfo.xcprivacy` 已打包到 `Contents/Resources/PrivacyInfo.xcprivacy`
 
+2026-06-27 进一步处理：
+
+- Xcode Release build 仍通过。
+- entitlement 已清理：
+  - 移除 incoming network/server entitlement。
+  - 移除 user-selected file read-only entitlement。
+  - 移除 JIT runtime exception。
+  - 保留 App Sandbox、network client、audio input。
+- Info.plist 已更新：
+  - `NSHumanReadableCopyright = Copyright 2026 Zhang Shifeng`
+  - `NSMicrophoneUsageDescription = Websites opened in Peek may request microphone access for features such as calls or voice input.`
+- App Store 上架材料已重写：`CornerAssistantApp/docs/AppStore-Materials.md`。
+
 当前发现的发布门槛：
 
 - 本地 Release build 仍使用 `Apple Development` 签名，entitlements 里有 `com.apple.security.get-task-allow = true`；这个产物不能直接提交 App Store Connect，必须用 App Store distribution archive/export 重新签名。
-- 当前签名 entitlements 包含 `network.server`、`audio-input`、`files.user-selected.read-only`、`cs.allow-jit`。上线前要逐项确认是否真实需要，不需要的权限应移除以降低审核风险。
+- 当前保留 `audio-input`，用于内置 WebKit 页面可能请求的网页通话或语音输入；隐私页和 Info.plist 已同步说明。
+
+## 1.2 本次部署记录
+
+2026-06-27 已完成：
+
+- GitHub Pages 已通过 GitHub REST API 启用为 workflow 模式。
+- Pages HTTPS enforced。
+- 已提交并推送 commit：`fff1270 launch: prepare Peek landing and App Store release`。
+- GitHub Actions workflow `Deploy Peek landing page` 成功：
+  - Run ID: `28291446993`
+- 公网 URL 已验证：
+  - `https://kaedeeeeeeeeee.github.io/cornor_assitant/` -> 200
+  - `https://kaedeeeeeeeeee.github.io/cornor_assitant/privacy.html` -> 200
+  - `https://kaedeeeeeeeeee.github.io/cornor_assitant/support.html` -> 200
+  - `https://kaedeeeeeeeeee.github.io/cornor_assitant/robots.txt` -> 200
+  - `https://kaedeeeeeeeeee.github.io/cornor_assitant/sitemap.xml` -> 200
+  - `https://kaedeeeeeeeeee.github.io/cornor_assitant/assets/social-preview.png` -> 200
+- 线上 Playwright 验证通过：
+  - 首页、隐私页、支持页 mobile 390px 均返回 200。
+  - 无控制台错误。
+  - 无横向溢出。
+  - 图片加载正常。
+  - Privacy page 英文/日文切换正常。
+  - 未发现 `Bing`、`macOS 14`、`Sonoma`、selected-text/选中文字等禁用公开宣传。
 
 ## 2. 首发完成定义
 
@@ -80,7 +117,7 @@
 
 ### Phase A: Landing Page 首发配置
 
-状态：进行中。
+状态：公网已部署；GA4 Measurement ID 和最终 App Store URL 待补。
 
 - [x] 使用 GitHub Pages 默认域名作为首发域名。
 - [x] 使用真实 App icon。
@@ -104,13 +141,13 @@
   - 当前 loader 已就绪，但默认不加载任何 analytics。
   - 拿到 ID 后写入 `main.js` 的 `GA_MEASUREMENT_ID` 配置或在页面注入 `window.PEEK_GA_MEASUREMENT_ID`。
 - [x] 增加 GitHub Pages Actions workflow。
-- [ ] 在 GitHub 仓库 Settings -> Pages 中启用 GitHub Actions 发布源。
-- [ ] 合并/推送后验证 Pages 公网 URL。
+- [x] 在 GitHub 仓库中启用 GitHub Actions Pages 发布源。
+- [x] 合并/推送后验证 Pages 公网 URL。
 - [ ] App Store URL 出来后，把 CTA 从 “Coming soon” 改成真实链接。
 
 ### Phase B: SEO 基础
 
-状态：本地基础已完成，公网验证待部署后执行。
+状态：本地基础和公网验证已完成；Search Console/Webmaster Tools 待后台操作。
 
 - [x] 设置 canonical host：`https://kaedeeeeeeeeee.github.io/cornor_assitant/`。
 - [x] 首页、隐私页、支持页设置独立 title 和 meta description。
@@ -120,7 +157,7 @@
 - [x] 增加 `robots.txt`。
 - [x] 增加 `sitemap.xml`。
 - [x] 生成 `assets/social-preview.png`。
-- [ ] 部署后检查：
+- [x] 部署后检查：
   - 首页、隐私页、支持页返回 200。
   - `robots.txt` 返回 200。
   - `sitemap.xml` 返回 200。
@@ -184,21 +221,21 @@
 
 ### Phase D: App Store 文案和素材
 
-状态：已有草稿，仍需最终审校。
+状态：首发文案已审校并更新。
 
-- [ ] 审校 `CornerAssistantApp/docs/AppStore-Materials.md`。
-- [ ] 保证中英日文案一致：
+- [x] 审校 `CornerAssistantApp/docs/AppStore-Materials.md`。
+- [x] 保证中英日文案一致：
   - macOS 15.0+。
   - 不说选中文字搜索。
   - 不说搜索引擎可选。
   - 不说 App 内 analytics。
   - 不说云同步、账号、团队协作等未实现功能。
-- [ ] 设置 subtitle：
+- [x] 设置 subtitle：
   - 中文：`屏幕边缘的快捷助手`
   - English: `Quick Access from Screen Edge`
   - 日本語：`画面端からクイックアクセス`
-- [ ] 准备关键词，控制在 App Store 限制内。
-- [ ] 准备 What's New 1.0 文案。
+- [x] 准备关键词，控制在 App Store 限制内。
+- [x] 准备 What's New 1.0 文案。
 - [ ] 准备 Mac App Store 截图。
 
 建议首发截图组：
@@ -218,22 +255,22 @@
 
 ### Phase E: App Build Readiness
 
-状态：本地 Release build 已通过；App Store distribution archive/export 待执行。
+状态：本地 Release build 已通过，权限已收窄；App Store distribution archive/export 待执行。
 
 - [ ] 明确当前 dirty worktree 哪些是本次上线工作，哪些是用户已有改动。
 - [ ] 确认版本号：
   - `MARKETING_VERSION = 1.0`
   - `CURRENT_PROJECT_VERSION` 每次上传递增。
-- [ ] 确认 bundle metadata：
+- [x] 确认 bundle metadata：
   - Bundle ID: `com.shifeng.peek`
   - Display name: `Peek`
   - Minimum macOS version: 15.0
   - Copyright: `© 2026 Zhang Shifeng`
-- [ ] 确认 App Sandbox entitlement。
-- [ ] 确认 WebKit 浏览需要的 network client entitlement。
-- [ ] 检查是否真的需要 audio input entitlement；如果只是让网页自己请求麦克风，需要确认审核风险和 privacy copy 是否足够。
+- [x] 确认 App Sandbox entitlement。
+- [x] 确认 WebKit 浏览需要的 network client entitlement。
+- [x] 检查是否真的需要 audio input entitlement；保留给 WebKit 页面请求麦克风，Info.plist 和 privacy copy 已同步。
 - [ ] 确认 distribution build 没有 `com.apple.security.get-task-allow`。
-- [ ] 确认 `PrivacyInfo.xcprivacy` 已加入 target 并打包进 app。
+- [x] 确认 `PrivacyInfo.xcprivacy` 已加入 target 并打包进 app。
 - [ ] 确认 app icon、menu bar icon 和 bundle icon 正常。
 - [x] 运行 Release build：
 
@@ -304,7 +341,7 @@ xcodebuild archive \
 
 ### Phase G: GitHub Pages 部署
 
-状态：workflow 已准备，远端配置待执行。
+状态：已部署并通过公网验证。
 
 本地已新增 workflow：
 
@@ -317,12 +354,12 @@ xcodebuild archive \
 
 上线步骤：
 
-1. 确认 landing 页面本地验证通过。
-2. commit 并 push 到 `main`。
-3. GitHub repo Settings -> Pages 选择 GitHub Actions。
-4. 触发 `Deploy Peek landing page` workflow。
-5. 打开 Actions logs，确认 artifact 上传和 deploy 成功。
-6. 验证公网 URL：
+1. [x] 确认 landing 页面本地验证通过。
+2. [x] commit 并 push 到 `main`。
+3. [x] GitHub Pages 选择 GitHub Actions workflow build type。
+4. [x] 触发 `Deploy Peek landing page` workflow。
+5. [x] 打开 Actions logs，确认 artifact 上传和 deploy 成功。
+6. [x] 验证公网 URL：
 
 ```bash
 curl -I https://kaedeeeeeeeeee.github.io/cornor_assitant/
@@ -452,14 +489,13 @@ xcodebuild \
 
 1. 完成本地 landing 视觉和技术验证。
 2. 补 GA4 Measurement ID，或者明确首发先不开启 analytics。
-3. commit/push landing 和 Pages workflow。
-4. GitHub Pages 后台启用 GitHub Actions 发布源。
-5. 验证公网 URL。
-6. 在 App Store Connect 创建 Peek app record。
-7. 回填真实 App Store URL 到 landing CTA。
-8. 准备截图和 App Store metadata。
-9. 跑 Release build、archive、upload。
-10. Submit for Review。
+3. 在 App Store Connect 创建 Peek app record。
+4. 回填真实 App Store URL 到 landing CTA。
+5. 准备截图并上传 App Store metadata。
+6. 创建 App Store distribution archive。
+7. 验证 distribution entitlements 中 `get-task-allow = false`。
+8. Upload build to App Store Connect。
+9. Submit for Review。
 
 ## 8. 参考链接
 
