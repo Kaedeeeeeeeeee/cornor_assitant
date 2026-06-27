@@ -1,6 +1,6 @@
 # Peek 上线准备计划
 
-最后更新：2026-06-28 05:26 JST
+最后更新：2026-06-28 05:31 JST
 
 这个文档是 Peek 从当前本地项目走到公开 landing page 和 Mac App Store 首发的工作台。后续执行、验收、补漏都以这里为准；如果产品、定价、域名、隐私口径或 App Store 配置发生变化，先更新本文件，再改代码或页面。
 
@@ -590,6 +590,10 @@
   - 已新增 `CornerAssistantApp/docs/Manual-QA-Checklist.md`，把首次启动、菜单栏点击/右键菜单、热角、resize、搜索/URL、固定网站、Launch at Login、WebKit 登录页、无网络、截图和人工证据整理成可执行 checklist。
   - 已新增 `script/validate_manual_qa_checklist.py` 并纳入 `script/launch_verify.sh`，防止发布计划里的人工作业清单缺失关键项。
   - `script/export_app_store_metadata.py` 现在会把 `manual_qa_checklist.md` 一并放入 `/tmp/peek-app-store-metadata`；`script/validate_app_store_metadata_export.py` 会验证导出副本和源码清单一致。
+- 2026-06-28 05:31 JST 外部输入清单收口：
+  - 已新增 `CornerAssistantApp/docs/External-Launch-Inputs.md`，把 GA4、Search Console/Bing、Apple Developer/App Store Connect、provisioning/export/upload、截图、审核电话、DSA 和最终 App Store URL 拆成明确需要用户或账号持有人处理的输入项。
+  - 已新增 `script/validate_external_launch_inputs.py` 并纳入 `script/launch_verify.sh`，确保外部输入清单不会遗漏关键阻塞项。
+  - `script/export_app_store_metadata.py` 现在会把 `external_launch_inputs.md` 一并放入 `/tmp/peek-app-store-metadata`；`script/validate_app_store_metadata_export.py` 会验证导出副本和源码清单一致。
 
 ## 2. 首发完成定义
 
@@ -1014,10 +1018,11 @@ xcodebuild archive \
 - [x] `script/validate_app_store_materials.py`：验证三语言 App Store metadata 长度和禁用宣传词。
 - [x] `script/validate_app_store_urls.py`：验证 App Store Connect 要填写的 Marketing / Privacy Policy / Support URL 与生产公网 URL 一致，并可联网要求 HTTP 200。
 - [x] `script/export_app_store_metadata.py`：导出可复制进 App Store Connect 的三语言 metadata、基础字段、审核备注和提交表单清单材料包。
-- [x] `script/validate_app_store_metadata_export.py`：验证生成后的 metadata 导出包文件集合和内容与 `AppStore-Materials.md`、`Manual-QA-Checklist.md` 保持一致。
+- [x] `script/validate_app_store_metadata_export.py`：验证生成后的 metadata 导出包文件集合和内容与 `AppStore-Materials.md`、`Manual-QA-Checklist.md`、`External-Launch-Inputs.md` 保持一致。
 - [x] `script/validate_export_options.py`：验证 App Store Connect export options 配置。
 - [x] `script/validate_privacy_alignment.py`：验证 PrivacyInfo、Xcode 权限、App Store App Privacy 口径和 landing privacy 文案一致；同时拒绝 Xcode build settings 中出现相反权限值。
 - [x] `script/validate_manual_qa_checklist.py`：验证人工 QA 清单包含首发真实交互、截图、证据记录和当前人工阻塞项。
+- [x] `script/validate_external_launch_inputs.py`：验证外部账号、后台操作、截图、审核电话、DSA、GA4/Bing 和最终 App Store URL 输入清单完整。
 - [x] `script/validate_landing_public.py`：验证公网 landing SEO、sitemap、manifest、icon/social preview 尺寸、analytics config 和禁用宣传词。
   - 当前也覆盖默认 UA、Googlebot UA、Bingbot UA 的 sitemap 抓取与 URL 解析。
 - [x] `script/validate_pages_workflow.py`：验证 GitHub Pages workflow 会正确注入 landing analytics / site verification variables，并部署 `CornerAssistantApp/landing-page`。
@@ -1268,7 +1273,7 @@ xcodebuild \
 ./script/launch_verify.sh
 ```
 
-该脚本会执行 repository hygiene 校验、App Store metadata 校验、App Store URL 校验、App Store metadata 导出包校验、App Store export options 校验、Privacy/App Privacy 口径一致性校验、人工 QA 清单校验、本地 landing 校验、GitHub Pages workflow 校验、App icon/landing icon 一致性校验、Release build、可自动运行的 XCTest、Release archive、归档 metadata/entitlements/privacy manifest 校验、archive entitlement allowlist、Release archive 字符串检查、公网 landing URL 检查和公网 landing SEO/analytics config 校验。公网检查可用 `SKIP_NETWORK=1 ./script/launch_verify.sh` 跳过。
+该脚本会执行 repository hygiene 校验、App Store metadata 校验、App Store URL 校验、App Store metadata 导出包校验、App Store export options 校验、Privacy/App Privacy 口径一致性校验、人工 QA 清单校验、外部输入清单校验、本地 landing 校验、GitHub Pages workflow 校验、App icon/landing icon 一致性校验、Release build、可自动运行的 XCTest、Release archive、归档 metadata/entitlements/privacy manifest 校验、archive entitlement allowlist、Release archive 字符串检查、公网 landing URL 检查和公网 landing SEO/analytics config 校验。公网检查可用 `SKIP_NETWORK=1 ./script/launch_verify.sh` 跳过。
 
 App Store Connect metadata 导出：
 
@@ -1276,7 +1281,7 @@ App Store Connect metadata 导出：
 ./script/export_app_store_metadata.py
 ```
 
-默认输出到 `/tmp/peek-app-store-metadata`。登录 App Store Connect 并创建 app record 后，从该目录复制三语言 metadata、审核备注、基础字段、`app_store_connect_submission_checklist.md` 里的后台表单清单，以及 `manual_qa_checklist.md` 的人工 QA 清单；截图、真实联系电话、价格层级确认、DSA 和 build selection 仍需在后台手工完成。
+默认输出到 `/tmp/peek-app-store-metadata`。登录 App Store Connect 并创建 app record 后，从该目录复制三语言 metadata、审核备注、基础字段、`app_store_connect_submission_checklist.md` 里的后台表单清单、`manual_qa_checklist.md` 的人工 QA 清单，以及 `external_launch_inputs.md` 的外部输入清单；截图、真实联系电话、价格层级确认、DSA 和 build selection 仍需在后台手工完成。
 
 Landing repository variables 配置：
 

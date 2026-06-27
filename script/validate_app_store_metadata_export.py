@@ -12,6 +12,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 ROOT = SCRIPT_DIR.parent
 DEFAULT_OUTPUT_DIR = Path("/tmp/peek-app-store-metadata")
 MANUAL_QA_PATH = ROOT / "CornerAssistantApp" / "docs" / "Manual-QA-Checklist.md"
+EXTERNAL_INPUTS_PATH = ROOT / "CornerAssistantApp" / "docs" / "External-Launch-Inputs.md"
 
 sys.path.insert(0, str(SCRIPT_DIR))
 
@@ -89,6 +90,7 @@ def expected_files() -> set[Path]:
         Path("app_review_notes.txt"),
         Path("app_store_connect_submission_checklist.md"),
         Path("manual_qa_checklist.md"),
+        Path("external_launch_inputs.md"),
     }
     for locale, config in LOCALIZATIONS.items():
         for field in config["fields"]:
@@ -198,6 +200,7 @@ def validate_readme_and_checklist(output_dir: Path, errors: list[str]) -> None:
     readme = read_text(output_dir / "README.md")
     checklist = read_text(output_dir / "app_store_connect_submission_checklist.md")
     manual_qa = read_text(output_dir / "manual_qa_checklist.md")
+    external_inputs = read_text(output_dir / "external_launch_inputs.md")
     for label, text, markers in [
         (
             "README.md",
@@ -206,6 +209,7 @@ def validate_readme_and_checklist(output_dir: Path, errors: list[str]) -> None:
                 "Manual Fields Still Required",
                 "Paid Apps Agreement, tax, and banking",
                 "manual_qa_checklist.md",
+                "external_launch_inputs.md",
                 "Do not submit screenshots or binaries from this export folder.",
             ],
         ),
@@ -231,6 +235,16 @@ def validate_readme_and_checklist(output_dir: Path, errors: list[str]) -> None:
                 "## 当前已知人工阻塞",
             ],
         ),
+        (
+            "external_launch_inputs.md",
+            external_inputs,
+            [
+                "# Peek External Launch Inputs",
+                "## Analytics",
+                "## Apple Developer And App Store Connect",
+                "## Final Store URL",
+            ],
+        ),
     ]:
         print(f"metadata_export.{label}: chars={len(text)}")
         for marker in markers:
@@ -239,6 +253,8 @@ def validate_readme_and_checklist(output_dir: Path, errors: list[str]) -> None:
 
     if manual_qa != MANUAL_QA_PATH.read_text(encoding="utf-8"):
         errors.append("manual_qa_checklist.md does not match current Manual-QA-Checklist.md")
+    if external_inputs != EXTERNAL_INPUTS_PATH.read_text(encoding="utf-8"):
+        errors.append("external_launch_inputs.md does not match current External-Launch-Inputs.md")
 
 
 def main() -> int:

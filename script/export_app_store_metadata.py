@@ -12,6 +12,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 ROOT = SCRIPT_DIR.parent
 DEFAULT_OUTPUT_DIR = Path("/tmp/peek-app-store-metadata")
 MANUAL_QA_PATH = ROOT / "CornerAssistantApp" / "docs" / "Manual-QA-Checklist.md"
+EXTERNAL_INPUTS_PATH = ROOT / "CornerAssistantApp" / "docs" / "External-Launch-Inputs.md"
 
 sys.path.insert(0, str(SCRIPT_DIR))
 
@@ -139,6 +140,7 @@ def write_readme(output_dir: Path, app_information: dict[str, object]) -> None:
         "- `app_information.json`: shared app record, pricing, privacy, age-rating, and compliance notes.",
         "- `app_store_connect_submission_checklist.md`: copy-paste checklist for App Store Connect forms.",
         "- `manual_qa_checklist.md`: manual QA checklist for the clean desktop and App Store screenshot pass.",
+        "- `external_launch_inputs.md`: external account, credential, and final URL inputs that still need the account holder.",
         "- `app_review_notes.txt`: App Review notes draft.",
         "- `metadata/<locale>/app_name.txt`",
         "- `metadata/<locale>/subtitle.txt`",
@@ -261,6 +263,10 @@ def export_metadata(output_dir: Path) -> list[Path]:
     manual_qa_path = output_dir / "manual_qa_checklist.md"
     write_text(manual_qa_path, MANUAL_QA_PATH.read_text(encoding="utf-8"))
     written.append(manual_qa_path)
+
+    external_inputs_path = output_dir / "external_launch_inputs.md"
+    write_text(external_inputs_path, EXTERNAL_INPUTS_PATH.read_text(encoding="utf-8"))
+    written.append(external_inputs_path)
 
     readme_path = output_dir / "README.md"
     write_readme(output_dir, app_information)
