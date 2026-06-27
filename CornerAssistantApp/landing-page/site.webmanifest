@@ -1,0 +1,18 @@
+{
+  "name": "Peek",
+  "short_name": "Peek",
+  "description": "A lightweight browser from the macOS screen edge.",
+  "start_url": "/cornor_assitant/",
+  "scope": "/cornor_assitant/",
+  "display": "browser",
+  "background_color": "#ffffff",
+  "theme_color": "#007aff",
+  "icons": [
+    {
+      "src": "assets/icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://kaedeeeeeeeeee.github.io/cornor_assitant/sitemap.xml

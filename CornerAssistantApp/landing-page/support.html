@@ -1,81 +1,119 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Peek - 技术支持</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title data-i18n-meta="title">Peek 技术支持</title>
+    <meta name="description" data-i18n-meta="description" content="Peek macOS 应用的常见问题、使用方式、系统要求和支持邮箱。">
+    <meta name="robots" content="index,follow">
+    <link rel="canonical" href="https://kaedeeeeeeeeee.github.io/cornor_assitant/support.html">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Peek">
+    <meta property="og:title" data-i18n-meta="ogTitle" content="Peek 技术支持">
+    <meta property="og:description" data-i18n-meta="ogDescription" content="查看 Peek 的热角唤出、搜索、标签页、固定站点和支持联系方式。">
+    <meta property="og:url" content="https://kaedeeeeeeeeee.github.io/cornor_assitant/support.html">
+    <meta property="og:image" content="https://kaedeeeeeeeeee.github.io/cornor_assitant/assets/social-preview.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" data-i18n-meta="twitterTitle" content="Peek 技术支持">
+    <meta name="twitter:description" data-i18n-meta="twitterDescription" content="查看 Peek 的热角唤出、搜索、标签页、固定站点和支持联系方式。">
+    <meta name="twitter:image" content="https://kaedeeeeeeeeee.github.io/cornor_assitant/assets/social-preview.png">
+    <link rel="icon" type="image/png" href="assets/icon.png">
+    <link rel="apple-touch-icon" href="assets/icon.png">
+    <link rel="manifest" href="site.webmanifest">
     <link rel="stylesheet" href="style.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap"
-        rel="stylesheet">
 </head>
-
-<body>
-    <nav class="navbar">
-        <div class="container">
-            <a href="index.html" class="logo">
-                <img src="assets/icon.png" alt="Peek Logo" class="nav-logo" onerror="this.style.display='none'">
+<body data-page="support">
+    <nav class="site-nav" aria-label="Primary navigation">
+        <div class="shell nav-inner">
+            <a class="brand" href="./" aria-label="Peek home">
+                <img src="assets/icon.png" alt="" width="28" height="28">
                 <span>Peek</span>
             </a>
-            <div class="nav-links">
-                <a href="index.html">首页</a>
-                <a href="privacy.html">隐私政策</a>
-                <a href="support.html" class="active">技术支持</a>
-                <div class="lang-switch">
-                    <span class="current-lang">中文</span>
-                    <div class="lang-dropdown">
-                        <a href="#" data-lang="zh">中文</a>
-                        <a href="#" data-lang="en">English</a>
-                        <a href="#" data-lang="ja">日本語</a>
-                    </div>
+            <div class="nav-actions">
+                <div class="nav-links" aria-label="Page navigation">
+                    <a href="./" data-i18n="navHome">首页</a>
+                    <a href="privacy.html" data-i18n="navPrivacy">隐私</a>
+                    <a href="support.html" data-i18n="navSupport">技术支持</a>
+                </div>
+                <div class="language-switcher" role="group" aria-label="Language">
+                    <button type="button" data-lang="zh" aria-pressed="true">中</button>
+                    <button type="button" data-lang="en" aria-pressed="false">EN</button>
+                    <button type="button" data-lang="ja" aria-pressed="false">日</button>
                 </div>
             </div>
         </div>
     </nav>
 
-    <div class="page-content">
-        <div class="container">
-            <div class="content-box">
-                <h1 class="page-title">技术支持</h1>
-                <div id="support-content" class="faq-list">
-                    <div class="faq-item">
-                        <h3>Q: 如何唤出 Peek 面板？</h3>
-                        <p>A: 将鼠标移动到屏幕右下角（默认设置），面板会自动滑出。您可以在设置中更改触发角落。</p>
+    <main>
+        <header class="page-hero">
+            <div class="shell">
+                <h1 data-i18n="supportHeroTitle">技术支持</h1>
+                <p data-i18n="supportHeroSub">这里整理了 Peek 首发版本最常见的使用问题。需要人工支持时，可以直接发邮件。</p>
+            </div>
+        </header>
+
+        <section class="content-page">
+            <div class="shell">
+                <article class="content-card">
+                    <div class="faq-list">
+                        <section class="faq-item">
+                            <h2 data-i18n="q1Title">如何唤出 Peek 面板？</h2>
+                            <p data-i18n="q1Body">把鼠标移到你设置的热角，Peek 会从屏幕边缘滑出。默认热角可以在应用设置里调整。</p>
+                        </section>
+
+                        <section class="faq-item">
+                            <h2 data-i18n="q2Title">如何隐藏或固定面板？</h2>
+                            <p data-i18n="q2Body">完成操作后移开鼠标，面板会自动收起。需要临时停留时，可以使用面板里的固定按钮。</p>
+                        </section>
+
+                        <section class="faq-item">
+                            <h2 data-i18n="q3Title">如何搜索或打开网址？</h2>
+                            <p data-i18n="q3Body">在面板搜索框输入关键词并按回车即可搜索；输入完整网址时，Peek 会直接打开对应网页。</p>
+                        </section>
+
+                        <section class="faq-item">
+                            <h2 data-i18n="q4Title">如何管理常用网站？</h2>
+                            <p data-i18n="q4Body">打开网页后使用固定操作加入常用网站列表。你可以从侧栏快速打开，也可以移除不再需要的网站。</p>
+                        </section>
+
+                        <section class="faq-item">
+                            <h2 data-i18n="q5Title">Peek 支持多标签吗？</h2>
+                            <p data-i18n="q5Body">支持。你可以新建、关闭和切换标签页，用轻量面板完成临时浏览任务。</p>
+                        </section>
+
+                        <section class="faq-item">
+                            <h2 data-i18n="q6Title">应用需要什么系统版本？</h2>
+                            <p data-i18n="q6Body">Peek 需要 macOS 15.0 或更高版本。</p>
+                        </section>
+
+                        <section class="faq-item">
+                            <h2 data-i18n="q7Title">如何联系支持？</h2>
+                            <p data-i18n="q7Body">请发送邮件到 f.shera.09@gmail.com，并尽量附上 macOS 版本、Peek 版本、问题步骤和截图。</p>
+                        </section>
                     </div>
-                    <div class="faq-item">
-                        <h3>Q: 如何使用快捷搜索？</h3>
-                        <p>A: 在面板中输入搜索内容，按回车即可搜索。您也可以先选中文字，然后唤出面板直接搜索。</p>
+
+                    <div class="contact-box">
+                        <p data-i18n="contactText">需要人工支持或想反馈功能建议？</p>
+                        <a class="contact-button" href="mailto:f.shera.09@gmail.com" data-i18n="contactButton" data-analytics-event="support_email_click">发送邮件</a>
                     </div>
-                    <div class="faq-item">
-                        <h3>Q: 如何固定常用网站？</h3>
-                        <p>A: 在浏览网页时，点击面板顶部的固定图标即可将当前网站添加到常用网站列表。</p>
-                    </div>
-                    <div class="faq-item">
-                        <h3>Q: 我的数据安全吗？</h3>
-                        <p>A: 所有数据都存储在您的本地设备上，不会上传到任何服务器。</p>
-                    </div>
-                    <div class="faq-item">
-                        <h3>Q: 应用需要什么系统版本？</h3>
-                        <p>A: Peek 需要 macOS 14.0 (Sonoma) 或更高版本。</p>
-                    </div>
-                </div>
-                <div class="contact-box">
-                    <p data-i18n="contact_text">如果您遇到任何问题或有功能建议，请联系我们：</p>
-                    <a href="mailto:f.shera.09@gmail.com" class="btn-contact" data-i18n="contact_btn">联系支持</a>
-                </div>
+                </article>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="shell footer-inner">
+            <a class="footer-brand" href="./">
+                <img src="assets/icon.png" alt="" width="24" height="24">
+                <span>© 2026 Zhang Shifeng</span>
+            </a>
+            <div>
+                <a href="privacy.html" data-i18n="navPrivacy">隐私</a>
+                <a href="support.html" data-i18n="fSupport">技术支持</a>
             </div>
         </div>
-    </div>
-
-    <footer class="footer">
-        <div class="container">
-            <p>&copy; 2026 Zhang Shifeng. All rights reserved.</p>
-        </div>
     </footer>
+
     <script src="main.js"></script>
 </body>
-
 </html>
