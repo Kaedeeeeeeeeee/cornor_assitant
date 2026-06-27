@@ -1,6 +1,6 @@
 # Peek 上线准备计划
 
-最后更新：2026-06-28 04:53 JST
+最后更新：2026-06-28 04:58 JST
 
 这个文档是 Peek 从当前本地项目走到公开 landing page 和 Mac App Store 首发的工作台。后续执行、验收、补漏都以这里为准；如果产品、定价、域名、隐私口径或 App Store 配置发生变化，先更新本文件，再改代码或页面。
 
@@ -563,6 +563,11 @@
   - Pages workflow `28299926702` 成功。
   - 公网首页已出现 `google-site-verification` meta。
   - `script/check_external_readiness.py` 默认结果更新为 `{"manual": 3, "ok": 10, "skipped": 2}`；剩余 manual 为 GA4、Bing verification 和缺少对应 GitHub variables。
+- 2026-06-28 04:58 JST 复查：
+  - 默认 readiness 仍为 `{"manual": 3, "ok": 10, "skipped": 2}`。
+  - 扩展 readiness 仍为 `{"blocked": 2, "manual": 3, "ok": 10}`，blocked 项为 App Store export 账号/profile 和截图权限。
+  - `script/check_landing_performance.py`：PageSpeed desktop/mobile 仍为 HTTP 429，本机 Lighthouse desktop 仍为 Performance 100、Accessibility 100、Best Practices 100、SEO 100。
+  - Google Analytics 已登录并可读到账号 `ZHANG SHIFENG`、属性 `とりあえずこの名前使う`，但页面提示该属性没有 data stream，因此还没有可用 GA4 Measurement ID。
 
 ## 2. 首发完成定义
 
@@ -606,6 +611,7 @@
   - 当前 loader 已就绪，但默认不加载任何 analytics。
   - 拿到 ID 后用 `script/configure_landing_variables.sh` 设置 GitHub repository variable `PEEK_GA_MEASUREMENT_ID`，然后手动 rerun `Deploy Peek landing page` workflow 或加 `--rerun-pages`。
   - 2026-06-28 01:24 JST 通过 GitHub API 复查：repository actions variables 为空，`PEEK_GA_MEASUREMENT_ID` 仍未设置。
+  - 2026-06-28 04:58 JST Google Analytics 只读复查：当前账号 `ZHANG SHIFENG`、属性 `とりあえずこの名前使う` 已存在，但没有 data stream；创建 Web data stream 后才能得到 `G-...` Measurement ID。创建 data stream 会改动 Google Analytics 账号配置，需行动前确认。
 - [x] 增加 GitHub Pages Actions workflow。
 - [x] 在 GitHub 仓库中启用 GitHub Actions Pages 发布源。
 - [x] 合并/推送后验证 Pages 公网 URL。
@@ -648,6 +654,7 @@
   - 已提交 `https://kaedeeeeeeeeee.github.io/cornor_assitant/sitemap.xml`。
   - Search Console 弹窗显示“サイトマップを送信しました”。
   - 即时表格状态仍为“取得できませんでした / サイトマップを読み込めませんでした”；公网和 Googlebot UA 访问该 sitemap 均返回 200，后续需要在 Search Console 复查处理状态。
+  - 2026-06-28 04:56 JST 复查结果未变化：Search Console 仍显示 `/sitemap.xml` 状态为“取得できませんでした”。
 - [ ] Bing Webmaster Tools 提交。
   - 2026-06-28 04:52 JST Bing Webmaster Tools 仍停留在未登录页；点击 Sign In 后只出现 Microsoft/Google/Facebook 登录选项，没有现成 Microsoft 会话。未使用 Google 身份登录 Bing。
 - [x] 部署后跑 Lighthouse，记录性能和 SEO 分数。
@@ -758,6 +765,19 @@ PEEK_BING_SITE_VERIFICATION=... \
 - Bing Webmaster Tools:
   - 当前仍为公开未登录页；Sign In 只显示 Microsoft/Google/Facebook 登录选项，没有可用登录会话。
   - 未用 Google 身份登录 Bing，未提交站点。
+
+2026-06-28 04:58 JST 后台可达性复查：
+
+- Google Search Console:
+  - `https://kaedeeeeeeeeee.github.io/cornor_assitant/` 属性仍可访问。
+  - sitemap 表格仍显示 `/sitemap.xml`、提交日期 `2026/06/28`、状态“取得できませんでした”、发现页面数 `0`。
+- Google Analytics:
+  - 已登录 Google Analytics。
+  - 当前账号为 `ZHANG SHIFENG`，当前属性为 `とりあえずこの名前使う`。
+  - 页面提示“データ ストリームが見つかりませんでした”，即该属性没有 data stream；没有读取到 GA4 Measurement ID。
+  - 未点击“ウェブ”创建数据流，未修改 GA 配置。
+- App Store Connect / Bing Webmaster Tools:
+  - 本轮未发现新的可用登录会话；仍需用户登录/确认后继续。
 
 2026-06-27 App Store Connect 表单材料补齐：
 
@@ -1107,6 +1127,7 @@ curl -I https://kaedeeeeeeeeee.github.io/cornor_assitant/sitemap.xml
 
 - [ ] GA4 Measurement ID。
   - GitHub Pages 已支持通过 repository variable `PEEK_GA_MEASUREMENT_ID` 注入；仍需真实 ID。
+  - Google Analytics 已有账号/属性，但没有 data stream；创建 Web data stream 后才能获得 Measurement ID。
 - [ ] Apple Developer/App Store Connect 登录权限。
 - [ ] Xcode Settings > Accounts 中登录可用 Apple Developer 账号。
 - [ ] Paid Apps Agreement、税务、银行信息。
@@ -1262,7 +1283,10 @@ Landing 性能复查：
 6. 运行 `./script/export_app_store_metadata.py`，从 `/tmp/peek-app-store-metadata` 复制 metadata 和审核备注。
 7. 填写 App Store Connect 年龄分级、内容权利、App Privacy、真实审核联系电话和其他后台表单。
 8. 如果覆盖 EU 地区，完成 DSA trader status；如果暂不覆盖 EU，先调整 availability。
-9. 补 GA4 Measurement ID：用 `script/configure_landing_variables.sh` 设置 `PEEK_GA_MEASUREMENT_ID`，或者明确首发先不开启 analytics。
+9. 补 GA4 Measurement ID：
+   - 现有 Google Analytics 账号/属性为 `ZHANG SHIFENG` / `とりあえずこの名前使う`，但没有 data stream。
+   - 确认后在该属性下创建 Web data stream：URL `https://kaedeeeeeeeeee.github.io/cornor_assitant/`，stream name 建议 `Peek Landing Page`。
+   - 拿到 `G-...` 后用 `script/configure_landing_variables.sh` 设置 `PEEK_GA_MEASUREMENT_ID`，或者明确首发先不开启 analytics。
 10. 准备截图并上传 App Store metadata。
 11. 复查搜索引擎后台。
     - Google Search Console 已验证；下一步是复查 sitemap 从“无法读取”变为成功或给出更具体错误。
