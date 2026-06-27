@@ -441,6 +441,21 @@ def check_screenshot_capture(results: list[CheckResult]) -> None:
         add(results, "app_store_screenshot_capture", "blocked", " | ".join(output.splitlines()[-5:]))
 
 
+def check_local_qa_smoke(results: list[CheckResult]) -> None:
+    if not env_enabled("PEEK_CHECK_QA_SMOKE"):
+        add(results, "local_qa_smoke", "skipped", "set PEEK_CHECK_QA_SMOKE=1 to run menu bar and panel smoke QA")
+        return
+
+    result = run([str(ROOT / "script" / "qa_smoke.sh")], timeout=120)
+    output = "\n".join([result.stdout, result.stderr]).strip()
+    if result.returncode == 0 and "qa_smoke passed" in output:
+        add(results, "local_qa_smoke", "ok", "menu bar status item and four-corner panel smoke QA passed")
+    elif "Accessibility UI scripting is disabled" in output:
+        add(results, "local_qa_smoke", "blocked", "Accessibility UI scripting is disabled")
+    else:
+        add(results, "local_qa_smoke", "blocked", " | ".join(output.splitlines()[-5:]))
+
+
 def print_results(results: list[CheckResult]) -> None:
     for result in results:
         print(f"{result.status.upper():7} {result.name}: {result.detail}")
@@ -460,6 +475,7 @@ def main() -> int:
     check_github(results)
     check_app_store_export(results)
     check_screenshot_capture(results)
+    check_local_qa_smoke(results)
     print_results(results)
     return 0
 

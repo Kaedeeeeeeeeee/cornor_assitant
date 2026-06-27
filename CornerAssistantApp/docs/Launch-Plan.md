@@ -1,6 +1,6 @@
 # Peek 上线准备计划
 
-最后更新：2026-06-28 05:03 JST
+最后更新：2026-06-28 05:10 JST
 
 这个文档是 Peek 从当前本地项目走到公开 landing page 和 Mac App Store 首发的工作台。后续执行、验收、补漏都以这里为准；如果产品、定价、域名、隐私口径或 App Store 配置发生变化，先更新本文件，再改代码或页面。
 
@@ -573,6 +573,14 @@
   - `script/check_external_readiness.py` 现在会输出 `googlebot_sitemap_fetch` 和 `bingbot_sitemap_fetch`。
   - 当前公网 sitemap 对 Googlebot/Bingbot 均返回 HTTP 200，且都能解析到 3 个预期 URL。
   - 默认 readiness 更新为 `{"manual": 3, "ok": 12, "skipped": 2}`。
+- 2026-06-28 05:10 JST 复查和本机 QA：
+  - Google Analytics 仍显示当前属性没有 data stream；未创建 Web data stream，仍没有 GA4 Measurement ID。
+  - Google Search Console sitemap 表格仍显示 `/sitemap.xml` 状态为“取得できませんでした”；机器校验仍证明公网 sitemap 对搜索 bot 可抓取。
+  - Bing Webmaster Tools 仍无已登录会话；未选择身份提供方，未提交站点。
+  - App Store Connect 仍跳转到 `authResult=FAILED` 登录入口；CLI export 仍为 `No Accounts / no com.shifeng.peek App Store profile`，notarytool 也无凭据。
+  - `./script/qa_smoke.sh` 已通过，覆盖菜单栏 status item、面板默认隐藏和四个角落面板定位。
+  - `script/check_external_readiness.py` 已新增 `PEEK_CHECK_QA_SMOKE=1` 可选检查，用于复跑本机菜单栏/面板 smoke QA。
+  - 默认 readiness 当前为 `{"manual": 3, "ok": 12, "skipped": 3}`；`PEEK_CHECK_QA_SMOKE=1` 扩展 readiness 当前为 `{"manual": 3, "ok": 13, "skipped": 2}`。
 
 ## 2. 首发完成定义
 
@@ -785,6 +793,20 @@ PEEK_BING_SITE_VERIFICATION=... \
 - App Store Connect / Bing Webmaster Tools:
   - 本轮未发现新的可用登录会话；仍需用户登录/确认后继续。
 
+2026-06-28 05:10 JST 后台可达性复查：
+
+- Google Analytics:
+  - 当前页面仍提示“データ ストリームが見つかりませんでした”，没有读取到 `G-...` Measurement ID。
+  - 未点击“ウェブ”创建数据流，未修改 GA 配置。
+- Google Search Console:
+  - sitemap 页面仍显示 `/sitemap.xml`、提交日期 `2026/06/28`、状态“取得できませんでした”、发现页面数 `0`。
+  - 机器校验继续确认 `https://kaedeeeeeeeeee.github.io/cornor_assitant/sitemap.xml` 对默认 UA、Googlebot UA、Bingbot UA 均返回 HTTP 200 且包含 3 个预期 URL。
+- Bing Webmaster Tools:
+  - 当前仍为公开未登录页；未进入已登录站点管理页，未提交站点。
+- App Store Connect:
+  - `https://appstoreconnect.apple.com/apps` 仍跳转到 `https://appstoreconnect.apple.com/login?targetUrl=%2Fapps&authResult=FAILED`。
+  - `PEEK_CHECK_EXPORT=1 ./script/check_external_readiness.py` 仍显示 App Store export 被 `No Accounts / no com.shifeng.peek App Store profile` 阻塞。
+
 2026-06-27 App Store Connect 表单材料补齐：
 
 - `CornerAssistantApp/docs/AppStore-Materials.md` 已补充可照填字段：
@@ -996,6 +1018,7 @@ xcodebuild archive \
   - 当前也覆盖 App Store export 成功后的 exported app metadata、privacy manifest 和 entitlements 验证。
   - 当前也覆盖最近一次成功 Pages run 是否仍覆盖当前 landing/page workflow 变更。
   - 当前也覆盖 Googlebot/Bingbot sitemap 抓取与 URL 解析，用于区分 Search Console 后台处理状态和真实公网可抓取性。
+  - 当前也可通过 `PEEK_CHECK_QA_SMOKE=1` 复跑菜单栏 status item、面板默认隐藏和四角面板定位 smoke QA。
 - [x] `script/configure_app_store_url.py`：真实 App Store URL 出来后激活 landing CTA、更新三语言 CTA 文案和 JSON-LD，并复跑本地 landing 校验。
 - [x] 搜索 URL 构造、空查询处理、查询 trim/encode。
 - [x] URL 输入规范化：完整 HTTP/HTTPS URL、裸域名、路径、localhost、普通搜索词；非 Web scheme 不从地址栏直接打开。
@@ -1018,21 +1041,23 @@ xcodebuild archive \
 当前自动化限制：
 
 - [ ] UI test runner 在当前 macOS 会话被系统认证状态阻塞，需要在干净用户会话或手动关闭系统认证提示后重跑。
+  - 2026-06-28 05:10 JST 单独运行 UI launch test 仍失败：`Authentication canceled. System authentication is running.`
 - [ ] App Store 截图在当前 Codex/shell 会话被 Screen Recording/可见桌面状态阻塞；自动截图得到黑图，不能提交。
+  - 2026-06-28 05:10 JST `PEEK_CHECK_SCREENSHOT=1 ./script/check_external_readiness.py` 仍显示 `Screen Recording/window capture permission is not usable`。
   - 可复跑命令：`./script/capture_app_store_screenshot.sh`
   - 脚本成功时应生成 `/tmp/peek-app-store-screenshots/01-hot-corner-panel-2880x1800.png` 至 `05-pinned-panel-2880x1800.png`。
 
 必须覆盖：
 
 - [ ] 首次启动。
-  - 2026-06-28 已自动确认 Debug app 首次启动后进程存在、菜单栏 status item 存在、面板默认隐藏；完整首启体验仍需人工跑。
+  - 2026-06-28 05:10 JST 已通过 `./script/qa_smoke.sh` 自动确认 Debug app 启动后进程存在、菜单栏 status item 存在、面板默认隐藏；完整首启体验仍需人工跑。
 - [ ] 菜单栏图标点击。
   - 2026-06-28 已确认 status item 存在；但 AXPress/AppleScript click 在当前会话未触发真实左键行为，本项仍需手动或更完整 UI automation 验证。
 - [ ] 菜单栏右键/control-click 菜单。
 - [x] 四个热角设置。
   - 自动覆盖：`LaunchReadinessTests` 验证四个 hot corner raw value、菜单文案、默认值和持久化；`script/qa_smoke.sh` 验证四个 hot corner 对应的真实面板窗口定位。
 - [ ] 边缘面板唤出和自动收起。
-  - 自动覆盖了 Debug expand/collapse、四角定位、hotspot rect、隐藏/显示 frame 和外部点击自动收起策略；真实鼠标边缘触发仍需人工或更完整 UI automation。
+  - 自动覆盖了 Debug expand/collapse、四角定位、hotspot rect、隐藏/显示 frame 和外部点击自动收起策略；2026-06-28 05:10 JST `./script/qa_smoke.sh` 已通过四角真实窗口定位。真实鼠标边缘触发仍需人工或更完整 UI automation。
 - [x] 固定面板行为。
   - 自动覆盖：`SlidePanelLayoutTests.testGlobalMouseDownCollapsePolicyRespectsPinnedAndResizingStates` 验证固定状态下点击外部不会自动收起，未固定且点击外部会收起。
 - [ ] 面板尺寸调整。
@@ -1266,10 +1291,11 @@ PEEK_APP_STORE_URL=https://apps.apple.com/.../app/.../id... \
 
 ```bash
 ./script/check_external_readiness.py
+PEEK_CHECK_QA_SMOKE=1 ./script/check_external_readiness.py
 PEEK_CHECK_EXPORT=1 PEEK_CHECK_SCREENSHOT=1 ./script/check_external_readiness.py
 ```
 
-默认模式只读，不触发 App Store export 或截图。扩展模式会写入 `/tmp/peek-appstore/external-readiness-export` 并启动截图脚本，用于复查账号/profile 和 Screen Recording 权限是否已经解除。
+默认模式只读，不触发 App Store export、截图或本机 UI 控制。扩展模式会写入 `/tmp/peek-appstore/external-readiness-export`、启动截图脚本或启动 Debug app smoke QA，用于复查账号/profile、Screen Recording 权限和本机菜单栏/面板 QA 是否已经解除或仍通过。
 
 Landing 性能复查：
 
