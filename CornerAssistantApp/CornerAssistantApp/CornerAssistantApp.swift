@@ -2,6 +2,19 @@ import SwiftUI
 import AppKit
 import Combine
 
+enum StatusMenuStructure {
+    static let hotCornerKey = "status.hot_corner"
+    static let launchAtLoginKey = "status.launch_at_login"
+    static let languageKey = "status.language"
+    static let quitKey = "status.quit"
+    static let hotCorners = HotCorner.allCases
+    static let languages = AppLanguage.allCases
+
+    static var topLevelLocalizationKeys: [String] {
+        [hotCornerKey, launchAtLoginKey, languageKey, quitKey]
+    }
+}
+
 @main
 struct CornerAssistantApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
@@ -219,11 +232,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let menu = NSMenu()
         menu.appearance = NSAppearance(named: .aqua)
 
-        let cornerMenuItem = NSMenuItem(title: localization.localized("status.hot_corner"), action: nil, keyEquivalent: "")
+        let cornerMenuItem = NSMenuItem(title: localization.localized(StatusMenuStructure.hotCornerKey), action: nil, keyEquivalent: "")
         let cornerSubmenu = NSMenu()
         cornerSubmenu.appearance = NSAppearance(named: .aqua)
         cornerMenuItems.removeAll()
-        for corner in HotCorner.allCases {
+        for corner in StatusMenuStructure.hotCorners {
             let item = NSMenuItem(title: corner.localizedName(using: localization),
                                   action: #selector(selectHotCorner(_:)),
                                   keyEquivalent: "")
@@ -235,17 +248,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         cornerMenuItem.submenu = cornerSubmenu
         menu.addItem(cornerMenuItem)
 
-        let launchItem = NSMenuItem(title: localization.localized("status.launch_at_login"), action: #selector(toggleLaunchAtLogin(_:)), keyEquivalent: "")
+        let launchItem = NSMenuItem(title: localization.localized(StatusMenuStructure.launchAtLoginKey), action: #selector(toggleLaunchAtLogin(_:)), keyEquivalent: "")
         launchItem.target = self
         menu.addItem(launchItem)
         launchAtLoginMenuItem = launchItem
 
         // 语言切换
-        let languageMenuItem = NSMenuItem(title: localization.localized("status.language"), action: nil, keyEquivalent: "")
+        let languageMenuItem = NSMenuItem(title: localization.localized(StatusMenuStructure.languageKey), action: nil, keyEquivalent: "")
         let languageSubmenu = NSMenu()
         languageSubmenu.appearance = NSAppearance(named: .aqua)
         
-        for language in AppLanguage.allCases {
+        for language in StatusMenuStructure.languages {
             let item = NSMenuItem(title: localization.localized(language.displayKey),
                                   action: #selector(selectLanguage(_:)),
                                   keyEquivalent: "")
@@ -258,7 +271,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(languageMenuItem)
 
         menu.addItem(.separator())
-        let quitTitle = localization.localized("status.quit")
+        let quitTitle = localization.localized(StatusMenuStructure.quitKey)
         let quitItem = NSMenuItem(title: quitTitle,
                                   action: #selector(NSApplication.terminate(_:)),
                                   keyEquivalent: "q")

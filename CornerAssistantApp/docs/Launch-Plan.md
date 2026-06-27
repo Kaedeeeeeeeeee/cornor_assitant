@@ -192,6 +192,7 @@
   - 2026-06-28 02:28 JST 再次执行 `./script/launch_verify.sh`，通过。
   - 2026-06-28 02:42 JST 再次执行 `./script/launch_verify.sh`，通过；当前脚本已额外验证 App Store metadata 导出包。
   - 2026-06-28 02:50 JST 再次执行 `./script/launch_verify.sh`，通过；当前脚本已额外验证 screenshot `scenario:` 调试入口不进入 Release archive。
+  - 2026-06-28 02:57 JST 再次执行 `./script/launch_verify.sh`，通过；当前测试已覆盖 status menu 结构、热角菜单项、语言菜单项和 Launch at Login 菜单标题。
 
 2026-06-28 Landing 本地验收收口：
 
@@ -827,6 +828,7 @@ xcodebuild archive \
 - [x] 固定网站模型：id 生成、favicon fallback、custom favicon、Codable 还原。
 - [x] 固定网站 view model：添加、打开、移除、排序、重复 URL 防护、固定 tab 关闭保护。
 - [x] 首发三语言 key 集合一致、关键 UI 文案存在、settings/language/hot corner 菜单文案存在、hot corner 选项稳定。
+- [x] Status menu 结构：热角子菜单、Launch at Login、语言子菜单、退出项、四个热角选项和三种语言选项均有测试覆盖。
 - [x] Hot corner 默认值、保存/读取和非法值回退。
 - [x] App Store 首发 build settings：bundle id、product/display name、AppIcon、Productivity 分类、version `1.0 (1)`、macOS 15.0。
 - [x] 本地化文案不包含 `Bing`、selected text / 选中文字、`macOS 14`、`Sonoma` 等禁用宣传。

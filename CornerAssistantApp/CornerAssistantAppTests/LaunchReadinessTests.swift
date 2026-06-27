@@ -67,6 +67,34 @@ final class LaunchReadinessTests: XCTestCase {
         }
     }
 
+    func testStatusMenuStructureCoversLaunchControls() throws {
+        XCTAssertEqual(StatusMenuStructure.hotCorners, HotCorner.allCases)
+        XCTAssertEqual(StatusMenuStructure.languages, AppLanguage.allCases)
+        XCTAssertEqual(
+            StatusMenuStructure.topLevelLocalizationKeys,
+            ["status.hot_corner", "status.launch_at_login", "status.language", "status.quit"]
+        )
+
+        for language in AppLanguage.allCases {
+            let strings = try localizedStrings(for: language)
+
+            for key in StatusMenuStructure.topLevelLocalizationKeys {
+                let title = strings[key]?.trimmingCharacters(in: .whitespacesAndNewlines)
+                XCTAssertFalse(title?.isEmpty ?? true, "\(language.rawValue) is missing status menu title \(key)")
+            }
+
+            for corner in StatusMenuStructure.hotCorners {
+                let title = strings[hotCornerLocalizationKey(for: corner)]?.trimmingCharacters(in: .whitespacesAndNewlines)
+                XCTAssertFalse(title?.isEmpty ?? true, "\(language.rawValue) is missing status menu corner \(corner.rawValue)")
+            }
+
+            for menuLanguage in StatusMenuStructure.languages {
+                let title = strings[menuLanguage.displayKey]?.trimmingCharacters(in: .whitespacesAndNewlines)
+                XCTAssertFalse(title?.isEmpty ?? true, "\(language.rawValue) is missing language menu title \(menuLanguage.rawValue)")
+            }
+        }
+    }
+
     func testHotCornerLaunchOptionsRemainStable() {
         XCTAssertEqual(
             HotCorner.allCases.map(\.rawValue),
