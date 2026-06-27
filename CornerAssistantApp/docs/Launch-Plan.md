@@ -468,6 +468,11 @@
   - Xcode AppIcon 512@2x 为 1024x1024，且与 landing icon SHA-256 完全一致。
   - `assets/social-preview.png` 为 1200x630。
   - `site.webmanifest` 中 `assets/icon.png` 尺寸声明已修正为 `1024x1024`。
+- 2026-06-28 03:55 JST GitHub Pages workflow `28298609516` 成功；公网 `script/validate_landing_public.py` 通过：
+  - 公网 `site.webmanifest` 中 `assets/icon.png` 声明为 `1024x1024`。
+  - 公网 `assets/icon.png` 实际为 1024x1024。
+  - 公网 `assets/social-preview.png` 实际为 1200x630。
+  - 默认 readiness 结果为 `{"manual": 4, "ok": 9, "skipped": 2}`。
 - 首页 JSON-LD `applicationCategory` 已从 `UtilitiesApplication` 调整为 `Productivity`，与 App Store 分类保持一致。
 
 2026-06-28 01:24 JST GitHub Pages / analytics 复查：
