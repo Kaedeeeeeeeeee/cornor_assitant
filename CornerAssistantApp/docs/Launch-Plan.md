@@ -489,6 +489,10 @@
   - `script/validate_privacy_alignment.py` 现在会检查 Xcode build settings 中 `YES`/`NO` 相反值不得同时存在。
   - `script/launch_verify.sh` 现在会把 archive entitlements 和 allowlist 精确对比；当前只允许 `app-sandbox`、`network.client`、`audio-input`。
   - `SKIP_NETWORK=1 ./script/launch_verify.sh` 通过。
+- 2026-06-28 04:14 JST 已新增 `script/validate_export_options.py` 并接入 `script/launch_verify.sh`：
+  - 校验 `CornerAssistantApp/export_options_app_store.plist` 为 App Store Connect export。
+  - 当前配置：`method = app-store-connect`、`signingCertificate = Apple Distribution`、`signingStyle = automatic`、`stripSwiftSymbols = true`、`uploadSymbols = true`、`teamID = Y4FV6WUU4V`。
+  - `SKIP_NETWORK=1 ./script/launch_verify.sh` 通过。
 - 首页 JSON-LD `applicationCategory` 已从 `UtilitiesApplication` 调整为 `Productivity`，与 App Store 分类保持一致。
 
 2026-06-28 01:24 JST GitHub Pages / analytics 复查：
@@ -868,6 +872,7 @@ xcodebuild archive \
 
 - [ ] 用 Xcode Organizer 或 `xcodebuild -exportArchive` 走 App Store distribution。
   - 已新增 `export_options_app_store.plist`。
+  - `script/validate_export_options.py` 已覆盖 export options：App Store Connect method、Apple Distribution certificate、automatic signing、symbols 配置和 10 位 Apple team ID。
   - 当前 export 被 Xcode account/profile 阻塞：`No Accounts`，且没有 `com.shifeng.peek` profile。
   - 2026-06-28 01:26 JST 已复查，阻塞仍未解除。
   - 登录账号后仍需确认 Apple Developer PLA 是否已接受。
@@ -905,6 +910,7 @@ xcodebuild archive \
 - [x] `script/capture_app_store_screenshot.sh`：可启动并展开真实面板，可生成 5 张首发截图套件；当前会话在 `screencapture` 阶段因截图权限/会话状态失败。
 - [x] `script/validate_app_store_materials.py`：验证三语言 App Store metadata 长度和禁用宣传词。
 - [x] `script/export_app_store_metadata.py`：导出可复制进 App Store Connect 的三语言 metadata、基础字段、审核备注和提交表单清单材料包。
+- [x] `script/validate_export_options.py`：验证 App Store Connect export options 配置。
 - [x] `script/validate_privacy_alignment.py`：验证 PrivacyInfo、Xcode 权限、App Store App Privacy 口径和 landing privacy 文案一致；同时拒绝 Xcode build settings 中出现相反权限值。
 - [x] `script/validate_landing_public.py`：验证公网 landing SEO、sitemap、manifest、icon/social preview 尺寸、analytics config 和禁用宣传词。
 - [x] `script/validate_app_icons.py`：验证 Xcode AppIcon、landing icon、web manifest icon 和 social preview 尺寸/一致性。
@@ -1143,7 +1149,7 @@ xcodebuild \
 ./script/launch_verify.sh
 ```
 
-该脚本会执行 App Store metadata 校验、App Store metadata 导出包校验、Privacy/App Privacy 口径一致性校验、本地 landing 校验、App icon/landing icon 一致性校验、Release build、可自动运行的 XCTest、Release archive、归档 metadata/entitlements/privacy manifest 校验、archive entitlement allowlist、Release archive 字符串检查、公网 landing URL 检查和公网 landing SEO/analytics config 校验。公网检查可用 `SKIP_NETWORK=1 ./script/launch_verify.sh` 跳过。
+该脚本会执行 App Store metadata 校验、App Store metadata 导出包校验、App Store export options 校验、Privacy/App Privacy 口径一致性校验、本地 landing 校验、App icon/landing icon 一致性校验、Release build、可自动运行的 XCTest、Release archive、归档 metadata/entitlements/privacy manifest 校验、archive entitlement allowlist、Release archive 字符串检查、公网 landing URL 检查和公网 landing SEO/analytics config 校验。公网检查可用 `SKIP_NETWORK=1 ./script/launch_verify.sh` 跳过。
 
 App Store Connect metadata 导出：
 

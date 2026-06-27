@@ -14,6 +14,7 @@ PRIVACY_MANIFEST="$APP_PATH/Contents/Resources/PrivacyInfo.xcprivacy"
 APP_EXECUTABLE="$APP_PATH/Contents/MacOS/Peek"
 MATERIALS_VALIDATOR="$ROOT_DIR/script/validate_app_store_materials.py"
 METADATA_EXPORTER="$ROOT_DIR/script/export_app_store_metadata.py"
+EXPORT_OPTIONS_VALIDATOR="$ROOT_DIR/script/validate_export_options.py"
 PRIVACY_ALIGNMENT_VALIDATOR="$ROOT_DIR/script/validate_privacy_alignment.py"
 LANDING_VALIDATOR="$ROOT_DIR/script/validate_landing_public.py"
 LANDING_LOCAL_VALIDATOR="$ROOT_DIR/script/validate_landing_local.js"
@@ -71,6 +72,9 @@ OUT_DIR="$METADATA_VERIFY_DIR" "$METADATA_EXPORTER" >/dev/null
 [[ -f "$METADATA_VERIFY_DIR/app_information.json" ]] || fail "metadata export missing app_information.json"
 [[ -f "$METADATA_VERIFY_DIR/app_store_connect_submission_checklist.md" ]] || fail "metadata export missing submission checklist"
 [[ -f "$METADATA_VERIFY_DIR/app_review_notes.txt" ]] || fail "metadata export missing app_review_notes.txt"
+
+log "App Store export options"
+"$EXPORT_OPTIONS_VALIDATOR"
 
 log "Privacy alignment"
 "$PRIVACY_ALIGNMENT_VALIDATOR"
