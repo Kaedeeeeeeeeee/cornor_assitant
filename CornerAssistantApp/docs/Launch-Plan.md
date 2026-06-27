@@ -1,6 +1,6 @@
 # Peek 上线准备计划
 
-最后更新：2026-06-28 05:10 JST
+最后更新：2026-06-28 05:22 JST
 
 这个文档是 Peek 从当前本地项目走到公开 landing page 和 Mac App Store 首发的工作台。后续执行、验收、补漏都以这里为准；如果产品、定价、域名、隐私口径或 App Store 配置发生变化，先更新本文件，再改代码或页面。
 
@@ -374,6 +374,7 @@
   - `corner=topRight window id=8754 layer=3 bounds=x:1186 y:43 width:528 height:750`
   - `qa_smoke passed`
 - 2026-06-28 03:14 JST 尝试用 CGEvent 坐标点击和 System Events `click` 验证菜单栏左键；两者都能定位 status item，但未触发真实面板展开，因此菜单栏左键/右键仍保留为人工或更完整 UI automation 项。
+- 2026-06-28 05:22 JST 复测 System Events `AXPress`：单独执行时可偶发触发展开，但在完整 smoke reset/expand 序列中不稳定，且 control-click/right-click 菜单仍不可稳定读取；不纳入 `script/qa_smoke.sh` 门禁。
 - 2026-06-28 01:15 JST 再次执行 UI test target，失败原因仍为当前 macOS 会话认证状态：
   - `Failed to initialize for UI testing`
   - `System authentication is running`
@@ -581,6 +582,10 @@
   - `./script/qa_smoke.sh` 已通过，覆盖菜单栏 status item、面板默认隐藏和四个角落面板定位。
   - `script/check_external_readiness.py` 已新增 `PEEK_CHECK_QA_SMOKE=1` 可选检查，用于复跑本机菜单栏/面板 smoke QA。
   - 默认 readiness 当前为 `{"manual": 3, "ok": 12, "skipped": 3}`；`PEEK_CHECK_QA_SMOKE=1` 扩展 readiness 当前为 `{"manual": 3, "ok": 13, "skipped": 2}`。
+- 2026-06-28 05:22 JST 本机菜单栏点击复测：
+  - `./script/qa_smoke.sh` 稳定通过，继续覆盖菜单栏 status item 存在性、面板默认隐藏和四个角落真实窗口定位。
+  - System Events `AXPress` 复测可偶发触发 status item 左键展开，但在完整 smoke reset/expand 序列中不稳定；未纳入自动发布门禁。
+  - control-click/right-click 菜单在当前会话仍不可稳定读取，菜单栏左键 toggle 和右键菜单仍保留为人工或更完整 UI automation 项。
 
 ## 2. 首发完成定义
 
@@ -1052,8 +1057,9 @@ xcodebuild archive \
 - [ ] 首次启动。
   - 2026-06-28 05:10 JST 已通过 `./script/qa_smoke.sh` 自动确认 Debug app 启动后进程存在、菜单栏 status item 存在、面板默认隐藏；完整首启体验仍需人工跑。
 - [ ] 菜单栏图标点击。
-  - 2026-06-28 已确认 status item 存在；但 AXPress/AppleScript click 在当前会话未触发真实左键行为，本项仍需手动或更完整 UI automation 验证。
+  - 2026-06-28 已确认 status item 存在；05:22 JST 复测 `AXPress` 可偶发触发展开，但在完整 smoke 序列中不稳定，本项仍需手动或更完整 UI automation 验证。
 - [ ] 菜单栏右键/control-click 菜单。
+  - 2026-06-28 05:22 JST 复测后仍无法在当前会话稳定读取弹出菜单，本项仍需手动或更完整 UI automation 验证。
 - [x] 四个热角设置。
   - 自动覆盖：`LaunchReadinessTests` 验证四个 hot corner raw value、菜单文案、默认值和持久化；`script/qa_smoke.sh` 验证四个 hot corner 对应的真实面板窗口定位。
 - [ ] 边缘面板唤出和自动收起。

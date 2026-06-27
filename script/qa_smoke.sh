@@ -179,6 +179,7 @@ CONFIGURATION=Debug "$RUN_SCRIPT" --verify
 status_item_summary="$(assert_status_item)"
 echo "status_item=$status_item_summary"
 
+post_panel_command "corner:bottomLeft"
 assert_panel_hidden
 
 for corner in bottomLeft bottomRight topLeft topRight; do
