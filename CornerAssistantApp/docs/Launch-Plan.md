@@ -170,11 +170,23 @@
 
 2026-06-27 Landing analytics 配置收口：
 
+- 已提交并推送 commit：`f8f6643 build: allow pages analytics configuration`。
+- GitHub Actions workflow `Deploy Peek landing page` 成功：
+  - Run ID: `28292355748`
 - 已新增 `CornerAssistantApp/landing-page/analytics-config.js`，默认不启用 analytics。
 - 已更新 GitHub Pages workflow：部署时会读取 GitHub repository variable `PEEK_GA_MEASUREMENT_ID`。
 - 如果 `PEEK_GA_MEASUREMENT_ID` 符合 `G-...` 格式，workflow 会写入 `analytics-config.js` 并启用官网 GA4；如果为空或格式不匹配，官网不会加载 Google Analytics。
+- 公网已验证：
+  - `https://kaedeeeeeeeeee.github.io/cornor_assitant/analytics-config.js` -> 200
+  - 当前内容为 `window.PEEK_GA_MEASUREMENT_ID = "";`，即当前公网默认不加载 GA。
+  - 首页 JSON-LD `applicationCategory = Productivity`。
 - 本地 Lighthouse 验证通过：
   - Performance: 100
+  - Accessibility: 100
+  - Best Practices: 100
+  - SEO: 100
+- 公网 Lighthouse 验证通过：
+  - Performance: 98
   - Accessibility: 100
   - Best Practices: 100
   - SEO: 100
