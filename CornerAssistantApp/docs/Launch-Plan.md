@@ -305,6 +305,25 @@
 - 页面在加载阶段超时，未进入可读后台状态；没有提交任何表单，也没有接受协议。
 - 当前 Apple 后台阻塞仍以 `xcodebuild -exportArchive` 的直接错误为准：PLA 更新待接受，且没有 `com.shifeng.peek` App Store provisioning profile。
 
+2026-06-27 App Store Connect 表单材料补齐：
+
+- `CornerAssistantApp/docs/AppStore-Materials.md` 已补充可照填字段：
+  - App record。
+  - Pricing and Availability。
+  - Age Rating 问卷建议。
+  - Content Rights / Third-Party Content。
+  - App Review Information。
+  - EU DSA / Trader Status 准备项。
+- 年龄分级关键口径：
+  - Peek 是 browser-like WebKit app，用户可以输入 URL、搜索或打开固定网站。
+  - `Unrestricted Web Access` 必须按真实能力填写 `Yes`。
+  - App 本身不内置暴力、色情、赌博、医疗、UGC、广告或原生聊天内容。
+  - 最终年龄分级由 App Store Connect 根据问卷自动计算；不要在公开文案里承诺更低年龄分级。
+- 内容权利关键口径：
+  - Peek 不打包、镜像、缓存或再分发第三方内容。
+  - 第三方网页只在用户主动输入 URL、搜索、点击结果或打开固定网站时访问。
+  - App 自带素材、icon、landing 文案和截图应确保归开发者所有或已授权。
+
 - [ ] Apple Developer Program 账号可用。
 - [ ] Paid Apps Agreement 已签署。
 - [ ] Apple Developer Program License Agreement 更新已接受。
@@ -313,7 +332,7 @@
   - Name: Peek
   - Bundle ID: `com.shifeng.peek`
   - SKU: 建议 `peek-macos-001`
-  - Primary language: 建议 English 或 Simplified Chinese，按你希望 App Store 默认展示选择。
+  - Primary language: English (U.S.)。
 - [ ] 设置价格和销售区域：
   - Price: US$5.99 对应 Apple 价格层级。
   - Availability: 首发区域需确认；默认建议全球可售，除非合规原因需要排除。
@@ -328,16 +347,22 @@
   - 本地偏好和固定站点保存在用户 Mac。
   - Web 和搜索请求发往对应第三方网站或默认搜索服务。
   - 官网 analytics 不等于 App 内数据收集，App Store App Privacy 只按 App 行为填写。
-- [ ] 填写年龄分级。
+- [ ] 填写年龄分级：
+  - App Store Connect 问卷建议已写入 `CornerAssistantApp/docs/AppStore-Materials.md`。
+  - `Unrestricted Web Access = Yes`。
 - [x] 填写出口合规/加密说明。
-- [ ] 填写版权、内容权利和地区合规信息。
-- [ ] 准备 App Review notes：
+- [ ] 填写版权、内容权利和地区合规信息：
+  - Copyright: `2026 Zhang Shifeng`。
+  - Content Rights 建议说明已写入 `CornerAssistantApp/docs/AppStore-Materials.md`。
+  - 如果首发包含 EU，需要完成 DSA trader status 声明。
+- [x] 准备 App Review notes 草稿：
   - 如何唤出面板：移动鼠标到热角。
   - 如何测试搜索/URL。
   - 如何测试标签页。
   - 如何测试固定站点。
   - 不需要账号。
   - Support email。
+- [ ] 在 App Store Connect 粘贴 App Review notes 并填写真实审核联系电话。
 
 ### Phase D: App Store 文案和素材
 
@@ -563,6 +588,8 @@ curl -I https://kaedeeeeeeeeee.github.io/cornor_assitant/sitemap.xml
 - [ ] `com.shifeng.peek` App Store provisioning profile。
 - [ ] App Store SKU 最终确认；建议 `peek-macos-001`。
 - [ ] App Store 截图素材。
+- [ ] App Review 真实联系电话。
+- [ ] 如果包含 EU 地区：DSA trader status 和可公开联系信息。
 - [ ] App Review release mode；建议首发使用 Manual release。
 - [ ] 真实 Mac App Store URL。
 - [x] GitHub Pages Settings 中启用 GitHub Actions Pages。
@@ -642,12 +669,14 @@ xcodebuild \
 3. 用 Organizer 或 `xcodebuild -exportArchive` 重新执行 App Store export。
 4. 验证 exported app entitlements 中 `get-task-allow = false`。
 5. 在 App Store Connect 创建 Peek app record。
-6. 补 GA4 Measurement ID：在 GitHub repository variable 设置 `PEEK_GA_MEASUREMENT_ID`，或者明确首发先不开启 analytics。
-7. 准备截图并上传 App Store metadata。
-8. 在 Google Search Console / Bing Webmaster Tools 提交 sitemap。
-9. Upload build to App Store Connect。
-10. 回填真实 App Store URL 到 landing CTA。
-11. Submit for Review。
+6. 填写 App Store Connect metadata、年龄分级、内容权利、App Privacy、审核备注和真实审核联系电话。
+7. 如果覆盖 EU 地区，完成 DSA trader status；如果暂不覆盖 EU，先调整 availability。
+8. 补 GA4 Measurement ID：在 GitHub repository variable 设置 `PEEK_GA_MEASUREMENT_ID`，或者明确首发先不开启 analytics。
+9. 准备截图并上传 App Store metadata。
+10. 在 Google Search Console / Bing Webmaster Tools 提交 sitemap。
+11. Upload build to App Store Connect。
+12. 回填真实 App Store URL 到 landing CTA。
+13. Submit for Review。
 
 ## 8. 参考链接
 
@@ -657,6 +686,9 @@ xcodebuild \
 - Apple: Upload builds - https://developer.apple.com/help/app-store-connect/manage-builds/upload-builds/
 - Apple: Sign and update agreements - https://developer.apple.com/help/app-store-connect/manage-agreements/sign-and-update-agreements/
 - Apple: Set a price - https://developer.apple.com/help/app-store-connect/manage-app-pricing/set-a-price/
+- Apple: Set an app age rating - https://developer.apple.com/help/app-store-connect/manage-app-information/set-an-app-age-rating/
+- Apple: Provide Content Rights Information - https://developer.apple.com/help/app-store-connect/manage-app-information/provide-content-rights-information/
+- Apple: Digital Services Act Compliance - https://developer.apple.com/help/app-store-connect/manage-compliance-information/manage-european-union-digital-services-act-trader-requirements/
 - Google: SEO Starter Guide - https://developers.google.com/search/docs/fundamentals/seo-starter-guide
 - Google: Sitemaps - https://developers.google.com/search/docs/crawling-indexing/sitemaps/overview
 - Google: robots.txt - https://developers.google.com/search/docs/crawling-indexing/robots/intro

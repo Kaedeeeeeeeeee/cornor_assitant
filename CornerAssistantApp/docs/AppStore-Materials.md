@@ -228,6 +228,101 @@ Peek は「必要なときだけ現れる」ことを目指して設計されて
 
 如果后续加入 crash reporting、App 内 analytics、账号、云同步或支付 SDK，必须重新填写 App Privacy 并更新 Privacy Policy。
 
+## App Store Connect 字段建议
+
+本节是后台表单的照填清单；最终仍以 App Store Connect 当前页面为准。
+
+### App Record
+
+| 字段 | 建议填写 |
+| --- | --- |
+| Platform | macOS |
+| Name | Peek |
+| Primary Language | English (U.S.) |
+| Bundle ID | `com.shifeng.peek` |
+| SKU | `peek-macos-001` |
+| Category | Productivity |
+| Copyright | `2026 Zhang Shifeng` |
+| License Agreement | 使用 Apple 标准 EULA，除非之后需要自定义条款 |
+| Marketing URL | `https://kaedeeeeeeeeee.github.io/cornor_assitant/` |
+| Privacy Policy URL | `https://kaedeeeeeeeeee.github.io/cornor_assitant/privacy.html` |
+| Support URL | `https://kaedeeeeeeeeee.github.io/cornor_assitant/support.html` |
+
+Localizations:
+
+- English (U.S.)
+- Chinese (Simplified)
+- Japanese
+
+### Pricing and Availability
+
+| 字段 | 建议填写 |
+| --- | --- |
+| Distribution Method | Public Distribution |
+| Price | US$5.99，一次买断 |
+| Reference Country or Region | United States |
+| Availability | 默认 All Countries or Regions，除非因税务、银行、DSA 或地区合规主动排除 |
+| Pre-order | No |
+| In-App Purchases | None |
+| Subscriptions | None |
+| Release Option | Manually release this version |
+
+付费销售前必须确认 Paid Apps Agreement、税务和银行信息已完成；否则 Apple 可能只能允许免费发布。
+
+### Age Rating 问卷建议
+
+Peek 是内置 WebKit 快速浏览器，用户可以输入 URL 或搜索并打开网页。因此年龄分级问卷必须按真实能力填写：
+
+| 问卷项 | 建议回答 | 说明 |
+| --- | --- | --- |
+| Made for Kids / Children target | No | Peek 是通用生产力工具，不面向儿童设计 |
+| Unrestricted Web Access | Yes | 用户可以在 App 内导航到任意网页或搜索结果 |
+| User-Generated Content | No | App 本身不托管或分发 UGC；第三方网站内容由对应网站提供 |
+| Messaging and Chat | No | App 本身没有原生聊天功能；第三方网站可能有自己的聊天功能 |
+| Advertising | No | App 本身不含广告 SDK；第三方网站可能显示自己的广告 |
+| Parental Controls | No | 首发没有儿童模式、内容过滤或家长控制 |
+| Age Assurance | No | 首发没有年龄验证 |
+| Medical or Treatment Information | None / No | App 自身不提供医疗内容 |
+| Health or Wellness Topics | None / No | App 自身不提供健康建议 |
+| Gambling / Contests / Loot Boxes | None / No | App 自身不含赌博、抽奖、比赛或 loot box |
+| Violence, Sexuality, Mature Themes | None / No | App 自身不包含这些内容 |
+
+预期结果：由于 `Unrestricted Web Access = Yes`，Apple 当前规则下全局年龄分级通常会到 17+。最终显示值由 App Store Connect 根据问卷自动计算；不要手动宣传更低年龄分级，也不要向下规避这个能力。
+
+### Content Rights / Third-Party Content
+
+Apple 对“包含、显示或访问第三方内容”的 App 要求开发者拥有必要权利，或在各销售地区法律下有其他允许依据。Peek 的建议口径：
+
+- Bundled app assets, icon, landing copy, screenshots: owned by developer or created for Peek.
+- App does not bundle, mirror, cache, or redistribute third-party articles, videos, images, or databases.
+- App can access third-party websites only when users type a URL, search, click a result, or open a pinned site.
+- If asked whether the app contains, shows, or accesses third-party content: answer Yes, because Peek is a browser-like WebKit app.
+- If asked whether you have rights or are otherwise permitted: answer Yes only on the basis that content is user-directed web access and not bundled/rehosted by Peek; account holder should make the final legal confirmation.
+
+Suggested explanation:
+
+```text
+Peek is a browser-like macOS utility. It does not bundle, mirror, cache, or redistribute third-party content. Users choose the websites they open by entering URLs, searching, or using pinned sites. Bundled app assets and product metadata are owned by the developer or created for Peek.
+```
+
+### App Review Information
+
+| 字段 | 建议填写 |
+| --- | --- |
+| Sign-in Required | No |
+| Demo Account | Not applicable |
+| Contact Email | `f.shera.09@gmail.com` |
+| Contact Phone | 待账号持有人填写真实联系电话 |
+| Notes | 使用下方 App Review Notes 草稿 |
+
+### EU DSA / Trader Status
+
+如果 App Store availability 包含欧盟地区，Apple 会要求账号持有人完成 Digital Services Act trader status 声明。由于 Peek 是付费 App，建议在提交前准备：
+
+- 是否以 trader 身份销售的自评结论。
+- 如选择 trader：可公开展示的地址或 P.O. Box、电话、邮箱。
+- 如不希望公开 trader 联系信息：需要重新评估是否排除 EU 地区或调整销售计划。
+
 ## Export Compliance 建议填写
 
 Peek 不包含自研加密算法或第三方加密库；HTTPS、WebKit 和系统网络能力由 Apple 系统框架提供。
@@ -249,6 +344,8 @@ How to test:
 5. Use the pin control if you want the panel to remain visible while testing.
 
 Peek stores preferences and pinned sites locally on the Mac. It does not include in-app analytics or advertising SDKs.
+Peek includes browser-like WebKit functionality. Users choose websites by entering URLs, searching, or opening pinned sites. Third-party websites may have their own content, cookies, login flows, and privacy practices.
+Websites opened in Peek may request microphone access for calls or voice input; Peek itself does not record audio.
 
 Support contact: f.shera.09@gmail.com
 ```
