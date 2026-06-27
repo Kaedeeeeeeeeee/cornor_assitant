@@ -1,6 +1,6 @@
 :root {
-    --accent: #007aff;
-    --accent-soft: rgba(0, 122, 255, 0.1);
+    --accent: #0064d2;
+    --accent-soft: rgba(0, 100, 210, 0.1);
     --text: #1d1d1f;
     --muted: #6e6e73;
     --faint: #a1a1a6;
@@ -29,7 +29,7 @@ body {
 }
 
 ::selection {
-    background: rgba(0, 122, 255, 0.18);
+    background: rgba(0, 100, 210, 0.18);
 }
 
 a {
