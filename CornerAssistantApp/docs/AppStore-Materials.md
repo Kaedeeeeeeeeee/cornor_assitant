@@ -228,6 +228,14 @@ Peek は「必要なときだけ現れる」ことを目指して設計されて
 
 如果后续加入 crash reporting、App 内 analytics、账号、云同步或支付 SDK，必须重新填写 App Privacy 并更新 Privacy Policy。
 
+## Export Compliance 建议填写
+
+Peek 不包含自研加密算法或第三方加密库；HTTPS、WebKit 和系统网络能力由 Apple 系统框架提供。
+
+- `ITSAppUsesNonExemptEncryption = false` 已写入 app Info.plist。
+- App Store Connect 加密/出口合规问题建议按“不使用非豁免加密”填写。
+- 如果后续加入自研加密、VPN、端到端加密、密码管理、加密消息、加密文件存储或第三方加密库，需要重新评估本节。
+
 ## App Review Notes 草稿
 
 ```text

@@ -418,6 +418,7 @@
 				ENABLE_USER_SELECTED_FILES = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Peek;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright 2026 Zhang Shifeng";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Websites opened in Peek may request microphone access for features such as calls or voice input.";
@@ -471,6 +472,7 @@
 				ENABLE_USER_SELECTED_FILES = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Peek;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright 2026 Zhang Shifeng";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Websites opened in Peek may request microphone access for features such as calls or voice input.";

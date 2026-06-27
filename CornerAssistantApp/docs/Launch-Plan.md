@@ -128,6 +128,19 @@
   - `xcodebuild test` 的 UI runner 初始化失败：`System authentication is running` / `Authentication canceled`。
   - 这属于当前 macOS 用户会话/系统认证状态阻塞；不作为代码失败处理。
 
+2026-06-27 Export Compliance 收口：
+
+- 已确认源码没有自研加密、CryptoKit、CommonCrypto、Security/SecKey/SecItem、OpenSSL/libsodium 等加密实现；网络访问来自 `URLSession`、WebKit 和系统框架。
+- 已在主 app Debug/Release build settings 添加：
+  - `INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO`
+- 已验证 Release build 成功。
+- 已验证 unit tests 成功：
+  - `xcodebuild -project CornerAssistantApp.xcodeproj -scheme CornerAssistantApp -destination 'platform=macOS' -skip-testing:CornerAssistantAppUITests test`
+- 已重新生成 `/tmp/peek-appstore/Peek.xcarchive`。
+- Archive Info.plist 已确认：
+  - `ITSAppUsesNonExemptEncryption = false`
+- App Store Connect Export Compliance 建议按“不使用非豁免加密”填写；如果后续加入自研加密、VPN、端到端加密、密码管理、加密消息、加密文件存储或第三方加密库，必须重新评估。
+
 ## 1.2 本次部署记录
 
 2026-06-27 已完成：
@@ -316,7 +329,7 @@
   - Web 和搜索请求发往对应第三方网站或默认搜索服务。
   - 官网 analytics 不等于 App 内数据收集，App Store App Privacy 只按 App 行为填写。
 - [ ] 填写年龄分级。
-- [ ] 填写出口合规/加密说明。
+- [x] 填写出口合规/加密说明。
 - [ ] 填写版权、内容权利和地区合规信息。
 - [ ] 准备 App Review notes：
   - 如何唤出面板：移动鼠标到热角。
@@ -381,6 +394,7 @@
   - Display name: `Peek`
   - Minimum macOS version: 15.0
   - Copyright: `© 2026 Zhang Shifeng`
+  - `ITSAppUsesNonExemptEncryption = false`
 - [x] 确认 App Sandbox entitlement。
 - [x] 确认 WebKit 浏览需要的 network client entitlement。
 - [x] 检查是否真的需要 audio input entitlement；保留给 WebKit 页面请求麦克风，Info.plist 和 privacy copy 已同步。
