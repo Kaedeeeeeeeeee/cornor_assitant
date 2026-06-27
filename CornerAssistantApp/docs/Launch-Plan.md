@@ -168,6 +168,18 @@
   - SEO: 100
   - `color-contrast` 已通过。
 
+2026-06-27 Landing analytics 配置收口：
+
+- 已新增 `CornerAssistantApp/landing-page/analytics-config.js`，默认不启用 analytics。
+- 已更新 GitHub Pages workflow：部署时会读取 GitHub repository variable `PEEK_GA_MEASUREMENT_ID`。
+- 如果 `PEEK_GA_MEASUREMENT_ID` 符合 `G-...` 格式，workflow 会写入 `analytics-config.js` 并启用官网 GA4；如果为空或格式不匹配，官网不会加载 Google Analytics。
+- 本地 Lighthouse 验证通过：
+  - Performance: 100
+  - Accessibility: 100
+  - Best Practices: 100
+  - SEO: 100
+- 首页 JSON-LD `applicationCategory` 已从 `UtilitiesApplication` 调整为 `Productivity`，与 App Store 分类保持一致。
+
 ## 2. 首发完成定义
 
 首发上线不是只把页面放出去，也不是只上传一个 build。完成定义如下：
@@ -207,7 +219,7 @@
 - [x] 增加 landing-only analytics loader。
 - [ ] 配置真实 GA4 Measurement ID。
   - 当前 loader 已就绪，但默认不加载任何 analytics。
-  - 拿到 ID 后写入 `main.js` 的 `GA_MEASUREMENT_ID` 配置或在页面注入 `window.PEEK_GA_MEASUREMENT_ID`。
+  - 拿到 ID 后在 GitHub repository variable 中设置 `PEEK_GA_MEASUREMENT_ID`，然后手动 rerun `Deploy Peek landing page` workflow 或推送 landing 变更。
 - [x] 增加 GitHub Pages Actions workflow。
 - [x] 在 GitHub 仓库中启用 GitHub Actions Pages 发布源。
 - [x] 合并/推送后验证 Pages 公网 URL。
@@ -221,6 +233,7 @@
 - [x] 首页、隐私页、支持页设置独立 title 和 meta description。
 - [x] 增加 Open Graph 和 Twitter Card metadata。
 - [x] 增加 `SoftwareApplication` JSON-LD。
+  - `applicationCategory = Productivity`
 - [x] 增加 `site.webmanifest`。
 - [x] 增加 `robots.txt`。
 - [x] 增加 `sitemap.xml`。
@@ -516,6 +529,7 @@ curl -I https://kaedeeeeeeeeee.github.io/cornor_assitant/sitemap.xml
 这些不是代码里能自动完成的内容：
 
 - [ ] GA4 Measurement ID。
+  - GitHub Pages 已支持通过 repository variable `PEEK_GA_MEASUREMENT_ID` 注入；仍需真实 ID。
 - [ ] Apple Developer/App Store Connect 登录权限。
 - [ ] Paid Apps Agreement、税务、银行信息。
 - [ ] App Store Connect App record。
@@ -602,7 +616,7 @@ xcodebuild \
 3. 用 Organizer 或 `xcodebuild -exportArchive` 重新执行 App Store export。
 4. 验证 exported app entitlements 中 `get-task-allow = false`。
 5. 在 App Store Connect 创建 Peek app record。
-6. 补 GA4 Measurement ID，或者明确首发先不开启 analytics。
+6. 补 GA4 Measurement ID：在 GitHub repository variable 设置 `PEEK_GA_MEASUREMENT_ID`，或者明确首发先不开启 analytics。
 7. 准备截图并上传 App Store metadata。
 8. 在 Google Search Console / Bing Webmaster Tools 提交 sitemap。
 9. Upload build to App Store Connect。
