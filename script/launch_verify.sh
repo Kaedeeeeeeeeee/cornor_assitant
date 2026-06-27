@@ -156,6 +156,9 @@ fi
 if strings "$APP_EXECUTABLE" | grep -Eiq 'BingSearchProvider|bing\.com|api\.bing'; then
   fail "Unsupported Bing search provider leaked into Release archive"
 fi
+if strings "$APP_EXECUTABLE" | grep -Eiq 'OCRHistoryManager|OCRHistoryItem|OCRHistory'; then
+  fail "Unsupported OCR history code leaked into Release archive"
+fi
 
 if [[ "${SKIP_NETWORK:-0}" != "1" ]]; then
   log "Public landing URLs"

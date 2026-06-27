@@ -28,7 +28,7 @@
 - 当前项目是 macOS SwiftUI/AppKit/WebKit 应用，Xcode 工程位于 `CornerAssistantApp/CornerAssistantApp.xcodeproj`。
 - 当前 app 产品名为 Peek，包名工程仍保留 `CornerAssistantApp` 命名。
 - `SlidePanelView.swift` 当前直接使用 `GoogleSearchProvider()`；未使用的 `BingSearchProvider.swift` 已移除，Release archive 会检查 Bing provider/endpoint 字符串不得进入二进制。
-- 当前代码没有系统选中文字读取逻辑；不能在 landing 或 App Store 文案中宣传 selected text search。
+- 当前代码没有系统选中文字读取逻辑；不能在 landing 或 App Store 文案中宣传 selected text search。未使用的 OCR history 残留已移除，Release archive 会检查 OCR history 字符串不得进入二进制。
 - Landing 源设计来自 `/Users/user/Downloads/项目 Landing Page 设计.zip`，其中 `.dc.html` 是设计稿，不是生产站点。
 - Landing 生产目录为 `CornerAssistantApp/landing-page`。
 - App icon 已核对：`CornerAssistantApp/landing-page/assets/icon.png` 与 Xcode AppIcon 512@2x 像素一致，SHA-256 为 `1fdd1e4c18c4ce6bb80d1264807c8034c0af28a83aa9471a98a3d25a6ec436b0`，无需替换；`script/validate_app_icons.py` 已把该检查固化。
@@ -477,6 +477,10 @@
   - `SKIP_NETWORK=1 ./script/launch_verify.sh` 通过。
   - `./script/qa_smoke.sh` 通过。
   - `/tmp/peek-appstore/Peek.xcarchive/Products/Applications/Peek.app/Contents/MacOS/Peek` 未命中 `BingSearchProvider`、`bing.com` 或 `api.bing` 字符串。
+- 2026-06-28 04:05 JST 已移除未使用的 `OCRHistoryManager.swift`，并在 `script/launch_verify.sh` 增加 Release archive guard：
+  - `SKIP_NETWORK=1 ./script/launch_verify.sh` 通过。
+  - Release archive 会拒绝 `OCRHistoryManager`、`OCRHistoryItem` 或 `OCRHistory` 字符串。
+  - `/tmp/peek-appstore/Peek.xcarchive/Products/Applications/Peek.app/Contents/MacOS/Peek` 未命中 `OCRHistoryManager`、`OCRHistoryItem`、`OCRHistory`、`BingSearchProvider`、`bing.com` 或 `api.bing` 字符串。
 - 首页 JSON-LD `applicationCategory` 已从 `UtilitiesApplication` 调整为 `Productivity`，与 App Store 分类保持一致。
 
 2026-06-28 01:24 JST GitHub Pages / analytics 复查：
@@ -914,6 +918,7 @@ xcodebuild archive \
 - [x] Xcode unit test target 可通过 CLI 运行。
 - [x] Debug screenshot 场景入口不会进入 Release archive。
 - [x] 未使用的 Bing 搜索 provider 不进入 Release archive。
+- [x] 未使用的 OCR history 残留不进入 Release archive。
 
 当前自动化限制：
 
