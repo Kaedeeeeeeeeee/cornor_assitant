@@ -112,6 +112,22 @@
   - Archive 成功生成到 `/tmp/peek-appstore/Peek.xcarchive`。
   - Archive Info.plist、entitlements、`PrivacyInfo.xcprivacy` 均已从归档产物中复核。
 
+2026-06-27 自动化测试收口：
+
+- 已新增 shared Xcode scheme：`CornerAssistantApp.xcodeproj/xcshareddata/xcschemes/CornerAssistantApp.xcscheme`。
+- 已修复 `CornerAssistantAppTests` 的 `TEST_HOST`，从旧的 `CornerAssistantApp.app/CornerAssistantApp` 改为实际产物 `Peek.app/Peek`。
+- 已新增 unit tests：
+  - `CornerAssistantAppTests/SearchProviderTests.swift`
+  - `CornerAssistantAppTests/PinnedSiteTests.swift`
+- 已验证通过：
+  - `xcodebuild -project CornerAssistantApp.xcodeproj -scheme CornerAssistantApp -destination 'platform=macOS' -only-testing:CornerAssistantAppTests test`
+  - `xcodebuild -project CornerAssistantApp.xcodeproj -scheme CornerAssistantApp -destination 'platform=macOS' -skip-testing:CornerAssistantAppUITests test`
+  - 10 tests passed, 0 failures。
+- 已验证 Release build 和 archive 在新增测试/scheme 后仍通过。
+- 完整 UI test 当前无法作为自动 gate：
+  - `xcodebuild test` 的 UI runner 初始化失败：`System authentication is running` / `Authentication canceled`。
+  - 这属于当前 macOS 用户会话/系统认证状态阻塞；不作为代码失败处理。
+
 ## 1.2 本次部署记录
 
 2026-06-27 已完成：
@@ -245,6 +261,12 @@
 
 状态：待 App Store Connect 操作。
 
+2026-06-27 App Store Connect 只读检查：
+
+- 已尝试用应用内浏览器打开 `https://appstoreconnect.apple.com/agreements/`。
+- 页面在加载阶段超时，未进入可读后台状态；没有提交任何表单，也没有接受协议。
+- 当前 Apple 后台阻塞仍以 `xcodebuild -exportArchive` 的直接错误为准：PLA 更新待接受，且没有 `com.shifeng.peek` App Store provisioning profile。
+
 - [ ] Apple Developer Program 账号可用。
 - [ ] Paid Apps Agreement 已签署。
 - [ ] Apple Developer Program License Agreement 更新已接受。
@@ -326,7 +348,7 @@
 状态：本地 Release build 和 archive 已通过，权限已收窄；App Store distribution export 被 Apple 后台阻塞。
 
 - [x] 明确当前 dirty worktree 哪些是本次上线工作，哪些是用户已有改动。
-- [ ] 确认版本号：
+- [x] 确认版本号：
   - `MARKETING_VERSION = 1.0`
   - `CURRENT_PROJECT_VERSION` 每次上传递增。
 - [x] 确认 bundle metadata：
@@ -385,7 +407,18 @@ xcodebuild archive \
 
 ### Phase F: 产品 QA
 
-状态：待跑。
+状态：部分自动化 QA 已完成；交互式产品 QA 待跑。
+
+已自动覆盖：
+
+- [x] 搜索 URL 构造、空查询处理、查询 trim/encode。
+- [x] URL 输入规范化：完整 URL、裸域名、localhost、普通搜索词。
+- [x] 固定网站模型：id 生成、favicon fallback、custom favicon、Codable 还原。
+- [x] Xcode unit test target 可通过 CLI 运行。
+
+当前自动化限制：
+
+- [ ] UI test runner 在当前 macOS 会话被系统认证状态阻塞，需要在干净用户会话或手动关闭系统认证提示后重跑。
 
 必须覆盖：
 
