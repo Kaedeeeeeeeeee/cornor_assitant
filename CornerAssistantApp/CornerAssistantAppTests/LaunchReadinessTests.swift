@@ -2,6 +2,8 @@ import XCTest
 @testable import Peek
 
 final class LaunchReadinessTests: XCTestCase {
+    private let hotCornerDefaultsKey = "CornerAssistant.HotCorner"
+
     func testAppLanguageResolutionCoversLaunchLocales() {
         XCTAssertEqual(AppLanguage.resolvedDefault(from: ["en-US"]), .english)
         XCTAssertEqual(AppLanguage.resolvedDefault(from: ["zh-Hans-CN"]), .chineseSimplified)
@@ -46,6 +48,25 @@ final class LaunchReadinessTests: XCTestCase {
         }
     }
 
+    func testStatusAndSettingsLocalizationCoverEveryLaunchLanguage() throws {
+        for language in AppLanguage.allCases {
+            let strings = try localizedStrings(for: language)
+            XCTAssertNotNil(strings["settings.language"], "\(language.rawValue) is missing settings language label")
+
+            for launchLanguage in AppLanguage.allCases {
+                XCTAssertNotNil(
+                    strings[launchLanguage.displayKey],
+                    "\(language.rawValue) is missing display name for \(launchLanguage.rawValue)"
+                )
+            }
+
+            for corner in HotCorner.allCases {
+                let title = strings[hotCornerLocalizationKey(for: corner)]
+                XCTAssertFalse(title?.isEmpty ?? true, "\(language.rawValue) has empty hot corner title for \(corner.rawValue)")
+            }
+        }
+    }
+
     func testHotCornerLaunchOptionsRemainStable() {
         XCTAssertEqual(
             HotCorner.allCases.map(\.rawValue),
@@ -53,10 +74,95 @@ final class LaunchReadinessTests: XCTestCase {
         )
     }
 
+    func testHotCornerPreferenceDefaultsAndRejectsUnknownValues() {
+        let defaults = UserDefaults.standard
+        let previousValue = defaults.string(forKey: hotCornerDefaultsKey)
+        defer {
+            if let previousValue {
+                defaults.set(previousValue, forKey: hotCornerDefaultsKey)
+            } else {
+                defaults.removeObject(forKey: hotCornerDefaultsKey)
+            }
+        }
+
+        defaults.removeObject(forKey: hotCornerDefaultsKey)
+        XCTAssertEqual(HotCornerStore.current, .bottomLeft)
+
+        HotCornerStore.current = .topRight
+        XCTAssertEqual(defaults.string(forKey: hotCornerDefaultsKey), "topRight")
+        XCTAssertEqual(HotCornerStore.current, .topRight)
+
+        defaults.set("center", forKey: hotCornerDefaultsKey)
+        XCTAssertEqual(HotCornerStore.current, .bottomLeft)
+    }
+
+    func testAppTargetBuildSettingsMatchStoreLaunchPlan() throws {
+        let project = try projectFileContents()
+        XCTAssertEqual(project.count(of: "PRODUCT_BUNDLE_IDENTIFIER = com.shifeng.peek;"), 2)
+        XCTAssertEqual(project.count(of: "PRODUCT_NAME = Peek;"), 2)
+        XCTAssertEqual(project.count(of: "INFOPLIST_KEY_CFBundleDisplayName = Peek;"), 2)
+        XCTAssertEqual(project.count(of: "ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;"), 2)
+        XCTAssertEqual(project.count(of: "INFOPLIST_KEY_LSApplicationCategoryType = \"public.app-category.productivity\";"), 2)
+        XCTAssertEqual(project.count(of: "MARKETING_VERSION = 1.0;"), 6)
+        XCTAssertEqual(project.count(of: "CURRENT_PROJECT_VERSION = 1;"), 6)
+        XCTAssertEqual(project.count(of: "MACOSX_DEPLOYMENT_TARGET = 15.0;"), 4)
+    }
+
+    func testLaunchLocalizationDoesNotPromoteUnsupportedFeatures() throws {
+        let forbiddenTerms = [
+            "Bing",
+            "selected text",
+            "Selected text",
+            "选中文字",
+            "選択したテキスト",
+            "macOS 14",
+            "Sonoma"
+        ]
+
+        for language in AppLanguage.allCases {
+            let strings = try localizedStrings(for: language)
+            let combinedCopy = strings.values.joined(separator: "\n")
+            for term in forbiddenTerms {
+                XCTAssertFalse(
+                    combinedCopy.localizedCaseInsensitiveContains(term),
+                    "\(language.rawValue) localization contains unsupported launch copy: \(term)"
+                )
+            }
+        }
+    }
+
     private func localizedStrings(for language: AppLanguage) throws -> [String: String] {
         let lprojPath = try XCTUnwrap(Bundle.main.path(forResource: language.resourceName, ofType: "lproj"))
         let stringsPath = (lprojPath as NSString).appendingPathComponent("Localizable.strings")
         let strings = NSDictionary(contentsOfFile: stringsPath) as? [String: String]
         return try XCTUnwrap(strings, "Could not parse \(language.rawValue) Localizable.strings")
+    }
+
+    private func projectFileContents() throws -> String {
+        let testFile = URL(fileURLWithPath: #filePath)
+        let projectFile = testFile
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .appendingPathComponent("CornerAssistantApp.xcodeproj/project.pbxproj")
+        return try String(contentsOf: projectFile, encoding: .utf8)
+    }
+
+    private func hotCornerLocalizationKey(for corner: HotCorner) -> String {
+        switch corner {
+        case .topLeft:
+            return "hot_corner.top_left"
+        case .topRight:
+            return "hot_corner.top_right"
+        case .bottomLeft:
+            return "hot_corner.bottom_left"
+        case .bottomRight:
+            return "hot_corner.bottom_right"
+        }
+    }
+}
+
+private extension String {
+    func count(of needle: String) -> Int {
+        components(separatedBy: needle).count - 1
     }
 }

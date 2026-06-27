@@ -186,6 +186,7 @@
   - 公网 landing 关键 URL 均可达。
   - 公网 landing SEO 和 analytics config 校验。
   - 2026-06-28 01:36 JST 再次执行 `./script/launch_verify.sh`，通过。
+  - 2026-06-28 01:48 JST 再次执行 `./script/launch_verify.sh`，通过。
 
 2026-06-28 Landing 本地验收收口：
 
@@ -287,6 +288,10 @@
   - 三语言 `Localizable.strings` key 集合一致且值非空。
   - 首发关键 UI 文案 key 存在。
   - 四个 hot corner raw value 保持稳定。
+  - 三语言 settings/language/hot corner 菜单文案存在。
+  - Hot corner 默认值为 `bottomLeft`，保存/读取有效值正常，非法值会回退到默认值。
+  - App Store 首发关键 build settings 保持一致：bundle id、product name、display name、AppIcon、Productivity 分类、version `1.0 (1)`、macOS 15.0。
+  - 首发本地化文案不包含 `Bing`、selected text / 选中文字、`macOS 14`、`Sonoma` 等禁用宣传。
   - 搜索/URL 模型：空查询、trim、unicode 和符号查询、HTTP/HTTPS URL、裸域名、路径、localhost、普通搜索词。
   - 标签模型：新建、切换、关闭、关闭最后一个普通标签后自动补新 launcher tab。
   - 固定网站模型：打开、添加、移除、排序、重复 URL 防护、固定 tab 不被普通关闭、缺失 tab mapping 时创建新固定 tab。
@@ -294,16 +299,17 @@
   - 搜索建议模型：最小输入长度、debounce 后填充、clear。
 - `xcodebuild ... -only-testing:CornerAssistantAppTests test` 已通过：
   - 2026-06-28 01:23 JST 通过。
-  - 当前 `CornerAssistantAppTests` 共 31 个 `func test...`。
+  - 2026-06-28 01:47 JST `LaunchReadinessTests` 定向复跑通过。
+  - 当前 `CornerAssistantAppTests` 共 35 个 `func test...`。
 - `script/qa_smoke.sh` 已重新验证通过：
   - 当前 smoke 会先验证菜单栏 status item 存在。
   - 当前 smoke 会逐个切换 Debug-only hot corner 命令并验证真实 Peek 面板窗口位于对应屏幕边角。
   - 最近一次输出：
     - `status_item=title= description=Peek x:1523 y:4 w:24 h:24`
-    - `corner=bottomLeft window id=8508 layer=3 bounds=x:0 y:281 width:528 height:750`
-    - `corner=bottomRight window id=8508 layer=3 bounds=x:1186 y:271 width:528 height:750`
-    - `corner=topLeft window id=8508 layer=3 bounds=x:14 y:43 width:528 height:750`
-    - `corner=topRight window id=8508 layer=3 bounds=x:1186 y:43 width:528 height:750`
+    - `corner=bottomLeft window id=8550 layer=3 bounds=x:0 y:281 width:528 height:750`
+    - `corner=bottomRight window id=8550 layer=3 bounds=x:1186 y:271 width:528 height:750`
+    - `corner=topLeft window id=8550 layer=3 bounds=x:14 y:43 width:528 height:750`
+    - `corner=topRight window id=8550 layer=3 bounds=x:1186 y:43 width:528 height:750`
     - `qa_smoke passed`
 - 2026-06-28 01:07 JST 再次执行 `xcodebuild -exportArchive`，失败原因仍为：
   - `error: exportArchive No Accounts`
@@ -312,6 +318,7 @@
   - `error: exportArchive No Accounts`
   - `error: exportArchive No profiles for 'com.shifeng.peek' were found`
 - 2026-06-28 01:36 JST 再次执行 `./script/launch_verify.sh`，通过。
+- 2026-06-28 01:48 JST 再次执行 `script/qa_smoke.sh` 和 `./script/launch_verify.sh`，均通过。
 - 2026-06-28 01:15 JST 再次执行 UI test target，失败原因仍为当前 macOS 会话认证状态：
   - `Failed to initialize for UI testing`
   - `System authentication is running`
@@ -416,6 +423,7 @@
 - 2026-06-28 01:42 JST 复查结果保持一致：
   - 默认模式：`{"manual": 2, "ok": 9, "skipped": 2}`。
   - 扩展模式：`{"blocked": 2, "manual": 2, "ok": 9}`。
+- 2026-06-28 01:48 JST 扩展模式复查结果保持一致：`{"blocked": 2, "manual": 2, "ok": 9}`。
 
 ## 2. 首发完成定义
 
@@ -765,7 +773,10 @@ xcodebuild archive \
 - [x] 标签模型：新建、切换、关闭、关闭最后普通标签后自动补新 launcher tab、排序。
 - [x] 固定网站模型：id 生成、favicon fallback、custom favicon、Codable 还原。
 - [x] 固定网站 view model：添加、打开、移除、排序、重复 URL 防护、固定 tab 关闭保护。
-- [x] 首发三语言 key 集合一致、关键 UI 文案存在、hot corner 选项稳定。
+- [x] 首发三语言 key 集合一致、关键 UI 文案存在、settings/language/hot corner 菜单文案存在、hot corner 选项稳定。
+- [x] Hot corner 默认值、保存/读取和非法值回退。
+- [x] App Store 首发 build settings：bundle id、product/display name、AppIcon、Productivity 分类、version `1.0 (1)`、macOS 15.0。
+- [x] 本地化文案不包含 `Bing`、selected text / 选中文字、`macOS 14`、`Sonoma` 等禁用宣传。
 - [x] 四个热角设置：Debug smoke 已验证真实面板窗口落在对应屏幕边角。
 - [x] Xcode unit test target 可通过 CLI 运行。
 
