@@ -18,6 +18,7 @@ PRIVACY_ALIGNMENT_VALIDATOR="$ROOT_DIR/script/validate_privacy_alignment.py"
 LANDING_VALIDATOR="$ROOT_DIR/script/validate_landing_public.py"
 LANDING_LOCAL_VALIDATOR="$ROOT_DIR/script/validate_landing_local.js"
 APP_ICON_VALIDATOR="$ROOT_DIR/script/validate_app_icons.py"
+RELEASE_STRING_VALIDATOR="$ROOT_DIR/script/validate_release_archive_strings.py"
 declare -a CLEANUP_PATHS=()
 
 cleanup() {
@@ -143,22 +144,8 @@ grep -q '"NSPrivacyCollectedDataTypes" => \[' <<<"$privacy_summary" || fail "NSP
 grep -q '"NSPrivacyAccessedAPICategoryUserDefaults"' <<<"$privacy_summary" || fail "UserDefaults required-reason API entry missing"
 grep -q '"CA92.1"' <<<"$privacy_summary" || fail "UserDefaults CA92.1 reason missing"
 
-log "Release-only debug guard"
-if strings "$APP_EXECUTABLE" | grep -q 'com\.shifeng\.peek\.debug\.panelCommand'; then
-  fail "Debug-only panel command leaked into Release archive"
-fi
-if strings "$APP_EXECUTABLE" | grep -q 'corner:'; then
-  fail "Debug-only hot corner command leaked into Release archive"
-fi
-if strings "$APP_EXECUTABLE" | grep -q 'scenario:'; then
-  fail "Debug-only screenshot scenario command leaked into Release archive"
-fi
-if strings "$APP_EXECUTABLE" | grep -Eiq 'BingSearchProvider|bing\.com|api\.bing'; then
-  fail "Unsupported Bing search provider leaked into Release archive"
-fi
-if strings "$APP_EXECUTABLE" | grep -Eiq 'OCRHistoryManager|OCRHistoryItem|OCRHistory'; then
-  fail "Unsupported OCR history code leaked into Release archive"
-fi
+log "Release archive strings"
+"$RELEASE_STRING_VALIDATOR" "$APP_PATH"
 
 if [[ "${SKIP_NETWORK:-0}" != "1" ]]; then
   log "Public landing URLs"

@@ -481,6 +481,10 @@
   - `SKIP_NETWORK=1 ./script/launch_verify.sh` 通过。
   - Release archive 会拒绝 `OCRHistoryManager`、`OCRHistoryItem` 或 `OCRHistory` 字符串。
   - `/tmp/peek-appstore/Peek.xcarchive/Products/Applications/Peek.app/Contents/MacOS/Peek` 未命中 `OCRHistoryManager`、`OCRHistoryItem`、`OCRHistory`、`BingSearchProvider`、`bing.com` 或 `api.bing` 字符串。
+- 2026-06-28 04:08 JST 已新增 `script/validate_release_archive_strings.py`，并将 Release archive 字符串检查从 `launch_verify.sh` 的 inline grep 收口为独立校验：
+  - `SKIP_NETWORK=1 ./script/launch_verify.sh` 通过。
+  - 校验 executable 不含 Debug-only panel command、Debug hot corner/scenario command、Bing provider/endpoint、OCR history 残留。
+  - 校验 archive 内三语言 `Localizable.strings` 不含 `Bing`、selected-text search、`macOS 14`、`Sonoma` 等禁用公开文案。
 - 首页 JSON-LD `applicationCategory` 已从 `UtilitiesApplication` 调整为 `Productivity`，与 App Store 分类保持一致。
 
 2026-06-28 01:24 JST GitHub Pages / analytics 复查：
@@ -899,6 +903,7 @@ xcodebuild archive \
 - [x] `script/validate_privacy_alignment.py`：验证 PrivacyInfo、Xcode 权限、App Store App Privacy 口径和 landing privacy 文案一致。
 - [x] `script/validate_landing_public.py`：验证公网 landing SEO、sitemap、manifest、icon/social preview 尺寸、analytics config 和禁用宣传词。
 - [x] `script/validate_app_icons.py`：验证 Xcode AppIcon、landing icon、web manifest icon 和 social preview 尺寸/一致性。
+- [x] `script/validate_release_archive_strings.py`：验证 Release archive executable 和三语言资源不包含调试入口、未发布功能残留或禁用公开文案。
 - [x] `script/check_external_readiness.py`：复查公网 URL、GitHub Pages/variables、GA4 配置状态，并可选复查 export/截图权限阻塞。
   - 当前也覆盖 App Store export 成功后的 exported app metadata、privacy manifest 和 entitlements 验证。
 - [x] `script/configure_app_store_url.py`：真实 App Store URL 出来后激活 landing CTA、更新三语言 CTA 文案和 JSON-LD，并复跑本地 landing 校验。
@@ -1133,7 +1138,7 @@ xcodebuild \
 ./script/launch_verify.sh
 ```
 
-该脚本会执行 App Store metadata 校验、App Store metadata 导出包校验、Privacy/App Privacy 口径一致性校验、本地 landing 校验、App icon/landing icon 一致性校验、Release build、可自动运行的 XCTest、Release archive、归档 metadata/entitlements/privacy manifest 校验、Debug-only 字符串泄漏检查、公网 landing URL 检查和公网 landing SEO/analytics config 校验。公网检查可用 `SKIP_NETWORK=1 ./script/launch_verify.sh` 跳过。
+该脚本会执行 App Store metadata 校验、App Store metadata 导出包校验、Privacy/App Privacy 口径一致性校验、本地 landing 校验、App icon/landing icon 一致性校验、Release build、可自动运行的 XCTest、Release archive、归档 metadata/entitlements/privacy manifest 校验、Release archive 字符串检查、公网 landing URL 检查和公网 landing SEO/analytics config 校验。公网检查可用 `SKIP_NETWORK=1 ./script/launch_verify.sh` 跳过。
 
 App Store Connect metadata 导出：
 
