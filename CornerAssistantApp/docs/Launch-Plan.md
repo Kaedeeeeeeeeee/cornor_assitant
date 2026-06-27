@@ -269,8 +269,10 @@
 2026-06-28 App Store metadata 导出包：
 
 - 已新增 `script/export_app_store_metadata.py`。
+- 已新增 `script/validate_app_store_metadata_export.py`。
 - 默认导出目录：`/tmp/peek-app-store-metadata`。
 - 导出前会先复用 `script/validate_app_store_materials.py` 校验，避免把超长字段或禁用宣传词复制进 App Store Connect。
+- `script/validate_app_store_metadata_export.py` 会复查导出包文件集合、`app_information.json`、三语言 metadata、App Review notes、README 和 App Store Connect checklist，确保导出结果仍与 `CornerAssistantApp/docs/AppStore-Materials.md` 一致。
 - 当前导出内容：
   - `app_information.json`：App record、价格、URL、隐私、年龄分级、出口合规和仍需手工填写的字段。
   - `app_store_connect_submission_checklist.md`：App Store Connect 表单照填清单，覆盖 app record、价格、年龄分级、内容权利、DSA、出口合规、截图计划和提交前核对。
@@ -281,10 +283,12 @@
 
 ```bash
 ./script/export_app_store_metadata.py
+./script/validate_app_store_metadata_export.py
 ```
 
 - 2026-06-28 01:42 JST 已执行通过，生成 `/tmp/peek-app-store-metadata`。
 - 2026-06-28 02:41 JST 已重新执行通过，生成 `/tmp/peek-app-store-metadata/app_store_connect_submission_checklist.md`。
+- 2026-06-28 04:19 JST 已用临时目录重新导出并通过内容一致性校验；`script/launch_verify.sh` 已纳入该校验。
 
 2026-06-28 Privacy / App Privacy 口径校验收口：
 
@@ -910,6 +914,7 @@ xcodebuild archive \
 - [x] `script/capture_app_store_screenshot.sh`：可启动并展开真实面板，可生成 5 张首发截图套件；当前会话在 `screencapture` 阶段因截图权限/会话状态失败。
 - [x] `script/validate_app_store_materials.py`：验证三语言 App Store metadata 长度和禁用宣传词。
 - [x] `script/export_app_store_metadata.py`：导出可复制进 App Store Connect 的三语言 metadata、基础字段、审核备注和提交表单清单材料包。
+- [x] `script/validate_app_store_metadata_export.py`：验证生成后的 metadata 导出包文件集合和内容与 `AppStore-Materials.md` 保持一致。
 - [x] `script/validate_export_options.py`：验证 App Store Connect export options 配置。
 - [x] `script/validate_privacy_alignment.py`：验证 PrivacyInfo、Xcode 权限、App Store App Privacy 口径和 landing privacy 文案一致；同时拒绝 Xcode build settings 中出现相反权限值。
 - [x] `script/validate_landing_public.py`：验证公网 landing SEO、sitemap、manifest、icon/social preview 尺寸、analytics config 和禁用宣传词。
