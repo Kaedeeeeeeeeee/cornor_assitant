@@ -8,6 +8,7 @@ import subprocess
 import sys
 import urllib.request
 import plistlib
+import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from html.parser import HTMLParser
 from pathlib import Path
@@ -18,6 +19,15 @@ BASE_URL = "https://kaedeeeeeeeeee.github.io/cornor_assitant/"
 REPO = "Kaedeeeeeeeeee/cornor_assitant"
 PAGES_WORKFLOW = "pages.yml"
 EXPECTED_PAGES_URL = BASE_URL
+EXPECTED_SITEMAP_URLS = {
+    BASE_URL,
+    f"{BASE_URL}privacy.html",
+    f"{BASE_URL}support.html",
+}
+SEARCH_BOT_USER_AGENTS = {
+    "googlebot_sitemap_fetch": "Googlebot/2.1 (+http://www.google.com/bot.html)",
+    "bingbot_sitemap_fetch": "Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)",
+}
 ARCHIVE_PATH = Path("/tmp/peek-appstore/Peek.xcarchive")
 EXPORT_PATH = Path("/tmp/peek-appstore/external-readiness-export")
 EXPORT_OPTIONS = ROOT / "CornerAssistantApp" / "export_options_app_store.plist"
@@ -127,8 +137,8 @@ def validate_exported_app(export_path: Path) -> str:
     return str(app_path)
 
 
-def fetch_text(url: str) -> tuple[int, str]:
-    request = urllib.request.Request(url, headers={"User-Agent": "PeekExternalReadiness/1.0"})
+def fetch_text(url: str, user_agent: str = "PeekExternalReadiness/1.0") -> tuple[int, str]:
+    request = urllib.request.Request(url, headers={"User-Agent": user_agent})
     with urllib.request.urlopen(request, timeout=20) as response:
         status = getattr(response, "status", 200)
         body = response.read().decode("utf-8")
@@ -155,6 +165,31 @@ def check_public_landing(results: list[CheckResult]) -> None:
             add(results, f"public_url:{url}", "blocked", str(exc))
             continue
         add(results, f"public_url:{url}", "ok", f"HTTP {status}")
+
+
+def sitemap_locations(xml_body: str) -> set[str]:
+    root = ET.fromstring(xml_body)
+    namespace = {"sm": "http://www.sitemaps.org/schemas/sitemap/0.9"}
+    return {loc.text for loc in root.findall(".//sm:loc", namespace) if loc.text}
+
+
+def check_search_bot_sitemap_fetch(results: list[CheckResult]) -> None:
+    sitemap_url = f"{BASE_URL}sitemap.xml"
+    for check_name, user_agent in SEARCH_BOT_USER_AGENTS.items():
+        try:
+            status, body = fetch_text(sitemap_url, user_agent=user_agent)
+            locations = sitemap_locations(body)
+        except Exception as exc:  # noqa: BLE001 - CLI status probe.
+            add(results, check_name, "blocked", str(exc))
+            continue
+
+        missing = EXPECTED_SITEMAP_URLS - locations
+        if status == 200 and not missing:
+            add(results, check_name, "ok", f"HTTP 200; {len(locations)} sitemap URLs")
+        elif missing:
+            add(results, check_name, "blocked", f"sitemap missing URLs: {', '.join(sorted(missing))}")
+        else:
+            add(results, check_name, "blocked", f"HTTP {status}")
 
 
 def check_analytics_config(results: list[CheckResult]) -> None:
@@ -419,6 +454,7 @@ def print_results(results: list[CheckResult]) -> None:
 def main() -> int:
     results: list[CheckResult] = []
     check_public_landing(results)
+    check_search_bot_sitemap_fetch(results)
     check_analytics_config(results)
     check_site_verification_meta(results)
     check_github(results)

@@ -1,6 +1,6 @@
 # Peek 上线准备计划
 
-最后更新：2026-06-28 04:58 JST
+最后更新：2026-06-28 05:03 JST
 
 这个文档是 Peek 从当前本地项目走到公开 landing page 和 Mac App Store 首发的工作台。后续执行、验收、补漏都以这里为准；如果产品、定价、域名、隐私口径或 App Store 配置发生变化，先更新本文件，再改代码或页面。
 
@@ -568,6 +568,11 @@
   - 扩展 readiness 仍为 `{"blocked": 2, "manual": 3, "ok": 10}`，blocked 项为 App Store export 账号/profile 和截图权限。
   - `script/check_landing_performance.py`：PageSpeed desktop/mobile 仍为 HTTP 429，本机 Lighthouse desktop 仍为 Performance 100、Accessibility 100、Best Practices 100、SEO 100。
   - Google Analytics 已登录并可读到账号 `ZHANG SHIFENG`、属性 `とりあえずこの名前使う`，但页面提示该属性没有 data stream，因此还没有可用 GA4 Measurement ID。
+- 2026-06-28 05:03 JST 已强化 sitemap 可抓取性校验：
+  - `script/validate_landing_public.py` 现在会分别用默认 UA、Googlebot UA、Bingbot UA 拉取并解析 sitemap。
+  - `script/check_external_readiness.py` 现在会输出 `googlebot_sitemap_fetch` 和 `bingbot_sitemap_fetch`。
+  - 当前公网 sitemap 对 Googlebot/Bingbot 均返回 HTTP 200，且都能解析到 3 个预期 URL。
+  - 默认 readiness 更新为 `{"manual": 3, "ok": 12, "skipped": 2}`。
 
 ## 2. 首发完成定义
 
@@ -655,6 +660,7 @@
   - Search Console 弹窗显示“サイトマップを送信しました”。
   - 即时表格状态仍为“取得できませんでした / サイトマップを読み込めませんでした”；公网和 Googlebot UA 访问该 sitemap 均返回 200，后续需要在 Search Console 复查处理状态。
   - 2026-06-28 04:56 JST 复查结果未变化：Search Console 仍显示 `/sitemap.xml` 状态为“取得できませんでした”。
+  - 2026-06-28 05:03 JST 机器校验确认：默认 UA、Googlebot UA、Bingbot UA 均可 HTTP 200 拉取 sitemap，并解析到首页、隐私页、支持页 3 个 URL；当前问题保留为 Search Console 处理状态待复查。
 - [ ] Bing Webmaster Tools 提交。
   - 2026-06-28 04:52 JST Bing Webmaster Tools 仍停留在未登录页；点击 Sign In 后只出现 Microsoft/Google/Facebook 登录选项，没有现成 Microsoft 会话。未使用 Google 身份登录 Bing。
 - [x] 部署后跑 Lighthouse，记录性能和 SEO 分数。
@@ -981,6 +987,7 @@ xcodebuild archive \
 - [x] `script/validate_export_options.py`：验证 App Store Connect export options 配置。
 - [x] `script/validate_privacy_alignment.py`：验证 PrivacyInfo、Xcode 权限、App Store App Privacy 口径和 landing privacy 文案一致；同时拒绝 Xcode build settings 中出现相反权限值。
 - [x] `script/validate_landing_public.py`：验证公网 landing SEO、sitemap、manifest、icon/social preview 尺寸、analytics config 和禁用宣传词。
+  - 当前也覆盖默认 UA、Googlebot UA、Bingbot UA 的 sitemap 抓取与 URL 解析。
 - [x] `script/validate_pages_workflow.py`：验证 GitHub Pages workflow 会正确注入 landing analytics / site verification variables，并部署 `CornerAssistantApp/landing-page`。
 - [x] `script/validate_app_icons.py`：验证 Xcode AppIcon、landing icon、web manifest icon 和 social preview 尺寸/一致性。
 - [x] `script/validate_release_archive_strings.py`：验证 Release archive executable 和三语言资源不包含调试入口、未发布功能残留或禁用公开文案。
@@ -988,6 +995,7 @@ xcodebuild archive \
 - [x] `script/check_external_readiness.py`：复查公网 URL、GitHub Pages/variables、GA4 配置状态，并可选复查 export/截图权限阻塞。
   - 当前也覆盖 App Store export 成功后的 exported app metadata、privacy manifest 和 entitlements 验证。
   - 当前也覆盖最近一次成功 Pages run 是否仍覆盖当前 landing/page workflow 变更。
+  - 当前也覆盖 Googlebot/Bingbot sitemap 抓取与 URL 解析，用于区分 Search Console 后台处理状态和真实公网可抓取性。
 - [x] `script/configure_app_store_url.py`：真实 App Store URL 出来后激活 landing CTA、更新三语言 CTA 文案和 JSON-LD，并复跑本地 landing 校验。
 - [x] 搜索 URL 构造、空查询处理、查询 trim/encode。
 - [x] URL 输入规范化：完整 HTTP/HTTPS URL、裸域名、路径、localhost、普通搜索词；非 Web scheme 不从地址栏直接打开。

@@ -16,6 +16,10 @@ EXPECTED_URLS = {
     f"{BASE_URL}privacy.html",
     f"{BASE_URL}support.html",
 }
+SEARCH_BOT_USER_AGENTS = {
+    "googlebot": "Googlebot/2.1 (+http://www.google.com/bot.html)",
+    "bingbot": "Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)",
+}
 FORBIDDEN_PUBLIC_COPY = [
     "Bing",
     "selected text",
@@ -74,8 +78,8 @@ class LandingHTMLParser(HTMLParser):
             self.text.append(data)
 
 
-def fetch_text(url: str) -> str:
-    request = urllib.request.Request(url, headers={"User-Agent": "PeekLaunchVerifier/1.0"})
+def fetch_text(url: str, user_agent: str = "PeekLaunchVerifier/1.0") -> str:
+    request = urllib.request.Request(url, headers={"User-Agent": user_agent})
     with urllib.request.urlopen(request, timeout=20) as response:
         status = getattr(response, "status", 200)
         if status != 200:
@@ -143,6 +147,20 @@ def validate_homepage(errors: list[str]) -> None:
             errors.append("homepage JSON-LD operatingSystem does not match macOS 15.0+")
 
 
+def sitemap_locations(xml_body: str) -> set[str]:
+    root = ET.fromstring(xml_body)
+    namespace = {"sm": "http://www.sitemaps.org/schemas/sitemap/0.9"}
+    return {loc.text for loc in root.findall(".//sm:loc", namespace) if loc.text}
+
+
+def validate_sitemap_locations(label: str, sitemap_body: str, errors: list[str]) -> None:
+    locations = sitemap_locations(sitemap_body)
+    print(f"landing.sitemap.{label}.urls: {len(locations)}")
+    missing = EXPECTED_URLS - locations
+    if missing:
+        errors.append(f"sitemap missing URLs for {label}: {', '.join(sorted(missing))}")
+
+
 def validate_robots_and_sitemap(errors: list[str]) -> None:
     robots = fetch_text(f"{BASE_URL}robots.txt")
     sitemap_url = f"{BASE_URL}sitemap.xml"
@@ -151,13 +169,11 @@ def validate_robots_and_sitemap(errors: list[str]) -> None:
         errors.append("robots.txt does not declare the production sitemap")
 
     sitemap = fetch_text(sitemap_url)
-    root = ET.fromstring(sitemap)
-    namespace = {"sm": "http://www.sitemaps.org/schemas/sitemap/0.9"}
-    locations = {loc.text for loc in root.findall(".//sm:loc", namespace) if loc.text}
-    print(f"landing.sitemap.urls: {len(locations)}")
-    missing = EXPECTED_URLS - locations
-    if missing:
-        errors.append(f"sitemap missing URLs: {', '.join(sorted(missing))}")
+    validate_sitemap_locations("default", sitemap, errors)
+
+    for bot_name, user_agent in SEARCH_BOT_USER_AGENTS.items():
+        bot_sitemap = fetch_text(sitemap_url, user_agent=user_agent)
+        validate_sitemap_locations(bot_name, bot_sitemap, errors)
 
 
 def validate_manifest_and_analytics(errors: list[str]) -> None:
