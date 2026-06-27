@@ -199,6 +199,7 @@
   - English keywords: 93 bytes。
   - 日本語キーワード：90 bytes。
 - 当前 metadata 校验通过：
+  - 基础信息表与已确认上线决策一致：App name、Bundle ID、SKU、价格、系统要求、support email、Marketing/Privacy/Support URL。
   - App name <= 30 chars。
   - Subtitle <= 30 chars。
   - Description <= 4000 chars。

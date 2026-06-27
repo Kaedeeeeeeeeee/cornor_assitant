@@ -68,6 +68,20 @@ FORBIDDEN_PATTERNS = [
     ]
 ]
 
+BASIC_INFO_EXPECTATIONS = {
+    "App 名称": "Peek",
+    "Bundle ID": "`com.shifeng.peek`",
+    "SKU 建议": "`peek-macos-001`",
+    "发布者/版权": "Zhang Shifeng",
+    "分类": "Productivity",
+    "价格": "US$5.99，一次买断",
+    "系统要求": "macOS 15.0 或更高版本",
+    "支持邮箱": "`f.shera.09@gmail.com`",
+    "Marketing URL": "`https://kaedeeeeeeeeee.github.io/cornor_assitant/`",
+    "Privacy Policy URL": "`https://kaedeeeeeeeeee.github.io/cornor_assitant/privacy.html`",
+    "Support URL": "`https://kaedeeeeeeeeee.github.io/cornor_assitant/support.html`",
+}
+
 
 def extract_localized_section(markdown: str, heading: str) -> str:
     pattern = re.compile(rf"^### {re.escape(heading)}\s*$", re.MULTILINE)
@@ -93,6 +107,30 @@ def extract_code_block_after_label(section: str, label: str) -> str:
     return block.group(1).strip()
 
 
+def extract_basic_info(markdown: str) -> dict[str, str]:
+    heading = re.search(r"^## 基础信息\s*$", markdown, re.MULTILINE)
+    if not heading:
+        raise ValueError("Missing 基础信息 section")
+
+    next_heading = re.search(r"^## .+$", markdown[heading.end():], re.MULTILINE)
+    end = heading.end() + next_heading.start() if next_heading else len(markdown)
+    section = markdown[heading.end():end]
+    table: dict[str, str] = {}
+
+    for line in section.splitlines():
+        if not line.startswith("|"):
+            continue
+        cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+        if len(cells) != 2:
+            continue
+        key, value = cells
+        if key in {"字段", "---"} or set(key) == {"-"}:
+            continue
+        table[key] = value
+
+    return table
+
+
 def validate_keyword_format(locale: str, value: str) -> list[str]:
     errors: list[str] = []
     if ", " in value:
@@ -107,6 +145,18 @@ def validate_keyword_format(locale: str, value: str) -> list[str]:
 def validate() -> int:
     markdown = MATERIALS_PATH.read_text(encoding="utf-8")
     errors: list[str] = []
+
+    try:
+        basic_info = extract_basic_info(markdown)
+    except ValueError as exc:
+        errors.append(str(exc))
+        basic_info = {}
+
+    for key, expected in BASIC_INFO_EXPECTATIONS.items():
+        actual = basic_info.get(key)
+        print(f"basic_info.{key}: {actual or '<missing>'}")
+        if actual != expected:
+            errors.append(f"basic_info.{key} expected {expected!r}; got {actual!r}")
 
     for locale, config in LOCALIZATIONS.items():
         try:
