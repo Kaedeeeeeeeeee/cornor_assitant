@@ -165,6 +165,7 @@
 
 - 已新增 `script/launch_verify.sh`，作为发布前一键 gate。
 - `script/launch_verify.sh` 已验证通过，覆盖：
+  - App Store metadata 长度和禁用词校验。
   - Release build。
   - 跳过 UI runner 的 XCTest。
   - Release archive。
@@ -189,6 +190,22 @@
   - 成功定位 Peek 面板窗口：`window id=8433 bounds=0,281 528x750`。
   - 截图阶段失败：`could not create image from window`。
   - 结论：脚本可复跑，但当前会话仍缺少可用 Screen Recording/可见桌面截图能力；需要在已授权的可见桌面会话中重跑。
+
+2026-06-28 App Store metadata 校验收口：
+
+- 已新增 `script/validate_app_store_materials.py`。
+- 已修正三语言关键词，确保 App Store Connect keywords 字段不超过 100 bytes：
+  - 中文关键词：98 bytes。
+  - English keywords: 93 bytes。
+  - 日本語キーワード：90 bytes。
+- 当前 metadata 校验通过：
+  - App name <= 30 chars。
+  - Subtitle <= 30 chars。
+  - Description <= 4000 chars。
+  - Keywords <= 100 bytes。
+  - What's New <= 4000 chars。
+  - 未命中 `Bing`、`macOS 14`、`Sonoma`、selected text / 选中文字等禁用宣传词。
+- `script/launch_verify.sh` 已纳入该校验。
 
 2026-06-27 Export Compliance 收口：
 
@@ -458,6 +475,7 @@
   - English: `Quick Access from Screen Edge`
   - 日本語：`画面端からクイックアクセス`
 - [x] 准备关键词，控制在 App Store 限制内。
+  - 2026-06-28 已用 `script/validate_app_store_materials.py` 验证三语言 keywords 均不超过 100 bytes。
 - [x] 准备 What's New 1.0 文案。
 - [ ] 准备 Mac App Store 截图。
 
@@ -568,6 +586,7 @@ xcodebuild archive \
 - [x] `script/build_and_run.sh --verify`：构建并启动 Debug `Peek.app`，确认进程存在。
 - [x] `script/qa_smoke.sh`：通过 Debug-only 通知展开真实面板，确认 Window Server 中存在 Peek 面板窗口。
 - [x] `script/capture_app_store_screenshot.sh`：可启动并展开真实面板，当前会话在 `screencapture` 阶段因截图权限/会话状态失败。
+- [x] `script/validate_app_store_materials.py`：验证三语言 App Store metadata 长度和禁用宣传词。
 - [x] 搜索 URL 构造、空查询处理、查询 trim/encode。
 - [x] URL 输入规范化：完整 URL、裸域名、localhost、普通搜索词。
 - [x] 固定网站模型：id 生成、favicon fallback、custom favicon、Codable 还原。
@@ -789,6 +808,7 @@ xcodebuild \
 ## 8. 参考链接
 
 - Apple: Add a new app record - https://developer.apple.com/help/app-store-connect/create-an-app-record/add-a-new-app/
+- Apple: Required, localizable, and editable properties - https://developer.apple.com/help/app-store-connect/reference/app-information/required-localizable-and-editable-properties/
 - Apple: Manage app privacy - https://developer.apple.com/help/app-store-connect/manage-app-information/manage-app-privacy/
 - Apple: Screenshot specifications - https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications/
 - Apple: Upload builds - https://developer.apple.com/help/app-store-connect/manage-builds/upload-builds/

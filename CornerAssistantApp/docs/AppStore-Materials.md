@@ -1,6 +1,6 @@
 # Peek App Store 上架材料
 
-最后更新：2026-06-27 JST
+最后更新：2026-06-28 JST
 
 本文件用于 App Store Connect 填写和上线前审校。公开文案必须和真实 v1 功能一致：不宣传选中文字搜索，不宣传搜索引擎可选，不宣传 macOS 14 兼容，不宣传 App 内 analytics。
 
@@ -63,7 +63,7 @@ Peek 的设计初衷是“隐于无形，触手可及”。平时它安静地待
 关键词：
 
 ```text
-屏幕助手,快捷搜索,效率工具,菜单栏,边缘手势,生产力,侧边栏,快捷窗口,浏览器,网页
+屏幕助手,快捷搜索,效率工具,菜单栏,生产力,侧边栏,快捷窗口,浏览器,网页
 ```
 
 新功能（版本 1.0）：
@@ -119,7 +119,7 @@ Languages: English, Simplified Chinese, and Japanese.
 Keywords:
 
 ```text
-screen assistant,quick search,productivity,menu bar,edge gesture,utility,sidebar,quick window,browser
+screen assistant,quick search,productivity,menu bar,edge gesture,sidebar,quick window,browser
 ```
 
 What's New (Version 1.0):
@@ -175,7 +175,7 @@ Peek は「必要なときだけ現れる」ことを目指して設計されて
 キーワード：
 
 ```text
-スクリーンアシスタント,クイック検索,生産性,メニューバー,エッジジェスチャー,サイドバー,ユーティリティ
+画面端,検索,生産性,メニューバー,サイドバー,ブラウザ,固定サイト
 ```
 
 新機能（バージョン 1.0）：
