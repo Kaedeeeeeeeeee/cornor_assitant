@@ -1,6 +1,6 @@
 # Peek 上线准备计划
 
-最后更新：2026-06-28 05:37 JST
+最后更新：2026-06-28 05:45 JST
 
 这个文档是 Peek 从当前本地项目走到公开 landing page 和 Mac App Store 首发的工作台。后续执行、验收、补漏都以这里为准；如果产品、定价、域名、隐私口径或 App Store 配置发生变化，先更新本文件，再改代码或页面。
 
@@ -599,6 +599,13 @@
   - 当前本机已安装 `Apple Distribution` identity for team `Y4FV6WUU4V`。
   - 当前本机没有 `com.shifeng.peek` 的 App Store provisioning profile；同 team 下只发现 `Notation Mac App Store (Y4FV6WUU4V.com.shifengzhang.notation)`。
   - 默认 readiness 当前为 `{"manual": 4, "ok": 13, "skipped": 3}`；新增 manual 项是缺少 Peek App Store profile。
+- 2026-06-28 05:45 JST 浏览器和外部 readiness 复查：
+  - 内置浏览器可读 Google Search Console：`/sitemap.xml` 行仍显示类型 `不明`、提交日期 `2026/06/28`、状态 `取得できませんでした`、发现页面数 `0`；详情页显示 `サイトマップを読み込めませんでした`。
+  - 公网 `sitemap.xml` 当前仍为 HTTP 200，`content-type: application/xml`，默认 UA、Googlebot UA、Bingbot UA 均能解析到 3 个预期 URL。
+  - Google Analytics 仍可读账号 `ZHANG SHIFENG` / 属性 `とりあえずこの名前使う`，页面提示 `データ ストリームが見つかりませんでした`，没有 `G-...` Measurement ID；创建 Web data stream 属于后台写操作，需 action-time 确认或用户自行创建。
+  - Bing Webmaster Tools 当前仍是未登录公开介绍页，显示 `Sign In` / `Get started`。
+  - App Store Connect 当前仍停在 Apple Account 邮箱/密码登录页，URL 为 `https://appstoreconnect.apple.com/login?targetUrl=%2Fapps&authResult=FAILED`。
+  - `PEEK_CHECK_QA_SMOKE=1 ./script/check_external_readiness.py` 单独顺序复跑通过，结果为 `{"manual": 4, "ok": 14, "skipped": 2}`；不要把截图 readiness 和 QA smoke 作为并行进程同时运行，否则两个检查都会启动 Debug Peek 并干扰窗口判定。
 
 ## 2. 首发完成定义
 
@@ -1182,6 +1189,7 @@ curl -I https://kaedeeeeeeeeee.github.io/cornor_assitant/sitemap.xml
 - [ ] GA4 Measurement ID。
   - GitHub Pages 已支持通过 repository variable `PEEK_GA_MEASUREMENT_ID` 注入；仍需真实 ID。
   - Google Analytics 已有账号/属性，但没有 data stream；创建 Web data stream 后才能获得 Measurement ID。
+  - 2026-06-28 05:45 JST 浏览器复查确认 landing GA4 首发启用决策已定，但后台仍缺 Web data stream / Measurement ID。
 - [ ] Apple Developer/App Store Connect 登录权限。
 - [ ] Xcode Settings > Accounts 中登录可用 Apple Developer 账号。
 - [ ] Paid Apps Agreement、税务、银行信息。
@@ -1200,6 +1208,7 @@ curl -I https://kaedeeeeeeeeee.github.io/cornor_assitant/sitemap.xml
 - [x] Google Search Console 所有权验证。
 - [ ] Google Search Console sitemap 处理状态复查。
   - sitemap 已提交，但当前 Search Console 显示“无法读取”；公网 URL 对 Googlebot UA 返回 200。
+  - 2026-06-28 05:45 JST 详情页仍显示 `サイトマップを読み込めませんでした`，公网 `sitemap.xml` 仍为 HTTP 200 / `application/xml`。
 - [ ] Bing Webmaster Tools Microsoft 登录和站点提交。
 - [x] GitHub Pages Settings 中启用 GitHub Actions Pages。
 
@@ -1320,6 +1329,8 @@ PEEK_CHECK_EXPORT=1 PEEK_CHECK_SCREENSHOT=1 ./script/check_external_readiness.py
 ```
 
 默认模式只读，不触发 App Store export、截图或本机 UI 控制；当前也会读取本机 code signing identity 和 provisioning profile，拆分证书/profile 状态。扩展模式会写入 `/tmp/peek-appstore/external-readiness-export`、启动截图脚本或启动 Debug app smoke QA，用于复查账号/profile、Screen Recording 权限和本机菜单栏/面板 QA 是否已经解除或仍通过。
+
+UI 类扩展检查需要顺序执行，不要在多个 shell 里并行运行 `PEEK_CHECK_SCREENSHOT=1` 和 `PEEK_CHECK_QA_SMOKE=1`；两者都会启动 Debug Peek，重复实例会干扰窗口隐藏/定位断言。
 
 Landing 性能复查：
 

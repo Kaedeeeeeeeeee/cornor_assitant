@@ -1,16 +1,17 @@
 # Peek External Launch Inputs
 
-最后更新：2026-06-28 05:37 JST
+最后更新：2026-06-28 05:45 JST
 
 这个文件只记录代码和本机 CLI 无法安全代办的外部账号、后台表单、真实联系方式和最终 URL。执行这些项目时，不要在聊天或日志里粘贴密码、验证码、恢复码、API private key 或完整付款/银行信息。
 
 ## Analytics
 
-- [ ] 决策：首发是否启用 landing GA4。
-  - 当前建议：如果要启用，使用当前 Google Analytics 账号 `ZHANG SHIFENG` 中的属性 `とりあえずこの名前使う` 创建 Web data stream。
+- [x] 决策：首发启用 landing GA4。
+  - 当前建议：使用当前 Google Analytics 账号 `ZHANG SHIFENG` 中的属性 `とりあえずこの名前使う` 创建 Web data stream。
+  - 当前浏览器状态：2026-06-28 05:45 JST 页面仍提示 `データ ストリームが見つかりませんでした`，未发现 `G-...` Measurement ID。
   - Web stream URL：`https://kaedeeeeeeeeee.github.io/cornor_assitant/`
   - Web stream name 建议：`Peek Landing Page`
-  - 需要输入/确认：允许创建 Web data stream，或直接提供已有 `G-...` Measurement ID，或明确首发暂不开启 analytics。
+  - 需要输入/确认：允许创建 Web data stream，或直接提供已有 `G-...` Measurement ID。
   - 拿到 ID 后执行：
 
 ```bash
@@ -23,9 +24,11 @@ PEEK_GA_MEASUREMENT_ID=G-XXXXXXXXXX \
 - [x] Google Search Console ownership verified.
 - [ ] Google Search Console sitemap status.
   - 当前 sitemap 已提交。
+  - 当前浏览器状态：2026-06-28 05:45 JST `/sitemap.xml` 行仍显示类型 `不明`、提交日期 `2026/06/28`、状态 `取得できませんでした`、发现页面数 `0`；详情页显示 `サイトマップを読み込めませんでした`。
   - 机器校验：默认 UA、Googlebot UA、Bingbot UA 均可 HTTP 200 抓取 sitemap，并解析到 3 个预期 URL。
   - 需要输入/确认：只需后续复查 Search Console 页面状态；不要重复使用匿名 sitemap ping 作为上线证据。
 - [ ] Bing Webmaster Tools.
+  - 当前浏览器状态：2026-06-28 05:45 JST 仍是未登录公开介绍页，显示 `Sign In` / `Get started`。
   - 需要输入/确认：用于 Bing Webmaster Tools 的 Microsoft 账号，或由用户登录后提供 `msvalidate.01` meta tag 的 `content` 值。
   - 拿到 token 后执行：
 
@@ -44,6 +47,7 @@ PEEK_BING_SITE_VERIFICATION=bing_token \
 - [ ] Paid Apps Agreement, tax, and banking.
   - 需要输入/确认：已签署 Paid Apps Agreement，并完成税务、银行和付费销售相关信息。
 - [ ] App Store Connect app record.
+  - 当前浏览器状态：2026-06-28 05:45 JST App Store Connect 仍停在 Apple Account 邮箱/密码登录页，URL 为 `authResult=FAILED`。
   - App name：`Peek`
   - Bundle ID：`com.shifeng.peek`
   - SKU 建议：`peek-macos-001`
