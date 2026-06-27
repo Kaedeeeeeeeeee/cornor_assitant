@@ -810,7 +810,6 @@ private extension SlidePanelController {
     }
 
     func collapse() {
-        guard isExpanded else { return }
         isExpanded = false
         
         // 重置拖拽状态

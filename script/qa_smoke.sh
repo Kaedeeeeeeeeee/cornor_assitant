@@ -7,7 +7,7 @@ DEBUG_NOTIFICATION="com.shifeng.peek.debug.panelCommand"
 
 post_panel_command() {
   local command="$1"
-  /usr/bin/swift -e 'import Foundation; let name = Notification.Name(CommandLine.arguments[1]); let command = CommandLine.arguments[2]; DistributedNotificationCenter.default().postNotificationName(name, object: nil, userInfo: ["command": command], deliverImmediately: true); Thread.sleep(forTimeInterval: 0.2)' "$DEBUG_NOTIFICATION" "$command"
+  /usr/bin/swift -e 'import Foundation; let name = Notification.Name(CommandLine.arguments[1]); let command = CommandLine.arguments[2]; DistributedNotificationCenter.default().postNotificationName(name, object: nil, userInfo: ["command": command], deliverImmediately: true); Thread.sleep(forTimeInterval: 1.0)' "$DEBUG_NOTIFICATION" "$command"
 }
 
 trap 'post_panel_command collapse >/dev/null 2>&1 || true' EXIT
@@ -142,13 +142,48 @@ print("corner=\(corner) window id=\(match.id) layer=\(match.layer) bounds=x:\(In
 SWIFT
 }
 
+assert_panel_hidden() {
+  /usr/bin/swift - <<'SWIFT'
+import CoreGraphics
+import Foundation
+
+let windows = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]] ?? []
+let matches = windows.compactMap { window -> (id: Any, x: Double, y: Double, width: Double, height: Double)? in
+    guard (window[kCGWindowOwnerName as String] as? String) == "Peek",
+          let bounds = window[kCGWindowBounds as String] as? [String: Any],
+          let x = bounds["X"] as? Double,
+          let y = bounds["Y"] as? Double,
+          let width = bounds["Width"] as? Double,
+          let height = bounds["Height"] as? Double,
+          width > 100,
+          height > 100 else {
+        return nil
+    }
+
+    let id = window[kCGWindowNumber as String] ?? ""
+    return (id, x, y, width, height)
+}
+
+guard matches.isEmpty else {
+    let descriptions = matches.map { "id=\($0.id) x=\(Int($0.x)) y=\(Int($0.y)) width=\(Int($0.width)) height=\(Int($0.height))" }
+    fputs("Peek panel window was visible when it should be hidden: \(descriptions.joined(separator: ", "))\n", stderr)
+    exit(1)
+}
+
+print("panel_hidden=true")
+SWIFT
+}
+
 CONFIGURATION=Debug "$RUN_SCRIPT" --verify
 
 status_item_summary="$(assert_status_item)"
 echo "status_item=$status_item_summary"
 
+assert_panel_hidden
+
 for corner in bottomLeft bottomRight topLeft topRight; do
   post_panel_command "corner:$corner"
+  sleep 1
   post_panel_command expand
   sleep 1
   assert_panel_window "$corner"
