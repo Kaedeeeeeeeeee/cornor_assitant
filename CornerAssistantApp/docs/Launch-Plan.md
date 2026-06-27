@@ -1,6 +1,6 @@
 # Peek 上线准备计划
 
-最后更新：2026-06-28 04:43 JST
+最后更新：2026-06-28 04:53 JST
 
 这个文档是 Peek 从当前本地项目走到公开 landing page 和 Mac App Store 首发的工作台。后续执行、验收、补漏都以这里为准；如果产品、定价、域名、隐私口径或 App Store 配置发生变化，先更新本文件，再改代码或页面。
 
@@ -559,6 +559,10 @@
   - `.gitignore` 现在明确忽略 `/build/`、`/dist/`、`*.dmg`、`*.xcarchive/`、`CornerAssistantApp/build/` 和 `CornerAssistantApp/*.log`。
   - 已从 Git 跟踪中移除 369 个历史 build/archive/dmg/log 生成文件；本地文件保留，仅不再进入仓库。
   - 当前 `git ls-files` 中生成产物数量为 0，`script/validate_repository_hygiene.py` 通过。
+- 2026-06-28 04:49 JST 已通过 `script/configure_landing_variables.sh --rerun-pages --check-after` 设置 Google Search Console verification variable，并触发 Pages workflow：
+  - Pages workflow `28299926702` 成功。
+  - 公网首页已出现 `google-site-verification` meta。
+  - `script/check_external_readiness.py` 默认结果更新为 `{"manual": 3, "ok": 10, "skipped": 2}`；剩余 manual 为 GA4、Bing verification 和缺少对应 GitHub variables。
 
 ## 2. 首发完成定义
 
@@ -610,7 +614,7 @@
 
 ### Phase B: SEO 基础
 
-状态：本地基础和公网验证已完成；Lighthouse 已完成；Search Console/Webmaster Tools 待登录后台操作。
+状态：本地基础、公网验证、Lighthouse 和 Google Search Console 所有权验证已完成；Google sitemap 处理状态待复查；Bing Webmaster Tools 待登录。
 
 - [x] 设置 canonical host：`https://kaedeeeeeeeeee.github.io/cornor_assitant/`。
 - [x] 首页、隐私页、支持页设置独立 title 和 meta description。
@@ -638,11 +642,14 @@
   - App Store materials 中 Marketing / Privacy Policy / Support URL 均为公网 HTTPS 且返回 200。
   - canonical URL 和最终 Pages URL 一致。
   - 页面没有 `noindex`。
-- [ ] 部署后提交：
-  - Google Search Console。
-  - Bing Webmaster Tools。
-  - Sitemap URL。
-  - 2026-06-28 检查结果：Search Console 已登录 `f.shera.09@gmail.com`，但该属性尚未验证；Bing Webmaster Tools 尚未登录。
+- [x] Google Search Console 所有权验证。
+  - 2026-06-28 04:50 JST 使用 `f.shera.09@gmail.com` 通过 HTML tag 方式完成验证。
+- [x] Google Search Console sitemap URL 已提交。
+  - 已提交 `https://kaedeeeeeeeeee.github.io/cornor_assitant/sitemap.xml`。
+  - Search Console 弹窗显示“サイトマップを送信しました”。
+  - 即时表格状态仍为“取得できませんでした / サイトマップを読み込めませんでした”；公网和 Googlebot UA 访问该 sitemap 均返回 200，后续需要在 Search Console 复查处理状态。
+- [ ] Bing Webmaster Tools 提交。
+  - 2026-06-28 04:52 JST Bing Webmaster Tools 仍停留在未登录页；点击 Sign In 后只出现 Microsoft/Google/Facebook 登录选项，没有现成 Microsoft 会话。未使用 Google 身份登录 Bing。
 - [x] 部署后跑 Lighthouse，记录性能和 SEO 分数。
 - [x] 将公网 landing SEO 校验纳入 `script/launch_verify.sh`。
 - [x] 增加 landing 性能复查脚本：
@@ -661,9 +668,10 @@
 搜索引擎提交说明：
 
 - `robots.txt` 已公开声明 sitemap：`https://kaedeeeeeeeeee.github.io/cornor_assitant/sitemap.xml`。
-- Google Search Console 和 Bing Webmaster Tools 需要登录对应账号后提交 sitemap；不要使用旧式匿名 sitemap ping 端点作为上线证据。
-- 提交 sitemap 会改变站长工具账号状态，执行前需要确认使用哪个 Google/Microsoft 账号。
-- Search Console 当前下一步是完成 `https://kaedeeeeeeeeee.github.io/cornor_assitant/` 的所有权验证；GitHub Pages 可优先使用 HTML meta tag 验证方式。
+- Google Search Console 已用 `f.shera.09@gmail.com` 完成所有权验证；不要删除部署产物中的 `google-site-verification` meta。
+- Search Console 已提交 sitemap，但当前显示无法读取；后续先复查处理状态，不要重复提交旧式匿名 sitemap ping。
+- Bing Webmaster Tools 仍需要登录 Microsoft 账号后提交站点和 sitemap；不要使用旧式匿名 sitemap ping 端点作为上线证据。
+- 提交 Bing sitemap 会改变站长工具账号状态，执行前需要确认使用哪个 Microsoft 账号。
 - 拿到验证 token 后，用 `script/configure_landing_variables.sh` 设置 GitHub repository variables：
   - `PEEK_GOOGLE_SITE_VERIFICATION`：Google meta tag 的 `content` 值。
   - `PEEK_BING_SITE_VERIFICATION`：Bing `msvalidate.01` meta tag 的 `content` 值。
@@ -736,6 +744,20 @@ PEEK_BING_SITE_VERIFICATION=... \
 - PageSpeed Insights API：
   - mobile 和 desktop 请求仍返回 HTTP 429 Too Many Requests；继续作为非阻塞补充项。
   - 2026-06-28 03:39 JST 复查结果保持一致；改用本机 Chrome + Lighthouse 复核公网性能和 SEO。
+
+2026-06-28 04:53 JST 后台可达性复查：
+
+- App Store Connect:
+  - `https://appstoreconnect.apple.com/apps` 跳转到 `https://appstoreconnect.apple.com/login?targetUrl=%2Fapps&authResult=FAILED`。
+  - 当前无可操作 App Store Connect 登录会话；页面停在 Apple Account 邮箱/密码登录表单，未提交任何表单。
+- Google Search Console:
+  - 当前浏览器已登录 `f.shera.09@gmail.com`。
+  - `https://kaedeeeeeeeeee.github.io/cornor_assitant/` 属性已通过 HTML tag 方式验证成功，页面显示“所有権を証明しました”。
+  - 已提交 `sitemap.xml`；详情 URL 确认为 `https://kaedeeeeeeeeee.github.io/cornor_assitant/sitemap.xml`。
+  - Search Console 即时状态为“サイトマップを読み込めませんでした”；CLI 复查同一 URL 对 Googlebot UA 返回 200，需后续复查 Google 处理状态。
+- Bing Webmaster Tools:
+  - 当前仍为公开未登录页；Sign In 只显示 Microsoft/Google/Facebook 登录选项，没有可用登录会话。
+  - 未用 Google 身份登录 Bing，未提交站点。
 
 2026-06-27 App Store Connect 表单材料补齐：
 
@@ -1097,7 +1119,9 @@ curl -I https://kaedeeeeeeeeee.github.io/cornor_assitant/sitemap.xml
 - [ ] 如果包含 EU 地区：DSA trader status 和可公开联系信息。
 - [ ] App Review release mode；建议首发使用 Manual release。
 - [ ] 真实 Mac App Store URL。
-- [ ] Google Search Console 所有权验证。
+- [x] Google Search Console 所有权验证。
+- [ ] Google Search Console sitemap 处理状态复查。
+  - sitemap 已提交，但当前 Search Console 显示“无法读取”；公网 URL 对 Googlebot UA 返回 200。
 - [ ] Bing Webmaster Tools Microsoft 登录和站点提交。
 - [x] GitHub Pages Settings 中启用 GitHub Actions Pages。
 
@@ -1240,10 +1264,10 @@ Landing 性能复查：
 8. 如果覆盖 EU 地区，完成 DSA trader status；如果暂不覆盖 EU，先调整 availability。
 9. 补 GA4 Measurement ID：用 `script/configure_landing_variables.sh` 设置 `PEEK_GA_MEASUREMENT_ID`，或者明确首发先不开启 analytics。
 10. 准备截图并上传 App Store metadata。
-11. 在 Google Search Console / Bing Webmaster Tools 验证站点并提交 sitemap。
-    - Search Console 当前需要为 `f.shera.09@gmail.com` 完成属性所有权验证。
-    - Bing Webmaster Tools 当前需要 Microsoft 登录。
-    - GitHub Pages workflow 已支持通过 `PEEK_GOOGLE_SITE_VERIFICATION` / `PEEK_BING_SITE_VERIFICATION` repository variables 注入验证 meta，可用 `script/configure_landing_variables.sh` 设置。
+11. 复查搜索引擎后台。
+    - Google Search Console 已验证；下一步是复查 sitemap 从“无法读取”变为成功或给出更具体错误。
+    - Bing Webmaster Tools 当前需要 Microsoft 登录并获取/配置 `PEEK_BING_SITE_VERIFICATION`。
+    - GitHub Pages workflow 已支持通过 `PEEK_BING_SITE_VERIFICATION` repository variable 注入 Bing verification meta，可用 `script/configure_landing_variables.sh` 设置。
 12. Upload build to App Store Connect。
 13. 回填真实 App Store URL 到 landing CTA：用 `PEEK_APP_STORE_URL=... ./script/configure_app_store_url.py --dry-run` 先验证，再去掉 `--dry-run` 写入。
 14. Submit for Review。
