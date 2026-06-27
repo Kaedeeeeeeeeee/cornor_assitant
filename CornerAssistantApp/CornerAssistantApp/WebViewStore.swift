@@ -37,6 +37,14 @@ final class WebViewStore: NSObject, ObservableObject, WKNavigationDelegate, WKUI
         onURLChange?(url)
     }
 
+    #if DEBUG
+    func loadDebugHTML(_ html: String, baseURL: URL, title: String) {
+        webView.loadHTMLString(html, baseURL: baseURL)
+        onURLChange?(baseURL)
+        onTitleChange?(title)
+    }
+    #endif
+
     // MARK: - WKNavigationDelegate
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {

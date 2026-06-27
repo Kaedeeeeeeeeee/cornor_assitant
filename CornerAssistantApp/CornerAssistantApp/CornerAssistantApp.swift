@@ -84,6 +84,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                     if let corner = HotCorner(rawValue: rawCorner) {
                         controller.updateHotCorner(corner)
                     }
+                case let value where value.hasPrefix("scenario:"):
+                    let scenario = String(value.dropFirst("scenario:".count))
+                    controller.applyDebugScenario(scenario)
                 default:
                     controller.togglePanel()
                 }

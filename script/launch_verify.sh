@@ -146,6 +146,9 @@ fi
 if strings "$APP_EXECUTABLE" | grep -q 'corner:'; then
   fail "Debug-only hot corner command leaked into Release archive"
 fi
+if strings "$APP_EXECUTABLE" | grep -q 'scenario:'; then
+  fail "Debug-only screenshot scenario command leaked into Release archive"
+fi
 
 if [[ "${SKIP_NETWORK:-0}" != "1" ]]; then
   log "Public landing URLs"

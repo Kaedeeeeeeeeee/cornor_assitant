@@ -4,10 +4,15 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 RUN_SCRIPT="$ROOT_DIR/script/build_and_run.sh"
 OUT_DIR="${OUT_DIR:-/tmp/peek-app-store-screenshots}"
-RAW_CAPTURE="$OUT_DIR/peek-panel-window.png"
-FULL_CAPTURE="$OUT_DIR/peek-full-screen.png"
-APP_STORE_CAPTURE="$OUT_DIR/peek-panel-2880x1800.png"
+LEGACY_APP_STORE_CAPTURE="$OUT_DIR/peek-panel-2880x1800.png"
 DEBUG_NOTIFICATION="com.shifeng.peek.debug.panelCommand"
+SCREENSHOT_SCENES=(
+  "01-hot-corner-panel-2880x1800.png|launcher"
+  "02-quick-search-2880x1800.png|search"
+  "03-web-page-2880x1800.png|web"
+  "04-tabs-and-pinned-sites-2880x1800.png|tabs"
+  "05-pinned-panel-2880x1800.png|pinned"
+)
 
 log() {
   printf "\n==> %s\n" "$1"
@@ -52,7 +57,9 @@ SWIFT
 }
 
 crop_window_from_full_capture() {
-  python3 - "$FULL_CAPTURE" "$RAW_CAPTURE" "$WINDOW_X" "$WINDOW_Y" "$WINDOW_WIDTH" "$WINDOW_HEIGHT" "$SCREEN_X" "$SCREEN_Y" "$SCREEN_WIDTH" "$SCREEN_HEIGHT" <<'PY'
+  local full_capture="$1"
+  local raw_capture="$2"
+  python3 - "$full_capture" "$raw_capture" "$WINDOW_X" "$WINDOW_Y" "$WINDOW_WIDTH" "$WINDOW_HEIGHT" "$SCREEN_X" "$SCREEN_Y" "$SCREEN_WIDTH" "$SCREEN_HEIGHT" <<'PY'
 from pathlib import Path
 import sys
 from PIL import Image
@@ -94,7 +101,9 @@ PY
 }
 
 validate_and_compose() {
-  python3 - "$RAW_CAPTURE" "$APP_STORE_CAPTURE" <<'PY'
+  local raw_capture="$1"
+  local app_store_capture="$2"
+  python3 - "$raw_capture" "$app_store_capture" <<'PY'
 from pathlib import Path
 import sys
 from PIL import Image, ImageFilter, ImageStat
@@ -140,29 +149,56 @@ print(f"app_store={out_path} app_store_size=2880x1800")
 PY
 }
 
+capture_scene() {
+  local filename="$1"
+  local scenario="$2"
+  local raw_capture="$OUT_DIR/${filename%.png}-window.png"
+  local full_capture="$OUT_DIR/${filename%.png}-full-screen.png"
+  local app_store_capture="$OUT_DIR/$filename"
+
+  log "Prepare scene: $scenario"
+  post_panel_command "scenario:$scenario"
+  sleep 1
+
+  log "Find Peek panel window"
+  WINDOW_INFO="$(find_peek_window)" || fail "Peek panel window was not visible"
+  IFS=$'\t' read -r WINDOW_ID WINDOW_X WINDOW_Y WINDOW_WIDTH WINDOW_HEIGHT SCREEN_X SCREEN_Y SCREEN_WIDTH SCREEN_HEIGHT <<<"$WINDOW_INFO"
+  printf "window id=%s bounds=%s,%s %sx%s screen=%s,%s %sx%s\n" "$WINDOW_ID" "$WINDOW_X" "$WINDOW_Y" "$WINDOW_WIDTH" "$WINDOW_HEIGHT" "$SCREEN_X" "$SCREEN_Y" "$SCREEN_WIDTH" "$SCREEN_HEIGHT"
+
+  log "Capture window: $filename"
+  if ! screencapture -x -l "$WINDOW_ID" "$raw_capture"; then
+    log "Window capture failed; try full-screen crop fallback"
+    if ! screencapture -x "$full_capture"; then
+      fail "screencapture could not capture the window or full screen; grant Screen Recording permission to the terminal/Codex host and retry"
+    fi
+    crop_window_from_full_capture "$full_capture" "$raw_capture"
+  fi
+
+  log "Validate and compose 16:10 screenshot: $filename"
+  validate_and_compose "$raw_capture" "$app_store_capture"
+}
+
 mkdir -p "$OUT_DIR"
 trap 'post_panel_command collapse >/dev/null 2>&1 || true' EXIT
 
 log "Launch Debug app"
 CONFIGURATION=Debug "$RUN_SCRIPT" --verify
 
-log "Expand panel"
-post_panel_command expand
-sleep 1
+post_panel_command "corner:bottomLeft"
 
-log "Find Peek panel window"
-WINDOW_INFO="$(find_peek_window)" || fail "Peek panel window was not visible"
-IFS=$'\t' read -r WINDOW_ID WINDOW_X WINDOW_Y WINDOW_WIDTH WINDOW_HEIGHT SCREEN_X SCREEN_Y SCREEN_WIDTH SCREEN_HEIGHT <<<"$WINDOW_INFO"
-printf "window id=%s bounds=%s,%s %sx%s screen=%s,%s %sx%s\n" "$WINDOW_ID" "$WINDOW_X" "$WINDOW_Y" "$WINDOW_WIDTH" "$WINDOW_HEIGHT" "$SCREEN_X" "$SCREEN_Y" "$SCREEN_WIDTH" "$SCREEN_HEIGHT"
-
-log "Capture window"
-if ! screencapture -x -l "$WINDOW_ID" "$RAW_CAPTURE"; then
-  log "Window capture failed; try full-screen crop fallback"
-  if ! screencapture -x "$FULL_CAPTURE"; then
-    fail "screencapture could not capture the window or full screen; grant Screen Recording permission to the terminal/Codex host and retry"
+first_capture=""
+for scene in "${SCREENSHOT_SCENES[@]}"; do
+  IFS='|' read -r filename scenario <<<"$scene"
+  capture_scene "$filename" "$scenario"
+  if [[ -z "$first_capture" ]]; then
+    first_capture="$OUT_DIR/$filename"
   fi
-  crop_window_from_full_capture
-fi
+done
 
-log "Validate and compose 16:10 screenshot"
-validate_and_compose
+cp "$first_capture" "$LEGACY_APP_STORE_CAPTURE"
+printf "\nGenerated App Store screenshot suite in %s\n" "$OUT_DIR"
+for scene in "${SCREENSHOT_SCENES[@]}"; do
+  IFS='|' read -r filename _ <<<"$scene"
+  printf "%s\n" "- $filename"
+done
+printf "%s\n" "- $(basename "$LEGACY_APP_STORE_CAPTURE")"

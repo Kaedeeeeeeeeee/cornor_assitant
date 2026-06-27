@@ -20,6 +20,14 @@ EXPECTED_PAGES_URL = BASE_URL
 ARCHIVE_PATH = Path("/tmp/peek-appstore/Peek.xcarchive")
 EXPORT_PATH = Path("/tmp/peek-appstore/external-readiness-export")
 EXPORT_OPTIONS = ROOT / "CornerAssistantApp" / "export_options_app_store.plist"
+SCREENSHOT_OUTPUT_DIR = Path("/tmp/peek-app-store-screenshots")
+EXPECTED_SCREENSHOTS = [
+    "01-hot-corner-panel-2880x1800.png",
+    "02-quick-search-2880x1800.png",
+    "03-web-page-2880x1800.png",
+    "04-tabs-and-pinned-sites-2880x1800.png",
+    "05-pinned-panel-2880x1800.png",
+]
 
 
 @dataclass
@@ -254,7 +262,32 @@ def check_screenshot_capture(results: list[CheckResult]) -> None:
     result = run([str(ROOT / "script" / "capture_app_store_screenshot.sh")], timeout=120)
     output = "\n".join([result.stdout, result.stderr]).strip()
     if result.returncode == 0:
-        add(results, "app_store_screenshot_capture", "ok", "screenshot capture succeeded")
+        try:
+            from PIL import Image
+        except ImportError:
+            add(results, "app_store_screenshot_capture", "blocked", "Pillow is missing; cannot validate screenshot dimensions")
+            return
+
+        missing: list[str] = []
+        invalid: list[str] = []
+        for filename in EXPECTED_SCREENSHOTS:
+            path = SCREENSHOT_OUTPUT_DIR / filename
+            if not path.exists():
+                missing.append(filename)
+                continue
+            with Image.open(path) as image:
+                if image.size != (2880, 1800):
+                    invalid.append(f"{filename}: {image.size[0]}x{image.size[1]}")
+
+        if missing or invalid:
+            details = []
+            if missing:
+                details.append(f"missing: {', '.join(missing)}")
+            if invalid:
+                details.append(f"invalid sizes: {', '.join(invalid)}")
+            add(results, "app_store_screenshot_capture", "blocked", " | ".join(details))
+        else:
+            add(results, "app_store_screenshot_capture", "ok", "5 screenshot files generated at 2880x1800")
     elif (
         "Screen Recording" in output
         or "could not create image from window" in output

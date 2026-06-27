@@ -483,6 +483,13 @@ final class SlidePanelController {
             expand(on: screen)
         }
     }
+
+    #if DEBUG
+    func applyDebugScenario(_ scenario: String) {
+        panelState.applyDebugScenario(scenario)
+        expandPanel()
+    }
+    #endif
 }
 
 private extension SlidePanelController {
@@ -778,6 +785,9 @@ private extension SlidePanelController {
         let visibleFrame = shownFrame(for: screen)
 
         if isExpanded {
+            window.alphaValue = 1
+            window.makeKeyAndOrderFront(nil)
+            window.invalidateCursorRects(for: resizeCursorOverlay)
             window.setFrame(visibleFrame, display: true, animate: true)
             return
         }

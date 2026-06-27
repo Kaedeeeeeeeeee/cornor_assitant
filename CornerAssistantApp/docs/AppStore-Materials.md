@@ -358,7 +358,7 @@ Support contact: f.shera.09@gmail.com
 2. 搜索/URL 输入。
 3. 多标签浏览。
 4. 固定常用网站侧栏。
-5. 菜单栏或设置状态。
+5. 固定面板状态；如果后续手动采集菜单栏状态截图，也可以替换该图。
 
 截图要求：
 
@@ -369,6 +369,7 @@ Support contact: f.shera.09@gmail.com
 - 推荐首发使用 2880x1800 或 2560x1600。
 - 可复跑采集入口：`./script/capture_app_store_screenshot.sh`。
   - 默认输出到 `/tmp/peek-app-store-screenshots`。
+  - 成功时会生成 `01-hot-corner-panel-2880x1800.png`、`02-quick-search-2880x1800.png`、`03-web-page-2880x1800.png`、`04-tabs-and-pinned-sites-2880x1800.png`、`05-pinned-panel-2880x1800.png`。
   - 当前 Codex/shell 会话缺少可用截图权限；需要在已授权 Screen Recording 的可见干净桌面中运行。
 
 ## 上架前核对

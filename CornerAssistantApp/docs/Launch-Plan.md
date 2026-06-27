@@ -191,6 +191,7 @@
   - 2026-06-28 02:13 JST 再次执行 `./script/launch_verify.sh`，通过。
   - 2026-06-28 02:28 JST 再次执行 `./script/launch_verify.sh`，通过。
   - 2026-06-28 02:42 JST 再次执行 `./script/launch_verify.sh`，通过；当前脚本已额外验证 App Store metadata 导出包。
+  - 2026-06-28 02:50 JST 再次执行 `./script/launch_verify.sh`，通过；当前脚本已额外验证 screenshot `scenario:` 调试入口不进入 Release archive。
 
 2026-06-28 Landing 本地验收收口：
 
@@ -230,6 +231,16 @@
   - 如果窗口截图失败，则执行 `screencapture -x` 全屏截图，并按 Window Server 定位到的 Peek 窗口坐标裁剪。
   - 当前会话复跑结果：窗口定位成功，fallback 生成 `peek-full-screen.png` 并裁剪出 `peek-panel-window.png`，但裁剪图仍被验证器判定为 blank/black。
   - 结论：脚本 fallback 已覆盖窗口级截图不稳定场景；当前仍缺 Screen Recording/可见桌面权限，不能产出可提交截图。
+- 2026-06-28 02:50 JST 已把 `script/capture_app_store_screenshot.sh` 扩展为首发 5 张套件：
+  - `01-hot-corner-panel-2880x1800.png`
+  - `02-quick-search-2880x1800.png`
+  - `03-web-page-2880x1800.png`
+  - `04-tabs-and-pinned-sites-2880x1800.png`
+  - `05-pinned-panel-2880x1800.png`
+  - 仍保留兼容输出 `peek-panel-2880x1800.png`。
+  - 这些截图场景通过 `#if DEBUG` notification 触发，`script/launch_verify.sh` 已验证 `scenario:` 调试命令不会进入 Release archive。
+  - `script/check_external_readiness.py` 扩展模式现在会在截图脚本成功后验证 5 张 PNG 均为 2880x1800。
+  - 当前扩展模式复查仍被 Screen Recording/可见桌面权限阻塞，不能产出可提交截图。
 
 2026-06-28 App Store metadata 校验收口：
 
@@ -698,7 +709,7 @@ PEEK_BING_SITE_VERIFICATION=... \
 2. 搜索/URL 输入。
 3. 多标签浏览。
 4. 固定常用网站侧栏。
-5. 设置或菜单栏状态。
+5. 固定面板状态；如果后续手动采集菜单栏状态截图，也可以替换该图。
 
 截图要求：
 
@@ -708,10 +719,10 @@ PEEK_BING_SITE_VERIFICATION=... \
 - 尽量覆盖中文、英文或日文中的至少一种主语言；如果 App Store Connect 支持本地化截图，后续再补全三语。
 - 当前机器已有 `/Applications/Peek.app` 运行；为避免干扰用户当前桌面，本次没有自动控制该实例采集截图。
 - 当前自动化会话已能用 `script/qa_smoke.sh` 展开真实 Debug 面板，但 `screencapture` 在该会话下只能得到黑图，不能作为 App Store 截图素材。
-- 已新增 `script/capture_app_store_screenshot.sh` 作为可复跑截图入口；脚本支持窗口截图和 full-screen crop fallback。当前会话运行到截图验证阶段仍被 Screen Recording/可见桌面权限阻塞。
+- 已新增 `script/capture_app_store_screenshot.sh` 作为可复跑截图入口；脚本支持窗口截图和 full-screen crop fallback，并会生成 5 张 2880x1800 首发候选图。当前会话运行到截图验证阶段仍被 Screen Recording/可见桌面权限阻塞。
 - 建议截图采集方式：
   - 在可见干净桌面中授予当前终端/Codex 宿主 Screen Recording 权限。
-  - 先运行 `./script/capture_app_store_screenshot.sh` 采集 Debug 面板候选图；脚本会拒绝黑图并生成 2880x1800 PNG。
+  - 先运行 `./script/capture_app_store_screenshot.sh` 采集 Debug 面板候选图；脚本会拒绝黑图并生成 5 张 2880x1800 PNG。
   - 如果需要严格使用 distribution build，再使用 `/tmp/peek-appstore/Peek.xcarchive/Products/Applications/Peek.app` 或最终 exported app 手动采集。
   - 在干净桌面/测试用户中打开 app。
   - 用菜单栏图标或热角展示面板。
@@ -803,7 +814,7 @@ xcodebuild archive \
   - 当前也覆盖菜单栏 status item 存在性。
   - 当前也覆盖启动后默认无可见面板窗口。
   - 当前覆盖四个 hot corner 的真实窗口定位。
-- [x] `script/capture_app_store_screenshot.sh`：可启动并展开真实面板，当前会话在 `screencapture` 阶段因截图权限/会话状态失败。
+- [x] `script/capture_app_store_screenshot.sh`：可启动并展开真实面板，可生成 5 张首发截图套件；当前会话在 `screencapture` 阶段因截图权限/会话状态失败。
 - [x] `script/validate_app_store_materials.py`：验证三语言 App Store metadata 长度和禁用宣传词。
 - [x] `script/export_app_store_metadata.py`：导出可复制进 App Store Connect 的三语言 metadata、基础字段、审核备注和提交表单清单材料包。
 - [x] `script/validate_privacy_alignment.py`：验证 PrivacyInfo、Xcode 权限、App Store App Privacy 口径和 landing privacy 文案一致。
@@ -821,12 +832,14 @@ xcodebuild archive \
 - [x] 本地化文案不包含 `Bing`、selected text / 选中文字、`macOS 14`、`Sonoma` 等禁用宣传。
 - [x] 四个热角设置：Debug smoke 已验证真实面板窗口落在对应屏幕边角。
 - [x] Xcode unit test target 可通过 CLI 运行。
+- [x] Debug screenshot 场景入口不会进入 Release archive。
 
 当前自动化限制：
 
 - [ ] UI test runner 在当前 macOS 会话被系统认证状态阻塞，需要在干净用户会话或手动关闭系统认证提示后重跑。
 - [ ] App Store 截图在当前 Codex/shell 会话被 Screen Recording/可见桌面状态阻塞；自动截图得到黑图，不能提交。
   - 可复跑命令：`./script/capture_app_store_screenshot.sh`
+  - 脚本成功时应生成 `/tmp/peek-app-store-screenshots/01-hot-corner-panel-2880x1800.png` 至 `05-pinned-panel-2880x1800.png`。
 
 必须覆盖：
 

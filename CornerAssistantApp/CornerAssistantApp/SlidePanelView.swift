@@ -62,6 +62,11 @@ struct SlidePanelView: View {
         .onReceive(viewModel.$activeTabID) { _ in
             syncAddressWithActiveTab()
         }
+        #if DEBUG
+        .onReceive(state.debugScenarioEvents) { scenario in
+            applyDebugScenario(scenario)
+        }
+        #endif
     }
 
     private var sidebar: some View {
@@ -236,6 +241,132 @@ struct SlidePanelView: View {
     private func syncAddressWithActiveTab() {
         address = viewModel.activeTab.addressText
     }
+
+    #if DEBUG
+    private func applyDebugScenario(_ scenario: String) {
+        suggestionStore.clear()
+
+        switch scenario {
+        case "launcher":
+            viewModel.addTab()
+            address = ""
+            viewModel.showingLauncher = true
+            state.isPinned = false
+        case "search":
+            viewModel.addTab()
+            address = "macOS focus workspace"
+            suggestionStore.suggestions = [
+                "macOS focus workspace",
+                "macOS menu bar browser",
+                "macOS productivity shortcuts"
+            ]
+            viewModel.showingLauncher = true
+            state.isPinned = false
+        case "web":
+            loadDebugPage(
+                title: "Peek Notes",
+                urlString: "https://peek.local/notes",
+                bodyTitle: "Research notes",
+                bodySubtitle: "A lightweight page opened from the screen edge.",
+                cards: ["Project brief", "Reference links", "Daily checklist"]
+            )
+            state.isPinned = false
+        case "tabs":
+            loadDebugPage(
+                title: "Team Workspace",
+                urlString: "https://peek.local/workspace",
+                bodyTitle: "Team workspace",
+                bodySubtitle: "Pinned sites and quick tabs stay close without taking over the desktop.",
+                cards: ["Docs", "Chat", "Dashboard"]
+            )
+            viewModel.addTab()
+            loadDebugPage(
+                title: "Release Checklist",
+                urlString: "https://peek.local/release",
+                bodyTitle: "Release checklist",
+                bodySubtitle: "A second tab for short review tasks.",
+                cards: ["Metadata", "Screenshots", "Review notes"]
+            )
+            state.isPinned = false
+        case "pinned":
+            loadDebugPage(
+                title: "Pinned Tools",
+                urlString: "https://peek.local/pinned",
+                bodyTitle: "Pinned tools",
+                bodySubtitle: "Keep everyday tools one click away from the side rail.",
+                cards: ["AI tools", "Docs", "Team chat"]
+            )
+            state.isPinned = true
+        default:
+            break
+        }
+    }
+
+    private func loadDebugPage(
+        title: String,
+        urlString: String,
+        bodyTitle: String,
+        bodySubtitle: String,
+        cards: [String]
+    ) {
+        guard let url = URL(string: urlString) else { return }
+        let cardHTML = cards
+            .map { "<li>\($0)</li>" }
+            .joined()
+        let html = """
+        <!doctype html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <title>\(title)</title>
+          <style>
+            :root { color-scheme: light dark; }
+            body {
+              margin: 0;
+              min-height: 100vh;
+              font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+              background: #f6f8fa;
+              color: #18202a;
+            }
+            main { max-width: 780px; margin: 0 auto; padding: 72px 56px; }
+            h1 { font-size: 42px; line-height: 1.08; margin: 0 0 18px; letter-spacing: 0; }
+            p { font-size: 18px; line-height: 1.6; margin: 0 0 34px; color: #52606d; }
+            ul { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; padding: 0; margin: 0; }
+            li {
+              list-style: none;
+              border: 1px solid rgba(24, 32, 42, 0.12);
+              border-radius: 8px;
+              padding: 18px;
+              background: rgba(255, 255, 255, 0.82);
+              font-weight: 600;
+            }
+            @media (prefers-color-scheme: dark) {
+              body { background: #11161d; color: #f4f6f8; }
+              p { color: #a9b4bf; }
+              li { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.14); }
+            }
+          </style>
+        </head>
+        <body>
+          <main>
+            <h1>\(bodyTitle)</h1>
+            <p>\(bodySubtitle)</p>
+            <ul>\(cardHTML)</ul>
+          </main>
+        </body>
+        </html>
+        """
+
+        let tab = viewModel.activeTab
+        tab.addressText = url.absoluteString
+        tab.title = title
+        tab.webViewStore.loadDebugHTML(html, baseURL: url, title: title)
+        viewModel.updateActiveTabURL(url, addressText: url.absoluteString)
+        viewModel.showingLauncher = false
+        address = url.absoluteString
+        isAddressFocused = false
+    }
+    #endif
 }
 
 // MARK: - WebView Hosting
@@ -274,6 +405,10 @@ private struct WebViewContainer: NSViewRepresentable {
 final class SlidePanelState: ObservableObject {
     private let focusSubject = PassthroughSubject<Void, Never>()
     fileprivate lazy var focusEvents: AnyPublisher<Void, Never> = focusSubject.eraseToAnyPublisher()
+    #if DEBUG
+    private let debugScenarioSubject = PassthroughSubject<String, Never>()
+    fileprivate lazy var debugScenarioEvents: AnyPublisher<String, Never> = debugScenarioSubject.eraseToAnyPublisher()
+    #endif
     
     /// 窗口是否被固定（固定后点击外部不会收起）
     @Published var isPinned: Bool = false
@@ -281,6 +416,12 @@ final class SlidePanelState: ObservableObject {
     func requestAddressFocus() {
         focusSubject.send(())
     }
+
+    #if DEBUG
+    func applyDebugScenario(_ scenario: String) {
+        debugScenarioSubject.send(scenario)
+    }
+    #endif
 }
 
 // MARK: - Sidebar
