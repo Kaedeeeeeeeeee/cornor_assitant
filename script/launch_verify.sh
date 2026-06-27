@@ -14,6 +14,7 @@ PRIVACY_MANIFEST="$APP_PATH/Contents/Resources/PrivacyInfo.xcprivacy"
 APP_EXECUTABLE="$APP_PATH/Contents/MacOS/Peek"
 MATERIALS_VALIDATOR="$ROOT_DIR/script/validate_app_store_materials.py"
 LANDING_VALIDATOR="$ROOT_DIR/script/validate_landing_public.py"
+LANDING_LOCAL_VALIDATOR="$ROOT_DIR/script/validate_landing_local.js"
 
 log() {
   printf "\n==> %s\n" "$1"
@@ -48,6 +49,9 @@ assert_plist_value() {
 
 log "App Store materials"
 "$MATERIALS_VALIDATOR"
+
+log "Local landing UI"
+"$LANDING_LOCAL_VALIDATOR"
 
 log "Release build"
 xcodebuild \

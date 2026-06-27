@@ -165,8 +165,10 @@
 
 - 已新增 `script/launch_verify.sh`，作为发布前一键 gate。
 - 已新增 `script/validate_landing_public.py`，校验公网 landing 的 canonical、meta description、Open Graph/Twitter Card、`SoftwareApplication` JSON-LD、`robots.txt`、`sitemap.xml`、`site.webmanifest`、analytics config 和禁用宣传词。
+- 已新增 `script/validate_landing_local.js`，启动本地静态服务并用 Playwright 校验 1440/1024/390 三个宽度、三语切换、无横向溢出、图片加载、隐私页、支持页和静态 SEO 文件。
 - `script/launch_verify.sh` 已验证通过，覆盖：
   - App Store metadata 长度和禁用词校验。
+  - 本地 landing UI/响应式/三语交互校验。
   - Release build。
   - 跳过 UI runner 的 XCTest。
   - Release archive。
@@ -176,6 +178,21 @@
   - Debug-only 面板命令和 hot corner smoke 命令没有进入 Release archive。
   - 公网 landing 关键 URL 均可达。
   - 公网 landing SEO 和 analytics config 校验。
+  - 2026-06-28 01:00 JST 再次执行 `./script/launch_verify.sh`，通过。
+
+2026-06-28 Landing 本地验收收口：
+
+- 已新增并验证 `script/validate_landing_local.js`。
+- 本地脚本已覆盖：
+  - 首页 1440px desktop、1024px tablet、390px mobile。
+  - Privacy page desktop。
+  - Support page desktop。
+  - 三语切换：`zh`、`en`、`ja`。
+  - 无横向溢出。
+  - App icon 和页面图片加载正常。
+  - `robots.txt`、`sitemap.xml`、`site.webmanifest`、`assets/social-preview.png` 可访问。
+  - 无浏览器 console error。
+- Atlas 浏览器也已打开 `http://127.0.0.1:4173/` 验证：当前页面 `title = Peek - A Lightweight Browser from the macOS Screen Edge`，`lang = en`，`h1 = Out of sight. Right when you need it.`，图片正常，无横向溢出。
 
 2026-06-28 截图采集脚本收口：
 
@@ -234,10 +251,10 @@
     - `corner=topLeft window id=8447 layer=3 bounds=x:14 y:43 width:528 height:750`
     - `corner=topRight window id=8447 layer=3 bounds=x:1186 y:43 width:528 height:750`
     - `qa_smoke passed`
-- 2026-06-28 00:55 JST 再次执行 `xcodebuild -exportArchive`，失败原因仍为：
+- 2026-06-28 01:01 JST 再次执行 `xcodebuild -exportArchive`，失败原因仍为：
   - `error: exportArchive No Accounts`
   - `error: exportArchive No profiles for 'com.shifeng.peek' were found`
-- 2026-06-28 00:54 JST 再次执行 `./script/launch_verify.sh`，通过。
+- 2026-06-28 01:00 JST 再次执行 `./script/launch_verify.sh`，通过。
 
 2026-06-27 Export Compliance 收口：
 
@@ -350,6 +367,7 @@
   - Bing 或搜索引擎可选。
   - macOS 14 兼容。
 - [x] 支持简体中文、英语、日语三语切换。
+- [x] 本地响应式和三语交互已纳入 `script/validate_landing_local.js`。
 - [x] 增加 Privacy Policy 页面。
 - [x] 增加 Support 页面。
 - [x] 增加 landing-only analytics loader。
@@ -794,15 +812,21 @@ python3 -m http.server 4173
 
 Landing 必查项：
 
-- [ ] 1440px 桌面首屏。
-- [ ] 1024px tablet。
-- [ ] 390px mobile。
-- [ ] 三语切换。
-- [ ] 页面没有水平滚动。
-- [ ] App icon 加载。
-- [ ] social preview image 加载。
-- [ ] 访问 `robots.txt` 和 `sitemap.xml`。
-- [ ] 控制台没有 JavaScript error。
+- [x] 1440px 桌面首屏。
+- [x] 1024px tablet。
+- [x] 390px mobile。
+- [x] 三语切换。
+- [x] 页面没有水平滚动。
+- [x] App icon 加载。
+- [x] social preview image 加载。
+- [x] 访问 `robots.txt` 和 `sitemap.xml`。
+- [x] 控制台没有 JavaScript error。
+
+自动验收：
+
+```bash
+./script/validate_landing_local.js
+```
 
 App 本地构建：
 
