@@ -544,6 +544,9 @@
   - 校验 GitHub Pages workflow 触发路径、Pages 权限、部署 action、artifact 目录和 GitHub repository variables 名称。
   - 校验 workflow 对 GA4 Measurement ID、Google/Bing verification token 的格式 guard、HTML attribute escaping 和空 token no-op 逻辑。
   - 拒绝把 landing 配置误接到 secrets、硬编码示例 GA4 ID 或旧版 deploy-pages action。
+- 2026-06-28 04:23 JST `script/check_external_readiness.py` 已增加 Pages stale deploy 判断：
+  - 如果最近一次成功 Pages run 不是当前 HEAD，会检查自该 run 以来是否有 `CornerAssistantApp/landing-page/**` 或 `.github/workflows/pages.yml` 变更。
+  - 当前结果：最近一次 Pages run 成功，且之后没有 landing/page workflow 变更，所以公网部署不视为陈旧。
 
 ## 2. 首发完成定义
 
@@ -927,6 +930,7 @@ xcodebuild archive \
 - [x] `script/validate_release_archive_strings.py`：验证 Release archive executable 和三语言资源不包含调试入口、未发布功能残留或禁用公开文案。
 - [x] `script/check_external_readiness.py`：复查公网 URL、GitHub Pages/variables、GA4 配置状态，并可选复查 export/截图权限阻塞。
   - 当前也覆盖 App Store export 成功后的 exported app metadata、privacy manifest 和 entitlements 验证。
+  - 当前也覆盖最近一次成功 Pages run 是否仍覆盖当前 landing/page workflow 变更。
 - [x] `script/configure_app_store_url.py`：真实 App Store URL 出来后激活 landing CTA、更新三语言 CTA 文案和 JSON-LD，并复跑本地 landing 校验。
 - [x] 搜索 URL 构造、空查询处理、查询 trim/encode。
 - [x] URL 输入规范化：完整 HTTP/HTTPS URL、裸域名、路径、localhost、普通搜索词。

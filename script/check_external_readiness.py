@@ -258,12 +258,18 @@ def check_github(results: list[CheckResult]) -> None:
         latest = json.loads(runs.stdout)
         if latest and latest[0].get("status") == "completed" and latest[0].get("conclusion") == "success":
             run_info = latest[0]
-            add(
-                results,
-                "github_pages_workflow",
-                "ok",
-                f"latest run {run_info.get('databaseId')} succeeded at {run_info.get('updatedAt')}",
-            )
+            head_sha = str(run_info.get("headSha") or "")
+            stale_status = pages_stale_status(head_sha)
+            if stale_status:
+                status, detail = stale_status
+                add(results, "github_pages_workflow", status, detail)
+            else:
+                add(
+                    results,
+                    "github_pages_workflow",
+                    "ok",
+                    f"latest run {run_info.get('databaseId')} succeeded at {run_info.get('updatedAt')}",
+                )
         else:
             add(results, "github_pages_workflow", "blocked", json.dumps(latest, ensure_ascii=False))
 
@@ -283,6 +289,43 @@ def check_github(results: list[CheckResult]) -> None:
             add(results, "github_actions_variables", "ok", "landing config variables exist")
         else:
             add(results, "github_actions_variables", "manual", f"missing variables: {', '.join(missing)}")
+
+
+def pages_stale_status(pages_head_sha: str) -> tuple[str, str] | None:
+    if not pages_head_sha:
+        return "manual", "latest Pages run did not report a head SHA"
+
+    local_head = run(["git", "rev-parse", "HEAD"], timeout=30)
+    if local_head.returncode != 0:
+        return "manual", "could not read local git HEAD"
+
+    current_head = local_head.stdout.strip()
+    if pages_head_sha == current_head:
+        return None
+
+    diff = run(
+        [
+            "git",
+            "diff",
+            "--name-only",
+            f"{pages_head_sha}..HEAD",
+            "--",
+            "CornerAssistantApp/landing-page",
+            ".github/workflows/pages.yml",
+        ],
+        timeout=30,
+    )
+    if diff.returncode != 0:
+        return "manual", "could not compare latest Pages run with local HEAD"
+
+    deploy_affecting_changes = [line.strip() for line in diff.stdout.splitlines() if line.strip()]
+    if deploy_affecting_changes:
+        preview = ", ".join(deploy_affecting_changes[:5])
+        if len(deploy_affecting_changes) > 5:
+            preview += ", ..."
+        return "blocked", f"latest successful Pages run is stale for deploy-affecting changes: {preview}"
+
+    return "ok", "latest Pages run succeeded; no landing/page workflow changes since that run"
 
 
 def check_app_store_export(results: list[CheckResult]) -> None:
