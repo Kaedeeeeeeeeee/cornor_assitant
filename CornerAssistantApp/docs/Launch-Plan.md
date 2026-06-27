@@ -436,6 +436,7 @@
 - 2026-06-28 02:11 JST 脚本已扩展 Google/Bing verification meta 检查：
   - 默认模式：`{"manual": 4, "ok": 9, "skipped": 2}`。
 - 2026-06-28 02:13 JST 扩展模式复查结果：`{"blocked": 2, "manual": 4, "ok": 9}`。
+- 2026-06-28 02:18 JST Pages workflow `28296237761` 成功；公网 `script/validate_landing_public.py` 通过；默认 readiness 结果为 `{"manual": 4, "ok": 9, "skipped": 2}`。
 
 ## 2. 首发完成定义
 
