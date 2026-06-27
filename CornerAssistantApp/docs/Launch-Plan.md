@@ -459,6 +459,10 @@
   - Best Practices: 100
   - SEO: 100
   - `color-contrast`、`document-title`、`meta-description`、`canonical`、`crawlable-anchors` 均通过。
+- 2026-06-28 03:44 JST 已新增并运行 `script/check_landing_performance.py`：
+  - PageSpeed Insights API desktop/mobile：HTTP 429 Too Many Requests，继续作为 manual / 非阻塞记录。
+  - 本机 Chrome Lighthouse desktop：Performance 100、Accessibility 100、Best Practices 100、SEO 100。
+  - Lighthouse JSON 产物：`/tmp/peek-lighthouse/public-desktop.json`。
 - 首页 JSON-LD `applicationCategory` 已从 `UtilitiesApplication` 调整为 `Productivity`，与 App Store 分类保持一致。
 
 2026-06-28 01:24 JST GitHub Pages / analytics 复查：
@@ -586,6 +590,10 @@
   - 2026-06-28 检查结果：Search Console 已登录 `f.shera.09@gmail.com`，但该属性尚未验证；Bing Webmaster Tools 尚未登录。
 - [x] 部署后跑 Lighthouse，记录性能和 SEO 分数。
 - [x] 将公网 landing SEO 校验纳入 `script/launch_verify.sh`。
+- [x] 增加 landing 性能复查脚本：
+  - `script/check_landing_performance.py`
+  - 默认调用 PageSpeed Insights API 和本机 Chrome Lighthouse。
+  - PageSpeed API 配额或 429 只记为 manual；本机 Lighthouse 低于阈值才使脚本失败。
 - [x] 增加外部依赖状态脚本：
   - `script/check_external_readiness.py`
   - 默认复查公网 URL、GitHub Pages、GitHub Actions variables、analytics config 和 Google/Bing verification meta。
@@ -593,6 +601,7 @@
 - [ ] PageSpeed Insights 在线报告可后续补充，不阻塞首发。
   - 2026-06-28 通过 PageSpeed Insights API 请求移动端/桌面端报告时返回 HTTP 429 Too Many Requests；本项继续作为非阻塞补充项。
   - 2026-06-28 03:39 JST 复查 PageSpeed Insights API，desktop/mobile 仍返回 HTTP 429 Too Many Requests；公网 Lighthouse 已复跑并通过。
+  - 2026-06-28 03:44 JST 使用 `script/check_landing_performance.py` 复查，PageSpeed API desktop/mobile 仍返回 HTTP 429 Too Many Requests；本机 Chrome Lighthouse desktop 为 100/100/100/100。
 
 搜索引擎提交说明：
 
@@ -1139,6 +1148,14 @@ PEEK_CHECK_EXPORT=1 PEEK_CHECK_SCREENSHOT=1 ./script/check_external_readiness.py
 ```
 
 默认模式只读，不触发 App Store export 或截图。扩展模式会写入 `/tmp/peek-appstore/external-readiness-export` 并启动截图脚本，用于复查账号/profile 和 Screen Recording 权限是否已经解除。
+
+Landing 性能复查：
+
+```bash
+./script/check_landing_performance.py
+```
+
+默认会请求 PageSpeed Insights desktop/mobile，并用本机 Chrome + `npx lighthouse@latest` 生成公网 desktop Lighthouse 报告到 `/tmp/peek-lighthouse/public-desktop.json`。PageSpeed 429 或配额问题只作为 manual 状态记录；Lighthouse 分数低于阈值会使脚本失败。
 
 ## 7. 当前下一步
 
