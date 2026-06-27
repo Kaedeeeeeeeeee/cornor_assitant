@@ -13,6 +13,7 @@ INFO_PLIST="$APP_PATH/Contents/Info.plist"
 PRIVACY_MANIFEST="$APP_PATH/Contents/Resources/PrivacyInfo.xcprivacy"
 APP_EXECUTABLE="$APP_PATH/Contents/MacOS/Peek"
 MATERIALS_VALIDATOR="$ROOT_DIR/script/validate_app_store_materials.py"
+LANDING_VALIDATOR="$ROOT_DIR/script/validate_landing_public.py"
 
 log() {
   printf "\n==> %s\n" "$1"
@@ -130,6 +131,9 @@ if [[ "${SKIP_NETWORK:-0}" != "1" ]]; then
   for url in "${urls[@]}"; do
     curl -fsSI --max-time 20 "$url" >/dev/null || fail "URL not reachable: $url"
   done
+
+  log "Public landing SEO"
+  "$LANDING_VALIDATOR"
 fi
 
 log "Launch verification passed"

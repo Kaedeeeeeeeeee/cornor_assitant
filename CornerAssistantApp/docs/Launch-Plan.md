@@ -164,6 +164,7 @@
 2026-06-28 发布验证脚本收口：
 
 - 已新增 `script/launch_verify.sh`，作为发布前一键 gate。
+- 已新增 `script/validate_landing_public.py`，校验公网 landing 的 canonical、meta description、Open Graph/Twitter Card、`SoftwareApplication` JSON-LD、`robots.txt`、`sitemap.xml`、`site.webmanifest`、analytics config 和禁用宣传词。
 - `script/launch_verify.sh` 已验证通过，覆盖：
   - App Store metadata 长度和禁用词校验。
   - Release build。
@@ -174,6 +175,7 @@
   - Archive `PrivacyInfo.xcprivacy`。
   - Debug-only 面板命令没有进入 Release archive。
   - 公网 landing 关键 URL 均可达。
+  - 公网 landing SEO 和 analytics config 校验。
 
 2026-06-28 截图采集脚本收口：
 
@@ -207,6 +209,22 @@
   - What's New <= 4000 chars。
   - 未命中 `Bing`、`macOS 14`、`Sonoma`、selected text / 选中文字等禁用宣传词。
 - `script/launch_verify.sh` 已纳入该校验。
+
+2026-06-28 QA 自动化覆盖扩展：
+
+- 已新增 `CornerAssistantAppTests/LaunchReadinessTests.swift`。
+- 新增覆盖：
+  - 首发三语言解析：`en`、`zh-Hans`、`ja`。
+  - 三语言 `Localizable.strings` key 集合一致且值非空。
+  - 首发关键 UI 文案 key 存在。
+  - 四个 hot corner raw value 保持稳定。
+- `xcodebuild ... -only-testing:CornerAssistantAppTests test` 已通过：
+  - 14 tests passed, 0 failures。
+- `script/qa_smoke.sh` 已重新验证通过：
+  - 最近一次输出：`window id=8439 layer=3 bounds=["Y": 281, "X": 0, "Height": 750, "Width": 528]`。
+- 2026-06-28 00:35 JST 再次执行 `xcodebuild -exportArchive`，失败原因仍为：
+  - `error: exportArchive No Accounts`
+  - `error: exportArchive No profiles for 'com.shifeng.peek' were found`
 
 2026-06-27 Export Compliance 收口：
 
@@ -356,6 +374,7 @@
   - Sitemap URL。
   - 2026-06-28 检查结果：Search Console 已登录 `f.shera.09@gmail.com`，但该属性尚未验证；Bing Webmaster Tools 尚未登录。
 - [x] 部署后跑 Lighthouse，记录性能和 SEO 分数。
+- [x] 将公网 landing SEO 校验纳入 `script/launch_verify.sh`。
 - [ ] PageSpeed Insights 在线报告可后续补充，不阻塞首发。
   - 2026-06-28 通过 PageSpeed Insights API 请求移动端/桌面端报告时返回 HTTP 429 Too Many Requests；本项继续作为非阻塞补充项。
 
@@ -400,6 +419,17 @@
 - Bing Webmaster Tools：
   - 当前停留在公开介绍页 `https://www.bing.com/webmasters/about`。
   - 没有已登录 Microsoft Webmaster Tools 会话；未提交站点。
+
+2026-06-28 00:36 JST 后台可达性复查：
+
+- App Store Connect agreements：
+  - `https://appstoreconnect.apple.com/agreements/` 最终仍跳转到 `https://appstoreconnect.apple.com/login?targetUrl=/agreements/`。
+  - 当前无可操作 App Store Connect 登录会话，无法读取或接受协议。
+- Google Search Console：
+  - 当前仍登录 `f.shera.09@gmail.com`，但 `https://kaedeeeeeeeeee.github.io/cornor_assitant/` 属性未验证。
+  - 页面仍显示“このプロパティへのアクセス権がありません”和“所有権を証明”；点击验证入口在当前浏览器自动化会话中仍超时，未提交验证。
+- Bing Webmaster Tools：
+  - 当前仍为公开未登录页，页面显示 Sign In / Get started；未提交站点。
 
 2026-06-27 App Store Connect 表单材料补齐：
 
@@ -588,9 +618,11 @@ xcodebuild archive \
 - [x] `script/qa_smoke.sh`：通过 Debug-only 通知展开真实面板，确认 Window Server 中存在 Peek 面板窗口。
 - [x] `script/capture_app_store_screenshot.sh`：可启动并展开真实面板，当前会话在 `screencapture` 阶段因截图权限/会话状态失败。
 - [x] `script/validate_app_store_materials.py`：验证三语言 App Store metadata 长度和禁用宣传词。
+- [x] `script/validate_landing_public.py`：验证公网 landing SEO、sitemap、manifest、analytics config 和禁用宣传词。
 - [x] 搜索 URL 构造、空查询处理、查询 trim/encode。
 - [x] URL 输入规范化：完整 URL、裸域名、localhost、普通搜索词。
 - [x] 固定网站模型：id 生成、favicon fallback、custom favicon、Codable 还原。
+- [x] 首发三语言 key 集合一致、关键 UI 文案存在、hot corner 选项稳定。
 - [x] Xcode unit test target 可通过 CLI 运行。
 
 当前自动化限制：
@@ -784,7 +816,7 @@ xcodebuild \
 ./script/launch_verify.sh
 ```
 
-该脚本会执行 Release build、可自动运行的 XCTest、Release archive、归档 metadata/entitlements/privacy manifest 校验、Debug-only 字符串泄漏检查和公网 landing URL 检查。公网检查可用 `SKIP_NETWORK=1 ./script/launch_verify.sh` 跳过。
+该脚本会执行 Release build、可自动运行的 XCTest、Release archive、归档 metadata/entitlements/privacy manifest 校验、Debug-only 字符串泄漏检查、公网 landing URL 检查和公网 landing SEO/analytics config 校验。公网检查可用 `SKIP_NETWORK=1 ./script/launch_verify.sh` 跳过。
 
 ## 7. 当前下一步
 
