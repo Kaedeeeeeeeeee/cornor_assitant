@@ -174,6 +174,22 @@
   - Debug-only 面板命令没有进入 Release archive。
   - 公网 landing 关键 URL 均可达。
 
+2026-06-28 截图采集脚本收口：
+
+- 已新增 `script/capture_app_store_screenshot.sh`。
+- 脚本默认输出到 `/tmp/peek-app-store-screenshots`，避免未审校截图直接进入仓库；需要保存到项目内时可设置 `OUT_DIR=CornerAssistantApp/docs/app-store-screenshots`。
+- 脚本会：
+  - 启动 Debug app。
+  - 通过 Debug-only 通知展开真实 Peek 面板。
+  - 从 Window Server 定位 Peek 面板窗口。
+  - 用 `screencapture -l` 按窗口 ID 捕获。
+  - 自动拒绝黑图/空图。
+  - 生成 2880x1800 的 16:10 App Store 候选图。
+- 2026-06-28 在当前 Codex/shell 会话运行结果：
+  - 成功定位 Peek 面板窗口：`window id=8433 bounds=0,281 528x750`。
+  - 截图阶段失败：`could not create image from window`。
+  - 结论：脚本可复跑，但当前会话仍缺少可用 Screen Recording/可见桌面截图能力；需要在已授权的可见桌面会话中重跑。
+
 2026-06-27 Export Compliance 收口：
 
 - 已确认源码没有自研加密、CryptoKit、CommonCrypto、Security/SecKey/SecItem、OpenSSL/libsodium 等加密实现；网络访问来自 `URLSession`、WebKit 和系统框架。
@@ -323,6 +339,7 @@
   - 2026-06-28 检查结果：Search Console 已登录 `f.shera.09@gmail.com`，但该属性尚未验证；Bing Webmaster Tools 尚未登录。
 - [x] 部署后跑 Lighthouse，记录性能和 SEO 分数。
 - [ ] PageSpeed Insights 在线报告可后续补充，不阻塞首发。
+  - 2026-06-28 通过 PageSpeed Insights API 请求移动端/桌面端报告时返回 HTTP 429 Too Many Requests；本项继续作为非阻塞补充项。
 
 搜索引擎提交说明：
 
@@ -460,8 +477,11 @@
 - 尽量覆盖中文、英文或日文中的至少一种主语言；如果 App Store Connect 支持本地化截图，后续再补全三语。
 - 当前机器已有 `/Applications/Peek.app` 运行；为避免干扰用户当前桌面，本次没有自动控制该实例采集截图。
 - 当前自动化会话已能用 `script/qa_smoke.sh` 展开真实 Debug 面板，但 `screencapture` 在该会话下只能得到黑图，不能作为 App Store 截图素材。
+- 已新增 `script/capture_app_store_screenshot.sh` 作为可复跑截图入口；当前会话运行到窗口定位后被 `screencapture` 权限/会话状态阻塞。
 - 建议截图采集方式：
-  - 使用 `/tmp/peek-appstore/Peek.xcarchive/Products/Applications/Peek.app` 或最终 exported app。
+  - 在可见干净桌面中授予当前终端/Codex 宿主 Screen Recording 权限。
+  - 先运行 `./script/capture_app_store_screenshot.sh` 采集 Debug 面板候选图；脚本会拒绝黑图并生成 2880x1800 PNG。
+  - 如果需要严格使用 distribution build，再使用 `/tmp/peek-appstore/Peek.xcarchive/Products/Applications/Peek.app` 或最终 exported app 手动采集。
   - 在干净桌面/测试用户中打开 app。
   - 用菜单栏图标或热角展示面板。
   - 只截取 app 窗口或经过清理的完整桌面。
@@ -547,6 +567,7 @@ xcodebuild archive \
 
 - [x] `script/build_and_run.sh --verify`：构建并启动 Debug `Peek.app`，确认进程存在。
 - [x] `script/qa_smoke.sh`：通过 Debug-only 通知展开真实面板，确认 Window Server 中存在 Peek 面板窗口。
+- [x] `script/capture_app_store_screenshot.sh`：可启动并展开真实面板，当前会话在 `screencapture` 阶段因截图权限/会话状态失败。
 - [x] 搜索 URL 构造、空查询处理、查询 trim/encode。
 - [x] URL 输入规范化：完整 URL、裸域名、localhost、普通搜索词。
 - [x] 固定网站模型：id 生成、favicon fallback、custom favicon、Codable 还原。
@@ -556,6 +577,7 @@ xcodebuild archive \
 
 - [ ] UI test runner 在当前 macOS 会话被系统认证状态阻塞，需要在干净用户会话或手动关闭系统认证提示后重跑。
 - [ ] App Store 截图在当前 Codex/shell 会话被 Screen Recording/可见桌面状态阻塞；自动截图得到黑图，不能提交。
+  - 可复跑命令：`./script/capture_app_store_screenshot.sh`
 
 必须覆盖：
 

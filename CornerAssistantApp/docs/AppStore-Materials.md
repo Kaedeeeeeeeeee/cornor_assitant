@@ -367,6 +367,9 @@ Support contact: f.shera.09@gmail.com
 - 不展示 selected-text search、搜索引擎选择、macOS 14 兼容等未发布能力。
 - Mac App Store 官方接受 16:10 截图：1280x800、1440x900、2560x1600、2880x1800。
 - 推荐首发使用 2880x1800 或 2560x1600。
+- 可复跑采集入口：`./script/capture_app_store_screenshot.sh`。
+  - 默认输出到 `/tmp/peek-app-store-screenshots`。
+  - 当前 Codex/shell 会话缺少可用截图权限；需要在已授权 Screen Recording 的可见干净桌面中运行。
 
 ## 上架前核对
 
