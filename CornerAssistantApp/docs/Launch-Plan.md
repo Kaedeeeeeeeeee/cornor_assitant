@@ -548,6 +548,10 @@
 - 2026-06-28 04:23 JST `script/check_external_readiness.py` 已增加 Pages stale deploy 判断：
   - 如果最近一次成功 Pages run 不是当前 HEAD，会检查自该 run 以来是否有 `CornerAssistantApp/landing-page/**` 或 `.github/workflows/pages.yml` 变更。
   - 当前结果：最近一次 Pages run 成功，且之后没有 landing/page workflow 变更，所以公网部署不视为陈旧。
+- 2026-06-28 04:34 JST 已收窄地址栏 URL 规范化：
+  - 显式 URL 只允许 `http://` 和 `https://` 直接进入 WebView。
+  - `ftp://`、`peek://`、`file://` 等非 Web scheme 已由 `SearchProviderTests` 覆盖为拒绝。
+  - `SearchProviderTests` 和 `SKIP_NETWORK=1 ./script/launch_verify.sh` 均通过。
 
 ## 2. 首发完成定义
 
@@ -934,7 +938,7 @@ xcodebuild archive \
   - 当前也覆盖最近一次成功 Pages run 是否仍覆盖当前 landing/page workflow 变更。
 - [x] `script/configure_app_store_url.py`：真实 App Store URL 出来后激活 landing CTA、更新三语言 CTA 文案和 JSON-LD，并复跑本地 landing 校验。
 - [x] 搜索 URL 构造、空查询处理、查询 trim/encode。
-- [x] URL 输入规范化：完整 HTTP/HTTPS URL、裸域名、路径、localhost、普通搜索词。
+- [x] URL 输入规范化：完整 HTTP/HTTPS URL、裸域名、路径、localhost、普通搜索词；非 Web scheme 不从地址栏直接打开。
 - [x] 搜索建议模型：最小输入长度、debounce、clear。
   - 当前也覆盖 suggestions 请求失败或无网络时清空旧建议，不保留 stale results。
 - [x] 标签模型：新建、切换、关闭、关闭最后普通标签后自动补新 launcher tab、排序。

@@ -11,7 +11,8 @@ extension SearchProvider {
         guard !trimmed.isEmpty else { return nil }
 
         if let url = URL(string: trimmed),
-           let scheme = url.scheme, !scheme.isEmpty,
+           let scheme = url.scheme?.lowercased(),
+           ["http", "https"].contains(scheme),
            url.host != nil {
             return url
         }

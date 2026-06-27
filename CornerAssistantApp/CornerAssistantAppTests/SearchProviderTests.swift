@@ -38,6 +38,14 @@ final class SearchProviderTests: XCTestCase {
         XCTAssertEqual(url?.absoluteString, "http://example.com/docs")
     }
 
+    func testNormalizedURLAllowsUppercaseHTTPSScheme() {
+        let url = provider.normalizedURL(from: "HTTPS://example.com/docs")
+
+        XCTAssertEqual(url?.scheme?.lowercased(), "https")
+        XCTAssertEqual(url?.host, "example.com")
+        XCTAssertEqual(url?.path, "/docs")
+    }
+
     func testNormalizedURLAddsHTTPSForHostLikeInput() {
         let url = provider.normalizedURL(from: "example.com")
 
@@ -59,5 +67,11 @@ final class SearchProviderTests: XCTestCase {
     func testNormalizedURLRejectsPlainSearchTerms() {
         XCTAssertNil(provider.normalizedURL(from: "menu bar browser"))
         XCTAssertNil(provider.normalizedURL(from: "peek"))
+    }
+
+    func testNormalizedURLRejectsNonWebSchemes() {
+        XCTAssertNil(provider.normalizedURL(from: "ftp://example.com/file.zip"))
+        XCTAssertNil(provider.normalizedURL(from: "peek://open/settings"))
+        XCTAssertNil(provider.normalizedURL(from: "file:///Users/user/private.txt"))
     }
 }
