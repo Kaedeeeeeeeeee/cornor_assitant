@@ -5,6 +5,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 RUN_SCRIPT="$ROOT_DIR/script/build_and_run.sh"
 OUT_DIR="${OUT_DIR:-/tmp/peek-app-store-screenshots}"
 RAW_CAPTURE="$OUT_DIR/peek-panel-window.png"
+FULL_CAPTURE="$OUT_DIR/peek-full-screen.png"
 APP_STORE_CAPTURE="$OUT_DIR/peek-panel-2880x1800.png"
 DEBUG_NOTIFICATION="com.shifeng.peek.debug.panelCommand"
 
@@ -27,6 +28,7 @@ find_peek_window() {
 import CoreGraphics
 import Foundation
 
+let displayBounds = CGDisplayBounds(CGMainDisplayID())
 let windows = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]] ?? []
 for window in windows {
     guard (window[kCGWindowOwnerName as String] as? String) == "Peek",
@@ -41,12 +43,54 @@ for window in windows {
         continue
     }
 
-    print("\(id)\t\(Int(x))\t\(Int(y))\t\(Int(width))\t\(Int(height))")
+    print("\(id)\t\(Int(x))\t\(Int(y))\t\(Int(width))\t\(Int(height))\t\(Int(displayBounds.minX))\t\(Int(displayBounds.minY))\t\(Int(displayBounds.width))\t\(Int(displayBounds.height))")
     exit(0)
 }
 
 exit(1)
 SWIFT
+}
+
+crop_window_from_full_capture() {
+  python3 - "$FULL_CAPTURE" "$RAW_CAPTURE" "$WINDOW_X" "$WINDOW_Y" "$WINDOW_WIDTH" "$WINDOW_HEIGHT" "$SCREEN_X" "$SCREEN_Y" "$SCREEN_WIDTH" "$SCREEN_HEIGHT" <<'PY'
+from pathlib import Path
+import sys
+from PIL import Image
+
+full_path = Path(sys.argv[1])
+raw_path = Path(sys.argv[2])
+window_x, window_y, window_w, window_h = map(int, sys.argv[3:7])
+screen_x, screen_y, screen_w, screen_h = map(int, sys.argv[7:11])
+
+if not full_path.exists():
+    raise SystemExit(f"full capture does not exist: {full_path}")
+if screen_w <= 0 or screen_h <= 0:
+    raise SystemExit(f"invalid screen bounds: {screen_w}x{screen_h}")
+
+image = Image.open(full_path).convert("RGBA")
+scale_x = image.width / screen_w
+scale_y = image.height / screen_h
+
+left = round((window_x - screen_x) * scale_x)
+top = round((window_y - screen_y) * scale_y)
+right = round(left + window_w * scale_x)
+bottom = round(top + window_h * scale_y)
+
+left = max(0, min(left, image.width))
+right = max(0, min(right, image.width))
+top = max(0, min(top, image.height))
+bottom = max(0, min(bottom, image.height))
+
+if right - left < 100 or bottom - top < 100:
+    raise SystemExit(
+        f"cropped window is too small: crop=({left},{top},{right},{bottom}) "
+        f"full={image.width}x{image.height}"
+    )
+
+image.crop((left, top, right, bottom)).save(raw_path, "PNG")
+print(f"full={full_path} full_size={image.width}x{image.height}")
+print(f"crop={left},{top},{right},{bottom} raw={raw_path}")
+PY
 }
 
 validate_and_compose() {
@@ -108,12 +152,16 @@ sleep 1
 
 log "Find Peek panel window"
 WINDOW_INFO="$(find_peek_window)" || fail "Peek panel window was not visible"
-IFS=$'\t' read -r WINDOW_ID WINDOW_X WINDOW_Y WINDOW_WIDTH WINDOW_HEIGHT <<<"$WINDOW_INFO"
-printf "window id=%s bounds=%s,%s %sx%s\n" "$WINDOW_ID" "$WINDOW_X" "$WINDOW_Y" "$WINDOW_WIDTH" "$WINDOW_HEIGHT"
+IFS=$'\t' read -r WINDOW_ID WINDOW_X WINDOW_Y WINDOW_WIDTH WINDOW_HEIGHT SCREEN_X SCREEN_Y SCREEN_WIDTH SCREEN_HEIGHT <<<"$WINDOW_INFO"
+printf "window id=%s bounds=%s,%s %sx%s screen=%s,%s %sx%s\n" "$WINDOW_ID" "$WINDOW_X" "$WINDOW_Y" "$WINDOW_WIDTH" "$WINDOW_HEIGHT" "$SCREEN_X" "$SCREEN_Y" "$SCREEN_WIDTH" "$SCREEN_HEIGHT"
 
 log "Capture window"
 if ! screencapture -x -l "$WINDOW_ID" "$RAW_CAPTURE"; then
-  fail "screencapture could not capture Peek window; grant Screen Recording permission to the terminal/Codex host and retry"
+  log "Window capture failed; try full-screen crop fallback"
+  if ! screencapture -x "$FULL_CAPTURE"; then
+    fail "screencapture could not capture the window or full screen; grant Screen Recording permission to the terminal/Codex host and retry"
+  fi
+  crop_window_from_full_capture
 fi
 
 log "Validate and compose 16:10 screenshot"

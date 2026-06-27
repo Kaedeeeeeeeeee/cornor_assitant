@@ -185,7 +185,7 @@
   - Debug-only 面板命令和 hot corner smoke 命令没有进入 Release archive。
   - 公网 landing 关键 URL 均可达。
   - 公网 landing SEO 和 analytics config 校验。
-  - 2026-06-28 01:31 JST 再次执行 `./script/launch_verify.sh`，通过。
+  - 2026-06-28 01:36 JST 再次执行 `./script/launch_verify.sh`，通过。
 
 2026-06-28 Landing 本地验收收口：
 
@@ -220,6 +220,11 @@
   - 成功定位 Peek 面板窗口：`window id=8513 bounds=0,281 528x750`。
   - 截图阶段仍失败：`could not create image from window`。
   - 脚本提示需要给终端/Codex 宿主授予 Screen Recording 权限后重试。
+- 2026-06-28 01:34 JST 已给 `script/capture_app_store_screenshot.sh` 增加 full-screen crop fallback：
+  - 先尝试 `screencapture -x -l <window-id>`。
+  - 如果窗口截图失败，则执行 `screencapture -x` 全屏截图，并按 Window Server 定位到的 Peek 窗口坐标裁剪。
+  - 当前会话复跑结果：窗口定位成功，fallback 生成 `peek-full-screen.png` 并裁剪出 `peek-panel-window.png`，但裁剪图仍被验证器判定为 blank/black。
+  - 结论：脚本 fallback 已覆盖窗口级截图不稳定场景；当前仍缺 Screen Recording/可见桌面权限，不能产出可提交截图。
 
 2026-06-28 App Store metadata 校验收口：
 
@@ -288,7 +293,7 @@
 - 2026-06-28 01:26 JST 再次执行 `xcodebuild -exportArchive`，失败原因仍为：
   - `error: exportArchive No Accounts`
   - `error: exportArchive No profiles for 'com.shifeng.peek' were found`
-- 2026-06-28 01:31 JST 再次执行 `./script/launch_verify.sh`，通过。
+- 2026-06-28 01:36 JST 再次执行 `./script/launch_verify.sh`，通过。
 - 2026-06-28 01:15 JST 再次执行 UI test target，失败原因仍为当前 macOS 会话认证状态：
   - `Failed to initialize for UI testing`
   - `System authentication is running`
@@ -633,7 +638,7 @@
 - 尽量覆盖中文、英文或日文中的至少一种主语言；如果 App Store Connect 支持本地化截图，后续再补全三语。
 - 当前机器已有 `/Applications/Peek.app` 运行；为避免干扰用户当前桌面，本次没有自动控制该实例采集截图。
 - 当前自动化会话已能用 `script/qa_smoke.sh` 展开真实 Debug 面板，但 `screencapture` 在该会话下只能得到黑图，不能作为 App Store 截图素材。
-- 已新增 `script/capture_app_store_screenshot.sh` 作为可复跑截图入口；当前会话运行到窗口定位后被 `screencapture` 权限/会话状态阻塞。
+- 已新增 `script/capture_app_store_screenshot.sh` 作为可复跑截图入口；脚本支持窗口截图和 full-screen crop fallback。当前会话运行到截图验证阶段仍被 Screen Recording/可见桌面权限阻塞。
 - 建议截图采集方式：
   - 在可见干净桌面中授予当前终端/Codex 宿主 Screen Recording 权限。
   - 先运行 `./script/capture_app_store_screenshot.sh` 采集 Debug 面板候选图；脚本会拒绝黑图并生成 2880x1800 PNG。
@@ -703,7 +708,7 @@ xcodebuild archive \
 ./script/launch_verify.sh
 ```
 
-  - 2026-06-28 01:31 JST 已通过。
+  - 2026-06-28 01:36 JST 已通过。
 - [ ] 上传 App Store Connect：
   - Xcode Organizer。
   - 或 Transporter。

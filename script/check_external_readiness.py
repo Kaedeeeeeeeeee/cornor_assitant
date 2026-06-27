@@ -199,7 +199,11 @@ def check_screenshot_capture(results: list[CheckResult]) -> None:
     output = "\n".join([result.stdout, result.stderr]).strip()
     if result.returncode == 0:
         add(results, "app_store_screenshot_capture", "ok", "screenshot capture succeeded")
-    elif "Screen Recording" in output or "could not create image from window" in output:
+    elif (
+        "Screen Recording" in output
+        or "could not create image from window" in output
+        or "blank or black" in output
+    ):
         add(results, "app_store_screenshot_capture", "blocked", "Screen Recording/window capture permission is not usable")
     else:
         add(results, "app_store_screenshot_capture", "blocked", " | ".join(output.splitlines()[-5:]))
