@@ -182,7 +182,7 @@
   - Debug-only 面板命令和 hot corner smoke 命令没有进入 Release archive。
   - 公网 landing 关键 URL 均可达。
   - 公网 landing SEO 和 analytics config 校验。
-  - 2026-06-28 01:06 JST 再次执行 `./script/launch_verify.sh`，通过。
+  - 2026-06-28 01:19 JST 再次执行 `./script/launch_verify.sh`，通过。
 
 2026-06-28 Landing 本地验收收口：
 
@@ -249,6 +249,9 @@
   - `CornerAssistantAppTests/LaunchReadinessTests.swift`
   - `CornerAssistantAppTests/SlidePanelViewModelTests.swift`
   - `CornerAssistantAppTests/SuggestionStoreTests.swift`
+- `script/qa_smoke.sh` 已扩展：
+  - 启动 Debug app 后先用 System Events 验证 Peek status item 存在于菜单栏 accessibility tree。
+  - 再用 Debug-only 通知逐个验证四个 hot corner 的真实面板窗口位置。
 - 新增覆盖：
   - 首发三语言解析：`en`、`zh-Hans`、`ja`。
   - 三语言 `Localizable.strings` key 集合一致且值非空。
@@ -260,17 +263,22 @@
 - `xcodebuild ... -only-testing:CornerAssistantAppTests test` 已通过：
   - 22 tests passed, 0 failures。
 - `script/qa_smoke.sh` 已重新验证通过：
+  - 当前 smoke 会先验证菜单栏 status item 存在。
   - 当前 smoke 会逐个切换 Debug-only hot corner 命令并验证真实 Peek 面板窗口位于对应屏幕边角。
   - 最近一次输出：
-    - `corner=bottomLeft window id=8447 layer=3 bounds=x:0 y:281 width:528 height:750`
-    - `corner=bottomRight window id=8447 layer=3 bounds=x:1186 y:271 width:528 height:750`
-    - `corner=topLeft window id=8447 layer=3 bounds=x:14 y:43 width:528 height:750`
-    - `corner=topRight window id=8447 layer=3 bounds=x:1186 y:43 width:528 height:750`
+    - `status_item=title= description=Peek x:1523 y:4 w:24 h:24`
+    - `corner=bottomLeft window id=8508 layer=3 bounds=x:0 y:281 width:528 height:750`
+    - `corner=bottomRight window id=8508 layer=3 bounds=x:1186 y:271 width:528 height:750`
+    - `corner=topLeft window id=8508 layer=3 bounds=x:14 y:43 width:528 height:750`
+    - `corner=topRight window id=8508 layer=3 bounds=x:1186 y:43 width:528 height:750`
     - `qa_smoke passed`
 - 2026-06-28 01:07 JST 再次执行 `xcodebuild -exportArchive`，失败原因仍为：
   - `error: exportArchive No Accounts`
   - `error: exportArchive No profiles for 'com.shifeng.peek' were found`
-- 2026-06-28 01:06 JST 再次执行 `./script/launch_verify.sh`，通过。
+- 2026-06-28 01:19 JST 再次执行 `./script/launch_verify.sh`，通过。
+- 2026-06-28 01:15 JST 再次执行 UI test target，失败原因仍为当前 macOS 会话认证状态：
+  - `Failed to initialize for UI testing`
+  - `System authentication is running`
 
 2026-06-27 Export Compliance 收口：
 
@@ -478,6 +486,19 @@
 - Bing Webmaster Tools：
   - 当前仍为公开未登录页，页面显示 Sign In / Get started；未提交站点。
 
+2026-06-28 01:16 JST 后台可达性复查：
+
+- App Store Connect agreements：
+  - `https://appstoreconnect.apple.com/agreements/` 最终仍跳转到 `https://appstoreconnect.apple.com/login?targetUrl=/agreements/`。
+  - 当前无可操作 App Store Connect 登录会话。
+- Google Search Console：
+  - 当前登录账号仍为 `f.shera.09@gmail.com`。
+  - `https://kaedeeeeeeeeee.github.io/cornor_assitant/` 属性仍未验证，页面标题为“このプロパティへのアクセス権がありません”。
+- Bing Webmaster Tools：
+  - 当前仍跳转到公开介绍页 `https://www.bing.com/webmasters/about?...`，页面显示 Sign In / Get started；未登录，未提交站点。
+- PageSpeed Insights API：
+  - mobile 和 desktop 请求仍返回 HTTP 429 Too Many Requests；继续作为非阻塞补充项。
+
 2026-06-27 App Store Connect 表单材料补齐：
 
 - `CornerAssistantApp/docs/AppStore-Materials.md` 已补充可照填字段：
@@ -605,7 +626,8 @@
 - [ ] 确认最终 App Store exported app 没有 `com.apple.security.get-task-allow`。
 - [x] 确认 `PrivacyInfo.xcprivacy` 已加入 target 并打包进 app。
 - [x] 确认 app icon 和 bundle icon 使用真实 Peek icon。
-- [ ] 确认 menu bar icon 在真实运行环境中显示正常。
+- [x] 确认 menu bar icon 在真实运行环境中显示正常。
+  - `script/qa_smoke.sh` 已用 System Events 验证 Peek status item 存在于菜单栏 accessibility tree。
 - [x] 设置 App category：
   - `public.app-category.productivity`
 - [x] 运行 Release build：
@@ -641,7 +663,7 @@ xcodebuild archive \
 ./script/launch_verify.sh
 ```
 
-  - 2026-06-28 01:06 JST 已通过。
+  - 2026-06-28 01:19 JST 已通过。
 - [ ] 上传 App Store Connect：
   - Xcode Organizer。
   - 或 Transporter。
@@ -663,6 +685,7 @@ xcodebuild archive \
 
 - [x] `script/build_and_run.sh --verify`：构建并启动 Debug `Peek.app`，确认进程存在。
 - [x] `script/qa_smoke.sh`：通过 Debug-only 通知展开真实面板，确认 Window Server 中存在 Peek 面板窗口。
+  - 当前也覆盖菜单栏 status item 存在性。
   - 当前覆盖四个 hot corner 的真实窗口定位。
 - [x] `script/capture_app_store_screenshot.sh`：可启动并展开真实面板，当前会话在 `screencapture` 阶段因截图权限/会话状态失败。
 - [x] `script/validate_app_store_materials.py`：验证三语言 App Store metadata 长度和禁用宣传词。
@@ -688,6 +711,7 @@ xcodebuild archive \
 
 - [ ] 首次启动。
 - [ ] 菜单栏图标点击。
+  - 2026-06-28 已确认 status item 存在；但 AXPress/AppleScript click 在当前会话未触发真实左键行为，本项仍需手动或更完整 UI automation 验证。
 - [ ] 菜单栏右键/control-click 菜单。
 - [ ] 四个热角设置。
 - [ ] 边缘面板唤出和自动收起。

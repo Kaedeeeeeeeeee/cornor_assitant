@@ -12,6 +12,61 @@ post_panel_command() {
 
 trap 'post_panel_command collapse >/dev/null 2>&1 || true' EXIT
 
+assert_status_item() {
+  /usr/bin/osascript <<'APPLESCRIPT'
+tell application "System Events"
+    if UI elements enabled is false then
+        error "Accessibility UI scripting is disabled"
+    end if
+
+    if not (exists process "Peek") then
+        error "Peek process is not visible to System Events"
+    end if
+
+    tell process "Peek"
+        set summaries to {}
+        set foundStatusItem to false
+        repeat with menuBar in menu bars
+            repeat with menuBarItem in menu bar items of menuBar
+                set titleText to ""
+                set descriptionText to ""
+                set positionText to ""
+                set sizeText to ""
+                set itemWidth to 0
+                set itemHeight to 0
+
+                try
+                    set titleText to title of menuBarItem as text
+                end try
+                try
+                    set descriptionText to description of menuBarItem as text
+                end try
+                try
+                    set itemPosition to position of menuBarItem
+                    set itemSize to size of menuBarItem
+                    set itemWidth to item 1 of itemSize
+                    set itemHeight to item 2 of itemSize
+                    set positionText to "x:" & (item 1 of itemPosition) & " y:" & (item 2 of itemPosition)
+                    set sizeText to "w:" & itemWidth & " h:" & itemHeight
+                end try
+
+                if descriptionText is "Peek" and itemWidth > 0 and itemHeight > 0 then
+                    set foundStatusItem to true
+                    set end of summaries to "title=" & titleText & " description=" & descriptionText & " " & positionText & " " & sizeText
+                end if
+            end repeat
+        end repeat
+
+        if foundStatusItem is false then
+            error "Peek status item was not found in menu bar accessibility tree"
+        end if
+
+        return summaries as text
+    end tell
+end tell
+APPLESCRIPT
+}
+
 assert_panel_window() {
   local corner="$1"
   /usr/bin/swift - "$corner" <<'SWIFT'
@@ -88,6 +143,9 @@ SWIFT
 }
 
 CONFIGURATION=Debug "$RUN_SCRIPT" --verify
+
+status_item_summary="$(assert_status_item)"
+echo "status_item=$status_item_summary"
 
 for corner in bottomLeft bottomRight topLeft topRight; do
   post_panel_command "corner:$corner"
