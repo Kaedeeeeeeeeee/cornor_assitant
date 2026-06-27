@@ -70,11 +70,26 @@
   - `NSHumanReadableCopyright = Copyright 2026 Zhang Shifeng`
   - `NSMicrophoneUsageDescription = Websites opened in Peek may request microphone access for features such as calls or voice input.`
 - App Store 上架材料已重写：`CornerAssistantApp/docs/AppStore-Materials.md`。
+- App Category 已设置为 `public.app-category.productivity`，避免 Xcode archive validation warning。
+- 已新增 App Store export 配置：`CornerAssistantApp/export_options_app_store.plist`。
+- App Store archive 已生成到 `/tmp/peek-appstore/Peek.xcarchive`。
+- Archive 产物确认：
+  - universal: `x86_64` + `arm64`
+  - bundle id: `com.shifeng.peek`
+  - version: `1.0 (1)`
+  - minimum macOS: `15.0`
+  - category: `public.app-category.productivity`
+  - entitlements: App Sandbox、network client、audio input
+  - archive app entitlements 未包含 `get-task-allow`
 
 当前发现的发布门槛：
 
 - 本地 Release build 仍使用 `Apple Development` 签名，entitlements 里有 `com.apple.security.get-task-allow = true`；这个产物不能直接提交 App Store Connect，必须用 App Store distribution archive/export 重新签名。
 - 当前保留 `audio-input`，用于内置 WebKit 页面可能请求的网页通话或语音输入；隐私页和 Info.plist 已同步说明。
+- App Store export 已尝试，但失败：
+  - `error: exportArchive Unable to process request - PLA Update available`
+  - `error: exportArchive No profiles for 'com.shifeng.peek' were found`
+  - 需要登录 Apple Developer/App Store Connect 接受 Program License Agreement 更新，并创建/刷新 `com.shifeng.peek` 的 App Store provisioning profile。
 
 ## 1.2 本次部署记录
 
@@ -188,6 +203,7 @@
 
 - [ ] Apple Developer Program 账号可用。
 - [ ] Paid Apps Agreement 已签署。
+- [ ] Apple Developer Program License Agreement 更新已接受。
 - [ ] 税务和银行信息已配置，否则 US$5.99 付费销售无法上线。
 - [ ] 创建 macOS App 记录：
   - Name: Peek
@@ -272,6 +288,8 @@
 - [ ] 确认 distribution build 没有 `com.apple.security.get-task-allow`。
 - [x] 确认 `PrivacyInfo.xcprivacy` 已加入 target 并打包进 app。
 - [ ] 确认 app icon、menu bar icon 和 bundle icon 正常。
+- [x] 设置 App category：
+  - `public.app-category.productivity`
 - [x] 运行 Release build：
 
 ```bash
@@ -283,7 +301,7 @@ xcodebuild \
   build
 ```
 
-- [ ] 创建新的 archive，不复用历史 build：
+- [x] 创建新的 archive，不复用历史 build：
 
 ```bash
 xcodebuild archive \
@@ -295,6 +313,8 @@ xcodebuild archive \
 ```
 
 - [ ] 用 Xcode Organizer 或 `xcodebuild -exportArchive` 走 App Store distribution。
+  - 已新增 `export_options_app_store.plist`。
+  - 当前 export 被 Apple 后台阻塞：PLA 更新待接受，且没有 `com.shifeng.peek` profile。
 - [ ] 上传 App Store Connect：
   - Xcode Organizer。
   - 或 Transporter。
@@ -411,6 +431,8 @@ curl -I https://kaedeeeeeeeeee.github.io/cornor_assitant/sitemap.xml
 - [ ] Apple Developer/App Store Connect 登录权限。
 - [ ] Paid Apps Agreement、税务、银行信息。
 - [ ] App Store Connect App record。
+- [ ] Apple Developer PLA update acceptance。
+- [ ] `com.shifeng.peek` App Store provisioning profile。
 - [ ] App Store SKU 最终确认；建议 `peek-macos-001`。
 - [ ] App Store 截图素材。
 - [ ] App Review release mode；建议首发使用 Manual release。
