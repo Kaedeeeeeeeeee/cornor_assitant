@@ -7,6 +7,7 @@ import shutil
 import subprocess
 import sys
 import urllib.request
+import plistlib
 from dataclasses import dataclass
 from html.parser import HTMLParser
 from pathlib import Path
@@ -65,6 +66,65 @@ def run(command: list[str], timeout: int = 30) -> subprocess.CompletedProcess[st
         timeout=timeout,
         check=False,
     )
+
+
+def read_plist(path: Path) -> dict[str, object]:
+    with path.open("rb") as file:
+        value = plistlib.load(file)
+    if not isinstance(value, dict):
+        raise ValueError(f"plist root is not a dictionary: {path}")
+    return value
+
+
+def exported_app_path(export_path: Path) -> Path:
+    apps = sorted(path for path in export_path.rglob("*.app") if path.is_dir())
+    if len(apps) != 1:
+        raise ValueError(f"expected one exported .app in {export_path}, found {len(apps)}")
+    return apps[0]
+
+
+def validate_exported_app(export_path: Path) -> str:
+    app_path = exported_app_path(export_path)
+    info_plist = app_path / "Contents" / "Info.plist"
+    privacy_manifest = app_path / "Contents" / "Resources" / "PrivacyInfo.xcprivacy"
+    executable = app_path / "Contents" / "MacOS" / "Peek"
+
+    if not info_plist.exists():
+        raise ValueError(f"exported app Info.plist missing: {info_plist}")
+    if not privacy_manifest.exists():
+        raise ValueError(f"exported app PrivacyInfo.xcprivacy missing: {privacy_manifest}")
+    if not executable.exists():
+        raise ValueError(f"exported app executable missing: {executable}")
+
+    info = read_plist(info_plist)
+    expected_info = {
+        "CFBundleIdentifier": "com.shifeng.peek",
+        "CFBundleShortVersionString": "1.0",
+        "CFBundleVersion": "1",
+        "LSMinimumSystemVersion": "15.0",
+        "LSApplicationCategoryType": "public.app-category.productivity",
+    }
+    for key, expected in expected_info.items():
+        actual = info.get(key)
+        if actual != expected:
+            raise ValueError(f"exported app {key} expected {expected!r}, got {actual!r}")
+
+    entitlements = run(["codesign", "-d", "--entitlements", ":-", str(app_path)], timeout=30)
+    entitlements_xml = "\n".join([entitlements.stdout, entitlements.stderr])
+    if entitlements.returncode != 0:
+        raise ValueError(f"could not read exported app entitlements: {' | '.join(entitlements_xml.splitlines()[-5:])}")
+
+    if "com.apple.security.get-task-allow" in entitlements_xml:
+        raise ValueError("exported app entitlements contain com.apple.security.get-task-allow")
+    for required in [
+        "com.apple.security.app-sandbox",
+        "com.apple.security.network.client",
+        "com.apple.security.device.audio-input",
+    ]:
+        if required not in entitlements_xml:
+            raise ValueError(f"exported app entitlements missing {required}")
+
+    return str(app_path)
 
 
 def fetch_text(url: str) -> tuple[int, str]:
@@ -248,7 +308,12 @@ def check_app_store_export(results: list[CheckResult]) -> None:
     result = run(command, timeout=120)
     output = "\n".join([result.stdout, result.stderr]).strip()
     if result.returncode == 0:
-        add(results, "app_store_export", "ok", f"export succeeded at {EXPORT_PATH}")
+        try:
+            app_path = validate_exported_app(EXPORT_PATH)
+        except Exception as exc:  # noqa: BLE001 - report validation failure in readiness summary.
+            add(results, "app_store_export", "blocked", f"export succeeded but validation failed: {exc}")
+        else:
+            add(results, "app_store_export", "ok", f"export succeeded and validated: {app_path}")
     elif "No Accounts" in output or "No profiles for 'com.shifeng.peek'" in output:
         add(results, "app_store_export", "blocked", "No Accounts / no com.shifeng.peek App Store profile")
     else:

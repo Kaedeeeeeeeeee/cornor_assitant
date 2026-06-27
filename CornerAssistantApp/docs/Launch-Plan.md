@@ -755,6 +755,7 @@ PEEK_BING_SITE_VERIFICATION=... \
 - [x] 检查是否真的需要 audio input entitlement；保留给 WebKit 页面请求麦克风，Info.plist 和 privacy copy 已同步。
 - [x] 确认 archive app entitlements 没有 `com.apple.security.get-task-allow`。
 - [ ] 确认最终 App Store exported app 没有 `com.apple.security.get-task-allow`。
+  - `script/check_external_readiness.py` 已扩展：App Store export 成功后会定位 exported `.app`，验证 bundle metadata、`PrivacyInfo.xcprivacy`、sandbox/network/audio entitlements，并拒绝 `com.apple.security.get-task-allow`。
 - [x] 确认 `PrivacyInfo.xcprivacy` 已加入 target 并打包进 app。
 - [x] 确认 app icon 和 bundle icon 使用真实 Peek icon。
 - [x] 确认 menu bar icon 在真实运行环境中显示正常。
@@ -826,6 +827,7 @@ xcodebuild archive \
 - [x] `script/validate_privacy_alignment.py`：验证 PrivacyInfo、Xcode 权限、App Store App Privacy 口径和 landing privacy 文案一致。
 - [x] `script/validate_landing_public.py`：验证公网 landing SEO、sitemap、manifest、analytics config 和禁用宣传词。
 - [x] `script/check_external_readiness.py`：复查公网 URL、GitHub Pages/variables、GA4 配置状态，并可选复查 export/截图权限阻塞。
+  - 当前也覆盖 App Store export 成功后的 exported app metadata、privacy manifest 和 entitlements 验证。
 - [x] `script/configure_app_store_url.py`：真实 App Store URL 出来后激活 landing CTA、更新三语言 CTA 文案和 JSON-LD，并复跑本地 landing 校验。
 - [x] 搜索 URL 构造、空查询处理、查询 trim/encode。
 - [x] URL 输入规范化：完整 HTTP/HTTPS URL、裸域名、路径、localhost、普通搜索词。
