@@ -190,6 +190,7 @@
   - 2026-06-28 02:04 JST 再次执行 `./script/launch_verify.sh`，通过。
   - 2026-06-28 02:13 JST 再次执行 `./script/launch_verify.sh`，通过。
   - 2026-06-28 02:28 JST 再次执行 `./script/launch_verify.sh`，通过。
+  - 2026-06-28 02:42 JST 再次执行 `./script/launch_verify.sh`，通过；当前脚本已额外验证 App Store metadata 导出包。
 
 2026-06-28 Landing 本地验收收口：
 
@@ -254,6 +255,7 @@
 - 导出前会先复用 `script/validate_app_store_materials.py` 校验，避免把超长字段或禁用宣传词复制进 App Store Connect。
 - 当前导出内容：
   - `app_information.json`：App record、价格、URL、隐私、年龄分级、出口合规和仍需手工填写的字段。
+  - `app_store_connect_submission_checklist.md`：App Store Connect 表单照填清单，覆盖 app record、价格、年龄分级、内容权利、DSA、出口合规、截图计划和提交前核对。
   - `metadata/zh-Hans/`、`metadata/en-US/`、`metadata/ja/`：三语言 App name、subtitle、description、keywords、what's new。
   - `app_review_notes.txt`：审核备注草稿。
   - `README.md`：后台填写顺序和仍需手工完成的外部事项。
@@ -264,6 +266,7 @@
 ```
 
 - 2026-06-28 01:42 JST 已执行通过，生成 `/tmp/peek-app-store-metadata`。
+- 2026-06-28 02:41 JST 已重新执行通过，生成 `/tmp/peek-app-store-metadata/app_store_connect_submission_checklist.md`。
 
 2026-06-28 Privacy / App Privacy 口径校验收口：
 
@@ -802,7 +805,7 @@ xcodebuild archive \
   - 当前覆盖四个 hot corner 的真实窗口定位。
 - [x] `script/capture_app_store_screenshot.sh`：可启动并展开真实面板，当前会话在 `screencapture` 阶段因截图权限/会话状态失败。
 - [x] `script/validate_app_store_materials.py`：验证三语言 App Store metadata 长度和禁用宣传词。
-- [x] `script/export_app_store_metadata.py`：导出可复制进 App Store Connect 的三语言 metadata、基础字段和审核备注材料包。
+- [x] `script/export_app_store_metadata.py`：导出可复制进 App Store Connect 的三语言 metadata、基础字段、审核备注和提交表单清单材料包。
 - [x] `script/validate_privacy_alignment.py`：验证 PrivacyInfo、Xcode 权限、App Store App Privacy 口径和 landing privacy 文案一致。
 - [x] `script/validate_landing_public.py`：验证公网 landing SEO、sitemap、manifest、analytics config 和禁用宣传词。
 - [x] `script/check_external_readiness.py`：复查公网 URL、GitHub Pages/variables、GA4 配置状态，并可选复查 export/截图权限阻塞。
@@ -1018,7 +1021,7 @@ xcodebuild \
 ./script/launch_verify.sh
 ```
 
-该脚本会执行 App Store metadata 校验、Privacy/App Privacy 口径一致性校验、Release build、可自动运行的 XCTest、Release archive、归档 metadata/entitlements/privacy manifest 校验、Debug-only 字符串泄漏检查、公网 landing URL 检查和公网 landing SEO/analytics config 校验。公网检查可用 `SKIP_NETWORK=1 ./script/launch_verify.sh` 跳过。
+该脚本会执行 App Store metadata 校验、App Store metadata 导出包校验、Privacy/App Privacy 口径一致性校验、Release build、可自动运行的 XCTest、Release archive、归档 metadata/entitlements/privacy manifest 校验、Debug-only 字符串泄漏检查、公网 landing URL 检查和公网 landing SEO/analytics config 校验。公网检查可用 `SKIP_NETWORK=1 ./script/launch_verify.sh` 跳过。
 
 App Store Connect metadata 导出：
 
@@ -1026,7 +1029,7 @@ App Store Connect metadata 导出：
 ./script/export_app_store_metadata.py
 ```
 
-默认输出到 `/tmp/peek-app-store-metadata`。登录 App Store Connect 并创建 app record 后，从该目录复制三语言 metadata、审核备注和基础字段；截图、真实联系电话、价格层级确认、DSA 和 build selection 仍需在后台手工完成。
+默认输出到 `/tmp/peek-app-store-metadata`。登录 App Store Connect 并创建 app record 后，从该目录复制三语言 metadata、审核备注、基础字段和 `app_store_connect_submission_checklist.md` 里的后台表单清单；截图、真实联系电话、价格层级确认、DSA 和 build selection 仍需在后台手工完成。
 
 Landing repository variables 配置：
 

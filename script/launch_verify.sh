@@ -13,9 +13,20 @@ INFO_PLIST="$APP_PATH/Contents/Info.plist"
 PRIVACY_MANIFEST="$APP_PATH/Contents/Resources/PrivacyInfo.xcprivacy"
 APP_EXECUTABLE="$APP_PATH/Contents/MacOS/Peek"
 MATERIALS_VALIDATOR="$ROOT_DIR/script/validate_app_store_materials.py"
+METADATA_EXPORTER="$ROOT_DIR/script/export_app_store_metadata.py"
 PRIVACY_ALIGNMENT_VALIDATOR="$ROOT_DIR/script/validate_privacy_alignment.py"
 LANDING_VALIDATOR="$ROOT_DIR/script/validate_landing_public.py"
 LANDING_LOCAL_VALIDATOR="$ROOT_DIR/script/validate_landing_local.js"
+declare -a CLEANUP_PATHS=()
+
+cleanup() {
+  local path
+  for path in "${CLEANUP_PATHS[@]}"; do
+    rm -rf "$path"
+  done
+}
+
+trap cleanup EXIT
 
 log() {
   printf "\n==> %s\n" "$1"
@@ -50,6 +61,14 @@ assert_plist_value() {
 
 log "App Store materials"
 "$MATERIALS_VALIDATOR"
+
+log "App Store metadata export"
+METADATA_VERIFY_DIR="$(mktemp -d "${TMPDIR:-/tmp}/peek-metadata-verify.XXXXXX")"
+CLEANUP_PATHS+=("$METADATA_VERIFY_DIR")
+OUT_DIR="$METADATA_VERIFY_DIR" "$METADATA_EXPORTER" >/dev/null
+[[ -f "$METADATA_VERIFY_DIR/app_information.json" ]] || fail "metadata export missing app_information.json"
+[[ -f "$METADATA_VERIFY_DIR/app_store_connect_submission_checklist.md" ]] || fail "metadata export missing submission checklist"
+[[ -f "$METADATA_VERIFY_DIR/app_review_notes.txt" ]] || fail "metadata export missing app_review_notes.txt"
 
 log "Privacy alignment"
 "$PRIVACY_ALIGNMENT_VALIDATOR"
@@ -103,7 +122,7 @@ microphone_usage="$(plist_read "NSMicrophoneUsageDescription" "$INFO_PLIST")"
 
 log "Archive entitlements"
 ENTITLEMENTS_PLIST="$(mktemp "${TMPDIR:-/tmp}/peek-entitlements.XXXXXX.plist")"
-trap 'rm -f "$ENTITLEMENTS_PLIST"' EXIT
+CLEANUP_PATHS+=("$ENTITLEMENTS_PLIST")
 codesign -d --entitlements :- "$APP_PATH" >"$ENTITLEMENTS_PLIST" 2>/dev/null
 assert_plist_value "$ENTITLEMENTS_PLIST" "com.apple.security.app-sandbox" "true"
 assert_plist_value "$ENTITLEMENTS_PLIST" "com.apple.security.network.client" "true"

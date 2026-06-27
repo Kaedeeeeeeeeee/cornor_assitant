@@ -136,6 +136,7 @@ def write_readme(output_dir: Path, app_information: dict[str, object]) -> None:
         "## Files",
         "",
         "- `app_information.json`: shared app record, pricing, privacy, age-rating, and compliance notes.",
+        "- `app_store_connect_submission_checklist.md`: copy-paste checklist for App Store Connect forms.",
         "- `app_review_notes.txt`: App Review notes draft.",
         "- `metadata/<locale>/app_name.txt`",
         "- `metadata/<locale>/subtitle.txt`",
@@ -181,6 +182,51 @@ def write_readme(output_dir: Path, app_information: dict[str, object]) -> None:
     write_text(output_dir / "README.md", "\n".join(lines))
 
 
+def write_submission_checklist(
+    output_dir: Path,
+    markdown: str,
+    app_information: dict[str, object],
+) -> None:
+    included_sections = [
+        ("App Store Connect fields", "App Store Connect 字段建议"),
+        ("Export compliance", "Export Compliance 建议填写"),
+        ("Screenshot plan", "截图计划"),
+        ("Pre-submission checklist", "上架前核对"),
+    ]
+    lines = [
+        "# Peek App Store Connect Submission Checklist",
+        "",
+        f"Source: `{MATERIALS_PATH}`",
+        "",
+        "Use this file while filling App Store Connect. It is generated from the reviewed launch materials, but the account holder must still confirm any legal, tax, banking, DSA, and contact details in Apple's UI.",
+        "",
+        "## Snapshot",
+        "",
+        f"- App name: {app_information['app_name']}",
+        f"- Bundle ID: `{app_information['bundle_id']}`",
+        f"- SKU: `{app_information['sku']}`",
+        f"- Price: {app_information['price']}",
+        f"- Primary language: {app_information['primary_language']}",
+        f"- Marketing URL: {app_information['marketing_url']}",
+        f"- Privacy Policy URL: {app_information['privacy_policy_url']}",
+        f"- Support URL: {app_information['support_url']}",
+        f"- Release option: {app_information['release_option']}",
+        "",
+        "## Files to paste",
+        "",
+        "- Localized metadata: `metadata/<locale>/*.txt`",
+        "- App Review notes: `app_review_notes.txt`",
+        "- Shared app record data: `app_information.json`",
+        "",
+    ]
+
+    for title, heading in included_sections:
+        section = extract_heading_section(markdown, heading).strip()
+        lines.extend([f"## {title}", "", section, ""])
+
+    write_text(output_dir / "app_store_connect_submission_checklist.md", "\n".join(lines))
+
+
 def export_metadata(output_dir: Path) -> list[Path]:
     markdown = MATERIALS_PATH.read_text(encoding="utf-8")
     basic_info = extract_basic_info(markdown)
@@ -205,6 +251,10 @@ def export_metadata(output_dir: Path) -> list[Path]:
     review_path = output_dir / "app_review_notes.txt"
     write_text(review_path, review_notes)
     written.append(review_path)
+
+    checklist_path = output_dir / "app_store_connect_submission_checklist.md"
+    write_submission_checklist(output_dir, markdown, app_information)
+    written.append(checklist_path)
 
     readme_path = output_dir / "README.md"
     write_readme(output_dir, app_information)
