@@ -62,6 +62,61 @@ require_command() {
   fi
 }
 
+latest_pages_run_json() {
+  gh run list \
+    --repo "$REPO" \
+    --workflow "$PAGES_WORKFLOW" \
+    --limit 1 \
+    --json databaseId,status,conclusion,url
+}
+
+extract_run_field() {
+  local field="$1"
+  python3 -c 'import json, sys
+raw = sys.stdin.read()
+try:
+    data = json.loads(raw) if raw.strip() else []
+except json.JSONDecodeError:
+    data = []
+value = data[0].get(sys.argv[1], "") if data else ""
+print("" if value is None else value)' "$field"
+}
+
+wait_for_pages_workflow() {
+  local previous_run_id="$1"
+  local attempts=90
+  local delay_seconds=5
+  local attempt
+
+  printf "Waiting for new %s run to complete...\n" "$PAGES_WORKFLOW"
+
+  for ((attempt = 1; attempt <= attempts; attempt += 1)); do
+    local run_json run_id status conclusion url
+    run_json="$(latest_pages_run_json || true)"
+    run_id="$(printf "%s" "$run_json" | extract_run_field databaseId)"
+    status="$(printf "%s" "$run_json" | extract_run_field status)"
+    conclusion="$(printf "%s" "$run_json" | extract_run_field conclusion)"
+    url="$(printf "%s" "$run_json" | extract_run_field url)"
+
+    if [[ -n "$run_id" && "$run_id" != "$previous_run_id" ]]; then
+      printf "Pages run %s status=%s conclusion=%s\n" "$run_id" "${status:-unknown}" "${conclusion:-pending}"
+      if [[ "$status" == "completed" ]]; then
+        if [[ "$conclusion" == "success" ]]; then
+          printf "Pages run completed successfully: %s\n" "$url"
+          return 0
+        fi
+        printf "Pages run did not succeed: %s\n" "$url" >&2
+        exit 1
+      fi
+    fi
+
+    sleep "$delay_seconds"
+  done
+
+  printf "Timed out waiting for a new %s run to complete.\n" "$PAGES_WORKFLOW" >&2
+  exit 1
+}
+
 validate_value() {
   local name="$1"
   local value="$2"
@@ -132,6 +187,7 @@ fi
 
 if [[ "$DRY_RUN" != "1" ]]; then
   require_command gh
+  require_command python3
   gh auth status >/dev/null
 fi
 
@@ -139,12 +195,17 @@ for index in "${!variable_names[@]}"; do
   set_variable "${variable_names[$index]}" "${variable_values[$index]}"
 done
 
+previous_pages_run_id=""
 if [[ "$RERUN_PAGES" == "1" ]]; then
   if [[ "$DRY_RUN" == "1" ]]; then
     printf "DRY RUN: would trigger %s for %s\n" "$PAGES_WORKFLOW" "$REPO"
   else
+    previous_pages_run_id="$(latest_pages_run_json | extract_run_field databaseId)"
     gh workflow run "$PAGES_WORKFLOW" --repo "$REPO"
     printf "Triggered %s for %s\n" "$PAGES_WORKFLOW" "$REPO"
+    if [[ "$CHECK_AFTER" == "1" ]]; then
+      wait_for_pages_workflow "$previous_pages_run_id"
+    fi
   fi
 fi
 

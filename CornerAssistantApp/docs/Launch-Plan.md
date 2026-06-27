@@ -532,6 +532,7 @@
   - dry-run 已验证会校验并列出将设置的 variable 名称，不打印 token 值。
   - 无效 GA4 ID 会失败，避免写入错误 repository variable。
   - 2026-06-28 02:28 JST 已验证脚本语法、dry-run、错误 token 拦截和默认 readiness 检查。
+  - 2026-06-28 04:27 JST 已扩展 `--rerun-pages --check-after`：真实触发 Pages workflow 后会等待新 run 完成，再运行 `script/check_external_readiness.py`，避免部署尚未完成时误判公网状态。
 - 2026-06-28 已新增 `script/configure_app_store_url.py`：
   - dry-run 已验证会接受 `https://apps.apple.com/.../app/.../id...` 格式并列出将更新的文件。
   - 无效 host 会失败，避免把非 App Store 链接写入 landing CTA。
@@ -1182,7 +1183,7 @@ PEEK_BING_SITE_VERIFICATION=... \
   ./script/configure_landing_variables.sh --dry-run
 ```
 
-确认输出无误后去掉 `--dry-run`，可追加 `--rerun-pages --check-after` 触发 Pages workflow 并复查公网状态。脚本只设置非空变量，会验证格式，并且不会在日志里打印 token 值。
+确认输出无误后去掉 `--dry-run`，可追加 `--rerun-pages --check-after` 触发 Pages workflow，等待新 run 完成，并复查公网状态。脚本只设置非空变量，会验证格式，并且不会在日志里打印 token 值。
 
 App Store URL 回填：
 
