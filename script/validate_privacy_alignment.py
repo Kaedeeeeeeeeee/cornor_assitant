@@ -114,6 +114,16 @@ def validate_project_settings(errors: list[str]) -> None:
                 f"project_setting.{key} expected at least "
                 f"{minimum_count} occurrences of {marker!r}"
             )
+        if value in {"YES", "NO"}:
+            opposite = "NO" if value == "YES" else "YES"
+            opposite_marker = f"{key} = {opposite};"
+            opposite_count = project.count(opposite_marker)
+            print(f"project_setting.{key}.opposite_{opposite}: count={opposite_count} expected=0")
+            if opposite_count:
+                errors.append(
+                    f"project_setting.{key} has {opposite_count} unexpected "
+                    f"occurrence(s) of {opposite_marker!r}"
+                )
 
     microphone_marker = (
         'INFOPLIST_KEY_NSMicrophoneUsageDescription = "Websites opened in Peek may request '

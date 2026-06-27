@@ -135,6 +135,23 @@ assert_plist_value "$ENTITLEMENTS_PLIST" "com.apple.security.device.audio-input"
 if /usr/libexec/PlistBuddy -c "Print :com.apple.security.get-task-allow" "$ENTITLEMENTS_PLIST" >/dev/null 2>&1; then
   fail "archive entitlements unexpectedly contain get-task-allow"
 fi
+ENTITLEMENTS_KEY_LIST="$(mktemp "${TMPDIR:-/tmp}/peek-entitlement-keys.XXXXXX.txt")"
+CLEANUP_PATHS+=("$ENTITLEMENTS_KEY_LIST")
+python3 - "$ENTITLEMENTS_PLIST" >"$ENTITLEMENTS_KEY_LIST" <<'PY'
+import plistlib
+import sys
+
+with open(sys.argv[1], "rb") as file:
+    entitlements = plistlib.load(file)
+
+for key in sorted(entitlements):
+    print(key)
+PY
+EXPECTED_ENTITLEMENTS=$'com.apple.security.app-sandbox\ncom.apple.security.device.audio-input\ncom.apple.security.network.client'
+ACTUAL_ENTITLEMENTS="$(cat "$ENTITLEMENTS_KEY_LIST")"
+if [[ "$ACTUAL_ENTITLEMENTS" != "$EXPECTED_ENTITLEMENTS" ]]; then
+  fail "archive entitlements differ from allowlist: $ACTUAL_ENTITLEMENTS"
+fi
 
 log "Privacy manifest"
 [[ -f "$PRIVACY_MANIFEST" ]] || fail "PrivacyInfo.xcprivacy missing from archive"

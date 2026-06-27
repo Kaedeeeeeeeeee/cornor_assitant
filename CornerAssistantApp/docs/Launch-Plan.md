@@ -485,6 +485,10 @@
   - `SKIP_NETWORK=1 ./script/launch_verify.sh` 通过。
   - 校验 executable 不含 Debug-only panel command、Debug hot corner/scenario command、Bing provider/endpoint、OCR history 残留。
   - 校验 archive 内三语言 `Localizable.strings` 不含 `Bing`、selected-text search、`macOS 14`、`Sonoma` 等禁用公开文案。
+- 2026-06-28 04:11 JST 已强化权限/entitlement gate：
+  - `script/validate_privacy_alignment.py` 现在会检查 Xcode build settings 中 `YES`/`NO` 相反值不得同时存在。
+  - `script/launch_verify.sh` 现在会把 archive entitlements 和 allowlist 精确对比；当前只允许 `app-sandbox`、`network.client`、`audio-input`。
+  - `SKIP_NETWORK=1 ./script/launch_verify.sh` 通过。
 - 首页 JSON-LD `applicationCategory` 已从 `UtilitiesApplication` 调整为 `Productivity`，与 App Store 分类保持一致。
 
 2026-06-28 01:24 JST GitHub Pages / analytics 复查：
@@ -829,6 +833,7 @@ PEEK_BING_SITE_VERIFICATION=... \
 - [x] 确认 WebKit 浏览需要的 network client entitlement。
 - [x] 检查是否真的需要 audio input entitlement；保留给 WebKit 页面请求麦克风，Info.plist 和 privacy copy 已同步。
 - [x] 确认 archive app entitlements 没有 `com.apple.security.get-task-allow`。
+  - `script/launch_verify.sh` 会精确校验 archive entitlement allowlist：`com.apple.security.app-sandbox`、`com.apple.security.network.client`、`com.apple.security.device.audio-input`。
 - [ ] 确认最终 App Store exported app 没有 `com.apple.security.get-task-allow`。
   - `script/check_external_readiness.py` 已扩展：App Store export 成功后会定位 exported `.app`，验证 bundle metadata、`PrivacyInfo.xcprivacy`、sandbox/network/audio entitlements，并拒绝 `com.apple.security.get-task-allow`。
 - [x] 确认 `PrivacyInfo.xcprivacy` 已加入 target 并打包进 app。
@@ -900,7 +905,7 @@ xcodebuild archive \
 - [x] `script/capture_app_store_screenshot.sh`：可启动并展开真实面板，可生成 5 张首发截图套件；当前会话在 `screencapture` 阶段因截图权限/会话状态失败。
 - [x] `script/validate_app_store_materials.py`：验证三语言 App Store metadata 长度和禁用宣传词。
 - [x] `script/export_app_store_metadata.py`：导出可复制进 App Store Connect 的三语言 metadata、基础字段、审核备注和提交表单清单材料包。
-- [x] `script/validate_privacy_alignment.py`：验证 PrivacyInfo、Xcode 权限、App Store App Privacy 口径和 landing privacy 文案一致。
+- [x] `script/validate_privacy_alignment.py`：验证 PrivacyInfo、Xcode 权限、App Store App Privacy 口径和 landing privacy 文案一致；同时拒绝 Xcode build settings 中出现相反权限值。
 - [x] `script/validate_landing_public.py`：验证公网 landing SEO、sitemap、manifest、icon/social preview 尺寸、analytics config 和禁用宣传词。
 - [x] `script/validate_app_icons.py`：验证 Xcode AppIcon、landing icon、web manifest icon 和 social preview 尺寸/一致性。
 - [x] `script/validate_release_archive_strings.py`：验证 Release archive executable 和三语言资源不包含调试入口、未发布功能残留或禁用公开文案。
@@ -1138,7 +1143,7 @@ xcodebuild \
 ./script/launch_verify.sh
 ```
 
-该脚本会执行 App Store metadata 校验、App Store metadata 导出包校验、Privacy/App Privacy 口径一致性校验、本地 landing 校验、App icon/landing icon 一致性校验、Release build、可自动运行的 XCTest、Release archive、归档 metadata/entitlements/privacy manifest 校验、Release archive 字符串检查、公网 landing URL 检查和公网 landing SEO/analytics config 校验。公网检查可用 `SKIP_NETWORK=1 ./script/launch_verify.sh` 跳过。
+该脚本会执行 App Store metadata 校验、App Store metadata 导出包校验、Privacy/App Privacy 口径一致性校验、本地 landing 校验、App icon/landing icon 一致性校验、Release build、可自动运行的 XCTest、Release archive、归档 metadata/entitlements/privacy manifest 校验、archive entitlement allowlist、Release archive 字符串检查、公网 landing URL 检查和公网 landing SEO/analytics config 校验。公网检查可用 `SKIP_NETWORK=1 ./script/launch_verify.sh` 跳过。
 
 App Store Connect metadata 导出：
 
