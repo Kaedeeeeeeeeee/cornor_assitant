@@ -1,9 +1,15 @@
 .DS_Store
 /.build
+/build/
+/dist/
 /Packages
 xcuserdata/
 DerivedData/
 .derivedData/
+*.dmg
+*.xcarchive/
+CornerAssistantApp/build/
+CornerAssistantApp/*.log
 __pycache__/
 *.pyc
 .swiftpm/configuration/registries.json

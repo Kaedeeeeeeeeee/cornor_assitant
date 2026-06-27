@@ -12,6 +12,7 @@ APP_PATH="$ARCHIVE_PATH/Products/Applications/Peek.app"
 INFO_PLIST="$APP_PATH/Contents/Info.plist"
 PRIVACY_MANIFEST="$APP_PATH/Contents/Resources/PrivacyInfo.xcprivacy"
 APP_EXECUTABLE="$APP_PATH/Contents/MacOS/Peek"
+REPOSITORY_HYGIENE_VALIDATOR="$ROOT_DIR/script/validate_repository_hygiene.py"
 MATERIALS_VALIDATOR="$ROOT_DIR/script/validate_app_store_materials.py"
 APP_STORE_URL_VALIDATOR="$ROOT_DIR/script/validate_app_store_urls.py"
 METADATA_EXPORTER="$ROOT_DIR/script/export_app_store_metadata.py"
@@ -64,6 +65,9 @@ assert_plist_value() {
   actual="$(plist_read "$key" "$plist")"
   assert_equals "$key" "$expected" "$actual"
 }
+
+log "Repository hygiene"
+"$REPOSITORY_HYGIENE_VALIDATOR"
 
 log "App Store materials"
 "$MATERIALS_VALIDATOR"

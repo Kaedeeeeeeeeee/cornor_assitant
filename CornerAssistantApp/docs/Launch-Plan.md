@@ -1,6 +1,6 @@
 # Peek 上线准备计划
 
-最后更新：2026-06-28 JST
+最后更新：2026-06-28 04:43 JST
 
 这个文档是 Peek 从当前本地项目走到公开 landing page 和 Mac App Store 首发的工作台。后续执行、验收、补漏都以这里为准；如果产品、定价、域名、隐私口径或 App Store 配置发生变化，先更新本文件，再改代码或页面。
 
@@ -32,7 +32,7 @@
 - Landing 源设计来自 `/Users/user/Downloads/项目 Landing Page 设计.zip`，其中 `.dc.html` 是设计稿，不是生产站点。
 - Landing 生产目录为 `CornerAssistantApp/landing-page`。
 - App icon 已核对：`CornerAssistantApp/landing-page/assets/icon.png` 与 Xcode AppIcon 512@2x 像素一致，SHA-256 为 `1fdd1e4c18c4ce6bb80d1264807c8034c0af28a83aa9471a98a3d25a6ec436b0`，无需替换；`script/validate_app_icons.py` 已把该检查固化。
-- `CornerAssistantApp/build/` 和历史 `.xcarchive` 里的导出产物视为陈旧产物，不能直接提交 App Store Connect。
+- `CornerAssistantApp/build/`、根目录 `build/`、`dist/`、历史 `.xcarchive`、`.dmg` 和构建日志都视为本地生成产物，不能提交 App Store Connect，也不能继续被 Git 跟踪；`script/validate_repository_hygiene.py` 已把该规则固化。
 
 ## 1.1 本次本地验证记录
 
@@ -555,6 +555,10 @@
 - 2026-06-28 04:37 JST 已新增 `script/validate_app_store_urls.py` 并纳入 `script/launch_verify.sh`：
   - 离线模式校验 App Store materials 中 Marketing / Privacy Policy / Support URL 与已确认生产 URL 一致，且均为 HTTPS GitHub Pages URL。
   - 联网模式额外请求三条 URL 并要求 HTTP 200。
+- 2026-06-28 04:43 JST 已新增 `script/validate_repository_hygiene.py` 并纳入 `script/launch_verify.sh`：
+  - `.gitignore` 现在明确忽略 `/build/`、`/dist/`、`*.dmg`、`*.xcarchive/`、`CornerAssistantApp/build/` 和 `CornerAssistantApp/*.log`。
+  - 已从 Git 跟踪中移除 369 个历史 build/archive/dmg/log 生成文件；本地文件保留，仅不再进入仓库。
+  - 当前 `git ls-files` 中生成产物数量为 0，`script/validate_repository_hygiene.py` 通过。
 
 ## 2. 首发完成定义
 
@@ -938,6 +942,7 @@ xcodebuild archive \
 - [x] `script/validate_pages_workflow.py`：验证 GitHub Pages workflow 会正确注入 landing analytics / site verification variables，并部署 `CornerAssistantApp/landing-page`。
 - [x] `script/validate_app_icons.py`：验证 Xcode AppIcon、landing icon、web manifest icon 和 social preview 尺寸/一致性。
 - [x] `script/validate_release_archive_strings.py`：验证 Release archive executable 和三语言资源不包含调试入口、未发布功能残留或禁用公开文案。
+- [x] `script/validate_repository_hygiene.py`：验证 build/archive/dmg/log 等生成产物没有被 Git 跟踪，并确认 `.gitignore` 保持对应规则。
 - [x] `script/check_external_readiness.py`：复查公网 URL、GitHub Pages/variables、GA4 配置状态，并可选复查 export/截图权限阻塞。
   - 当前也覆盖 App Store export 成功后的 exported app metadata、privacy manifest 和 entitlements 验证。
   - 当前也覆盖最近一次成功 Pages run 是否仍覆盖当前 landing/page workflow 变更。
@@ -1174,7 +1179,7 @@ xcodebuild \
 ./script/launch_verify.sh
 ```
 
-该脚本会执行 App Store metadata 校验、App Store URL 校验、App Store metadata 导出包校验、App Store export options 校验、Privacy/App Privacy 口径一致性校验、本地 landing 校验、GitHub Pages workflow 校验、App icon/landing icon 一致性校验、Release build、可自动运行的 XCTest、Release archive、归档 metadata/entitlements/privacy manifest 校验、archive entitlement allowlist、Release archive 字符串检查、公网 landing URL 检查和公网 landing SEO/analytics config 校验。公网检查可用 `SKIP_NETWORK=1 ./script/launch_verify.sh` 跳过。
+该脚本会执行 repository hygiene 校验、App Store metadata 校验、App Store URL 校验、App Store metadata 导出包校验、App Store export options 校验、Privacy/App Privacy 口径一致性校验、本地 landing 校验、GitHub Pages workflow 校验、App icon/landing icon 一致性校验、Release build、可自动运行的 XCTest、Release archive、归档 metadata/entitlements/privacy manifest 校验、archive entitlement allowlist、Release archive 字符串检查、公网 landing URL 检查和公网 landing SEO/analytics config 校验。公网检查可用 `SKIP_NETWORK=1 ./script/launch_verify.sh` 跳过。
 
 App Store Connect metadata 导出：
 
