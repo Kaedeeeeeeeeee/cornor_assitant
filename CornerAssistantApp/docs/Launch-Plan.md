@@ -27,7 +27,7 @@
 
 - 当前项目是 macOS SwiftUI/AppKit/WebKit 应用，Xcode 工程位于 `CornerAssistantApp/CornerAssistantApp.xcodeproj`。
 - 当前 app 产品名为 Peek，包名工程仍保留 `CornerAssistantApp` 命名。
-- `SlidePanelView.swift` 当前直接使用 `GoogleSearchProvider()`；`BingSearchProvider.swift` 存在，但不是用户可配置功能。
+- `SlidePanelView.swift` 当前直接使用 `GoogleSearchProvider()`；未使用的 `BingSearchProvider.swift` 已移除，Release archive 会检查 Bing provider/endpoint 字符串不得进入二进制。
 - 当前代码没有系统选中文字读取逻辑；不能在 landing 或 App Store 文案中宣传 selected text search。
 - Landing 源设计来自 `/Users/user/Downloads/项目 Landing Page 设计.zip`，其中 `.dc.html` 是设计稿，不是生产站点。
 - Landing 生产目录为 `CornerAssistantApp/landing-page`。
@@ -473,6 +473,10 @@
   - 公网 `assets/icon.png` 实际为 1024x1024。
   - 公网 `assets/social-preview.png` 实际为 1200x630。
   - 默认 readiness 结果为 `{"manual": 4, "ok": 9, "skipped": 2}`。
+- 2026-06-28 04:01 JST 已移除未使用的 `BingSearchProvider.swift`，并在 `script/launch_verify.sh` 增加 Release archive guard：
+  - `SKIP_NETWORK=1 ./script/launch_verify.sh` 通过。
+  - `./script/qa_smoke.sh` 通过。
+  - `/tmp/peek-appstore/Peek.xcarchive/Products/Applications/Peek.app/Contents/MacOS/Peek` 未命中 `BingSearchProvider`、`bing.com` 或 `api.bing` 字符串。
 - 首页 JSON-LD `applicationCategory` 已从 `UtilitiesApplication` 调整为 `Productivity`，与 App Store 分类保持一致。
 
 2026-06-28 01:24 JST GitHub Pages / analytics 复查：
@@ -909,6 +913,7 @@ xcodebuild archive \
 - [x] 四个热角设置：Debug smoke 已验证真实面板窗口落在对应屏幕边角。
 - [x] Xcode unit test target 可通过 CLI 运行。
 - [x] Debug screenshot 场景入口不会进入 Release archive。
+- [x] 未使用的 Bing 搜索 provider 不进入 Release archive。
 
 当前自动化限制：
 

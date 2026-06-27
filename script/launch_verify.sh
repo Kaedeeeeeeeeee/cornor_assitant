@@ -153,6 +153,9 @@ fi
 if strings "$APP_EXECUTABLE" | grep -q 'scenario:'; then
   fail "Debug-only screenshot scenario command leaked into Release archive"
 fi
+if strings "$APP_EXECUTABLE" | grep -Eiq 'BingSearchProvider|bing\.com|api\.bing'; then
+  fail "Unsupported Bing search provider leaked into Release archive"
+fi
 
 if [[ "${SKIP_NETWORK:-0}" != "1" ]]; then
   log "Public landing URLs"
