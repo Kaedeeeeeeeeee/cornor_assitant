@@ -185,7 +185,7 @@
   - Debug-only 面板命令和 hot corner smoke 命令没有进入 Release archive。
   - 公网 landing 关键 URL 均可达。
   - 公网 landing SEO 和 analytics config 校验。
-  - 2026-06-28 01:25 JST 再次执行 `./script/launch_verify.sh`，通过。
+  - 2026-06-28 01:31 JST 再次执行 `./script/launch_verify.sh`，通过。
 
 2026-06-28 Landing 本地验收收口：
 
@@ -288,7 +288,7 @@
 - 2026-06-28 01:26 JST 再次执行 `xcodebuild -exportArchive`，失败原因仍为：
   - `error: exportArchive No Accounts`
   - `error: exportArchive No profiles for 'com.shifeng.peek' were found`
-- 2026-06-28 01:25 JST 再次执行 `./script/launch_verify.sh`，通过。
+- 2026-06-28 01:31 JST 再次执行 `./script/launch_verify.sh`，通过。
 - 2026-06-28 01:15 JST 再次执行 UI test target，失败原因仍为当前 macOS 会话认证状态：
   - `Failed to initialize for UI testing`
   - `System authentication is running`
@@ -380,6 +380,17 @@
 - `gh run list --workflow pages.yml --limit 5` 最近 3 次 workflow 都是 `success`。
 - `gh api repos/Kaedeeeeeeeeee/cornor_assitant/actions/variables` 返回 `total_count = 0`；当前未设置 `PEEK_GA_MEASUREMENT_ID`。
 
+2026-06-28 外部依赖状态脚本收口：
+
+- 已新增 `script/check_external_readiness.py`，用于复查 GitHub Pages、公网 URL、官网 analytics config、GitHub Actions variables、App Store export 和截图权限状态。
+- 默认模式不触发 export 或截图，只做只读检查：
+  - `./script/check_external_readiness.py`
+  - 最近输出摘要：`{"manual": 2, "ok": 9, "skipped": 2}`。
+- 扩展模式会额外复查 App Store export 和截图权限：
+  - `PEEK_CHECK_EXPORT=1 PEEK_CHECK_SCREENSHOT=1 ./script/check_external_readiness.py`
+  - 最近输出摘要：`{"blocked": 2, "manual": 2, "ok": 9}`。
+  - 当前 blocked 项：`app_store_export` 仍为 `No Accounts / no com.shifeng.peek App Store profile`；`app_store_screenshot_capture` 仍为 Screen Recording/window capture permission 不可用。
+
 ## 2. 首发完成定义
 
 首发上线不是只把页面放出去，也不是只上传一个 build。完成定义如下：
@@ -454,6 +465,10 @@
   - 2026-06-28 检查结果：Search Console 已登录 `f.shera.09@gmail.com`，但该属性尚未验证；Bing Webmaster Tools 尚未登录。
 - [x] 部署后跑 Lighthouse，记录性能和 SEO 分数。
 - [x] 将公网 landing SEO 校验纳入 `script/launch_verify.sh`。
+- [x] 增加外部依赖状态脚本：
+  - `script/check_external_readiness.py`
+  - 默认复查公网 URL、GitHub Pages、GitHub Actions variables 和 analytics config。
+  - 可用 `PEEK_CHECK_EXPORT=1 PEEK_CHECK_SCREENSHOT=1` 额外复查 App Store export 和截图权限。
 - [ ] PageSpeed Insights 在线报告可后续补充，不阻塞首发。
   - 2026-06-28 通过 PageSpeed Insights API 请求移动端/桌面端报告时返回 HTTP 429 Too Many Requests；本项继续作为非阻塞补充项。
 
@@ -688,7 +703,7 @@ xcodebuild archive \
 ./script/launch_verify.sh
 ```
 
-  - 2026-06-28 01:25 JST 已通过。
+  - 2026-06-28 01:31 JST 已通过。
 - [ ] 上传 App Store Connect：
   - Xcode Organizer。
   - 或 Transporter。
@@ -716,6 +731,7 @@ xcodebuild archive \
 - [x] `script/validate_app_store_materials.py`：验证三语言 App Store metadata 长度和禁用宣传词。
 - [x] `script/validate_privacy_alignment.py`：验证 PrivacyInfo、Xcode 权限、App Store App Privacy 口径和 landing privacy 文案一致。
 - [x] `script/validate_landing_public.py`：验证公网 landing SEO、sitemap、manifest、analytics config 和禁用宣传词。
+- [x] `script/check_external_readiness.py`：复查公网 URL、GitHub Pages/variables、GA4 配置状态，并可选复查 export/截图权限阻塞。
 - [x] 搜索 URL 构造、空查询处理、查询 trim/encode。
 - [x] URL 输入规范化：完整 HTTP/HTTPS URL、裸域名、路径、localhost、普通搜索词。
 - [x] 搜索建议模型：最小输入长度、debounce、clear。
@@ -925,6 +941,15 @@ xcodebuild \
 ```
 
 该脚本会执行 App Store metadata 校验、Privacy/App Privacy 口径一致性校验、Release build、可自动运行的 XCTest、Release archive、归档 metadata/entitlements/privacy manifest 校验、Debug-only 字符串泄漏检查、公网 landing URL 检查和公网 landing SEO/analytics config 校验。公网检查可用 `SKIP_NETWORK=1 ./script/launch_verify.sh` 跳过。
+
+外部依赖状态复查：
+
+```bash
+./script/check_external_readiness.py
+PEEK_CHECK_EXPORT=1 PEEK_CHECK_SCREENSHOT=1 ./script/check_external_readiness.py
+```
+
+默认模式只读，不触发 App Store export 或截图。扩展模式会写入 `/tmp/peek-appstore/external-readiness-export` 并启动截图脚本，用于复查账号/profile 和 Screen Recording 权限是否已经解除。
 
 ## 7. 当前下一步
 

@@ -1,0 +1,230 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+
+import json
+import os
+import shutil
+import subprocess
+import sys
+import urllib.request
+from dataclasses import dataclass
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parents[1]
+BASE_URL = "https://kaedeeeeeeeeee.github.io/cornor_assitant/"
+REPO = "Kaedeeeeeeeeee/cornor_assitant"
+PAGES_WORKFLOW = "pages.yml"
+EXPECTED_PAGES_URL = BASE_URL
+ARCHIVE_PATH = Path("/tmp/peek-appstore/Peek.xcarchive")
+EXPORT_PATH = Path("/tmp/peek-appstore/external-readiness-export")
+EXPORT_OPTIONS = ROOT / "CornerAssistantApp" / "export_options_app_store.plist"
+
+
+@dataclass
+class CheckResult:
+    name: str
+    status: str
+    detail: str
+
+
+def env_enabled(name: str) -> bool:
+    return os.environ.get(name, "").strip() in {"1", "true", "TRUE", "yes", "YES"}
+
+
+def run(command: list[str], timeout: int = 30) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        command,
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        timeout=timeout,
+        check=False,
+    )
+
+
+def fetch_text(url: str) -> tuple[int, str]:
+    request = urllib.request.Request(url, headers={"User-Agent": "PeekExternalReadiness/1.0"})
+    with urllib.request.urlopen(request, timeout=20) as response:
+        status = getattr(response, "status", 200)
+        body = response.read().decode("utf-8")
+        return status, body
+
+
+def add(results: list[CheckResult], name: str, status: str, detail: str) -> None:
+    results.append(CheckResult(name=name, status=status, detail=detail))
+
+
+def check_public_landing(results: list[CheckResult]) -> None:
+    urls = [
+        BASE_URL,
+        f"{BASE_URL}privacy.html",
+        f"{BASE_URL}support.html",
+        f"{BASE_URL}robots.txt",
+        f"{BASE_URL}sitemap.xml",
+        f"{BASE_URL}analytics-config.js",
+    ]
+    for url in urls:
+        try:
+            status, _ = fetch_text(url)
+        except Exception as exc:  # noqa: BLE001 - CLI status probe.
+            add(results, f"public_url:{url}", "blocked", str(exc))
+            continue
+        add(results, f"public_url:{url}", "ok", f"HTTP {status}")
+
+
+def check_analytics_config(results: list[CheckResult]) -> None:
+    try:
+        _, body = fetch_text(f"{BASE_URL}analytics-config.js")
+    except Exception as exc:  # noqa: BLE001 - CLI status probe.
+        add(results, "landing_analytics_config", "blocked", str(exc))
+        return
+
+    config = body.strip()
+    prefix = 'window.PEEK_GA_MEASUREMENT_ID = "'
+    suffix = '";'
+    if not (config.startswith(prefix) and config.endswith(suffix)):
+        add(results, "landing_analytics_config", "blocked", f"unexpected format: {config}")
+        return
+
+    measurement_id = config[len(prefix):-len(suffix)]
+    if measurement_id:
+        add(results, "landing_analytics_config", "ok", f"GA4 id is configured: {measurement_id}")
+    else:
+        add(results, "landing_analytics_config", "manual", "GA4 id is empty; public site does not load GA")
+
+
+def check_github(results: list[CheckResult]) -> None:
+    if not shutil.which("gh"):
+        add(results, "github_cli", "manual", "gh is not installed")
+        return
+
+    auth = run(["gh", "auth", "status"], timeout=30)
+    if auth.returncode != 0:
+        add(results, "github_cli", "manual", "gh is not authenticated")
+        return
+    add(results, "github_cli", "ok", "gh auth status succeeded")
+
+    pages = run(["gh", "api", f"repos/{REPO}/pages"], timeout=30)
+    if pages.returncode != 0:
+        add(results, "github_pages", "blocked", pages.stderr.strip() or pages.stdout.strip())
+    else:
+        data = json.loads(pages.stdout)
+        html_url = data.get("html_url")
+        build_type = data.get("build_type")
+        cname = data.get("cname")
+        if html_url == EXPECTED_PAGES_URL and build_type == "workflow" and cname is None:
+            add(results, "github_pages", "ok", f"workflow pages at {html_url}")
+        else:
+            add(results, "github_pages", "blocked", json.dumps(data, ensure_ascii=False))
+
+    runs = run(
+        [
+            "gh",
+            "run",
+            "list",
+            "--repo",
+            REPO,
+            "--workflow",
+            PAGES_WORKFLOW,
+            "--limit",
+            "1",
+            "--json",
+            "status,conclusion,databaseId,displayTitle,headSha,updatedAt,url",
+        ],
+        timeout=30,
+    )
+    if runs.returncode != 0:
+        add(results, "github_pages_workflow", "blocked", runs.stderr.strip() or runs.stdout.strip())
+    else:
+        latest = json.loads(runs.stdout)
+        if latest and latest[0].get("status") == "completed" and latest[0].get("conclusion") == "success":
+            run_info = latest[0]
+            add(
+                results,
+                "github_pages_workflow",
+                "ok",
+                f"latest run {run_info.get('databaseId')} succeeded at {run_info.get('updatedAt')}",
+            )
+        else:
+            add(results, "github_pages_workflow", "blocked", json.dumps(latest, ensure_ascii=False))
+
+    variables = run(["gh", "api", f"repos/{REPO}/actions/variables"], timeout=30)
+    if variables.returncode != 0:
+        add(results, "github_actions_variables", "blocked", variables.stderr.strip() or variables.stdout.strip())
+    else:
+        data = json.loads(variables.stdout)
+        names = {item.get("name") for item in data.get("variables", [])}
+        if "PEEK_GA_MEASUREMENT_ID" in names:
+            add(results, "github_actions_variables", "ok", "PEEK_GA_MEASUREMENT_ID exists")
+        else:
+            add(results, "github_actions_variables", "manual", "PEEK_GA_MEASUREMENT_ID is not set")
+
+
+def check_app_store_export(results: list[CheckResult]) -> None:
+    if not env_enabled("PEEK_CHECK_EXPORT"):
+        add(results, "app_store_export", "skipped", "set PEEK_CHECK_EXPORT=1 to run xcodebuild -exportArchive")
+        return
+    if not ARCHIVE_PATH.exists():
+        add(results, "app_store_export", "blocked", f"archive missing: {ARCHIVE_PATH}")
+        return
+
+    command = [
+        "xcodebuild",
+        "-exportArchive",
+        "-archivePath",
+        str(ARCHIVE_PATH),
+        "-exportPath",
+        str(EXPORT_PATH),
+        "-exportOptionsPlist",
+        str(EXPORT_OPTIONS),
+    ]
+    if env_enabled("PEEK_ALLOW_PROVISIONING_UPDATES"):
+        command.append("-allowProvisioningUpdates")
+    result = run(command, timeout=120)
+    output = "\n".join([result.stdout, result.stderr]).strip()
+    if result.returncode == 0:
+        add(results, "app_store_export", "ok", f"export succeeded at {EXPORT_PATH}")
+    elif "No Accounts" in output or "No profiles for 'com.shifeng.peek'" in output:
+        add(results, "app_store_export", "blocked", "No Accounts / no com.shifeng.peek App Store profile")
+    else:
+        add(results, "app_store_export", "blocked", " | ".join(output.splitlines()[-5:]))
+
+
+def check_screenshot_capture(results: list[CheckResult]) -> None:
+    if not env_enabled("PEEK_CHECK_SCREENSHOT"):
+        add(results, "app_store_screenshot_capture", "skipped", "set PEEK_CHECK_SCREENSHOT=1 to run screenshot capture")
+        return
+    result = run([str(ROOT / "script" / "capture_app_store_screenshot.sh")], timeout=120)
+    output = "\n".join([result.stdout, result.stderr]).strip()
+    if result.returncode == 0:
+        add(results, "app_store_screenshot_capture", "ok", "screenshot capture succeeded")
+    elif "Screen Recording" in output or "could not create image from window" in output:
+        add(results, "app_store_screenshot_capture", "blocked", "Screen Recording/window capture permission is not usable")
+    else:
+        add(results, "app_store_screenshot_capture", "blocked", " | ".join(output.splitlines()[-5:]))
+
+
+def print_results(results: list[CheckResult]) -> None:
+    for result in results:
+        print(f"{result.status.upper():7} {result.name}: {result.detail}")
+
+    summary: dict[str, int] = {}
+    for result in results:
+        summary[result.status] = summary.get(result.status, 0) + 1
+    print(f"\nsummary: {json.dumps(summary, sort_keys=True)}")
+
+
+def main() -> int:
+    results: list[CheckResult] = []
+    check_public_landing(results)
+    check_analytics_config(results)
+    check_github(results)
+    check_app_store_export(results)
+    check_screenshot_capture(results)
+    print_results(results)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
