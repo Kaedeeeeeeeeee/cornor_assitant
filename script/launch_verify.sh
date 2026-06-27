@@ -13,6 +13,7 @@ INFO_PLIST="$APP_PATH/Contents/Info.plist"
 PRIVACY_MANIFEST="$APP_PATH/Contents/Resources/PrivacyInfo.xcprivacy"
 APP_EXECUTABLE="$APP_PATH/Contents/MacOS/Peek"
 MATERIALS_VALIDATOR="$ROOT_DIR/script/validate_app_store_materials.py"
+APP_STORE_URL_VALIDATOR="$ROOT_DIR/script/validate_app_store_urls.py"
 METADATA_EXPORTER="$ROOT_DIR/script/export_app_store_metadata.py"
 METADATA_EXPORT_VALIDATOR="$ROOT_DIR/script/validate_app_store_metadata_export.py"
 EXPORT_OPTIONS_VALIDATOR="$ROOT_DIR/script/validate_export_options.py"
@@ -66,6 +67,9 @@ assert_plist_value() {
 
 log "App Store materials"
 "$MATERIALS_VALIDATOR"
+
+log "App Store URLs"
+"$APP_STORE_URL_VALIDATOR"
 
 log "App Store metadata export"
 METADATA_VERIFY_DIR="$(mktemp -d "${TMPDIR:-/tmp}/peek-metadata-verify.XXXXXX")"
@@ -175,6 +179,9 @@ log "Release archive strings"
 "$RELEASE_STRING_VALIDATOR" "$APP_PATH"
 
 if [[ "${SKIP_NETWORK:-0}" != "1" ]]; then
+  log "App Store URL reachability"
+  "$APP_STORE_URL_VALIDATOR" --check-network
+
   log "Public landing URLs"
   urls=(
     "https://kaedeeeeeeeeee.github.io/cornor_assitant/"

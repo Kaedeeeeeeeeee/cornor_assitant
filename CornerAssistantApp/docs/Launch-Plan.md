@@ -552,6 +552,9 @@
   - 显式 URL 只允许 `http://` 和 `https://` 直接进入 WebView。
   - `ftp://`、`peek://`、`file://` 等非 Web scheme 已由 `SearchProviderTests` 覆盖为拒绝。
   - `SearchProviderTests` 和 `SKIP_NETWORK=1 ./script/launch_verify.sh` 均通过。
+- 2026-06-28 04:37 JST 已新增 `script/validate_app_store_urls.py` 并纳入 `script/launch_verify.sh`：
+  - 离线模式校验 App Store materials 中 Marketing / Privacy Policy / Support URL 与已确认生产 URL 一致，且均为 HTTPS GitHub Pages URL。
+  - 联网模式额外请求三条 URL 并要求 HTTP 200。
 
 ## 2. 首发完成定义
 
@@ -628,6 +631,7 @@
   - `robots.txt` 返回 200。
   - `sitemap.xml` 返回 200。
   - 社交卡片图片返回 200。
+  - App Store materials 中 Marketing / Privacy Policy / Support URL 均为公网 HTTPS 且返回 200。
   - canonical URL 和最终 Pages URL 一致。
   - 页面没有 `noindex`。
 - [ ] 部署后提交：
@@ -925,6 +929,7 @@ xcodebuild archive \
   - 当前覆盖四个 hot corner 的真实窗口定位。
 - [x] `script/capture_app_store_screenshot.sh`：可启动并展开真实面板，可生成 5 张首发截图套件；当前会话在 `screencapture` 阶段因截图权限/会话状态失败。
 - [x] `script/validate_app_store_materials.py`：验证三语言 App Store metadata 长度和禁用宣传词。
+- [x] `script/validate_app_store_urls.py`：验证 App Store Connect 要填写的 Marketing / Privacy Policy / Support URL 与生产公网 URL 一致，并可联网要求 HTTP 200。
 - [x] `script/export_app_store_metadata.py`：导出可复制进 App Store Connect 的三语言 metadata、基础字段、审核备注和提交表单清单材料包。
 - [x] `script/validate_app_store_metadata_export.py`：验证生成后的 metadata 导出包文件集合和内容与 `AppStore-Materials.md` 保持一致。
 - [x] `script/validate_export_options.py`：验证 App Store Connect export options 配置。
@@ -1042,7 +1047,8 @@ curl -I https://kaedeeeeeeeeee.github.io/cornor_assitant/sitemap.xml
 - [ ] 等待 build processing 完成。
 - [ ] 选择 build 加入版本 `1.0`。
 - [ ] 填完 metadata、截图、隐私、年龄分级、价格、可售区域。
-- [ ] 检查所有链接都是公网 HTTPS 且返回 200。
+- [x] 检查所有链接都是公网 HTTPS 且返回 200。
+  - `script/validate_app_store_urls.py --check-network` 已验证 App Store materials 中 Marketing / Privacy Policy / Support URL 均为 HTTPS 且返回 200。
 - [ ] Submit for Review。
 - [ ] 监控 App Review 消息。
 - [ ] 如果被拒，复制完整 rejection text 到本项目文档或 issue，再做最小必要修复。
@@ -1168,7 +1174,7 @@ xcodebuild \
 ./script/launch_verify.sh
 ```
 
-该脚本会执行 App Store metadata 校验、App Store metadata 导出包校验、App Store export options 校验、Privacy/App Privacy 口径一致性校验、本地 landing 校验、GitHub Pages workflow 校验、App icon/landing icon 一致性校验、Release build、可自动运行的 XCTest、Release archive、归档 metadata/entitlements/privacy manifest 校验、archive entitlement allowlist、Release archive 字符串检查、公网 landing URL 检查和公网 landing SEO/analytics config 校验。公网检查可用 `SKIP_NETWORK=1 ./script/launch_verify.sh` 跳过。
+该脚本会执行 App Store metadata 校验、App Store URL 校验、App Store metadata 导出包校验、App Store export options 校验、Privacy/App Privacy 口径一致性校验、本地 landing 校验、GitHub Pages workflow 校验、App icon/landing icon 一致性校验、Release build、可自动运行的 XCTest、Release archive、归档 metadata/entitlements/privacy manifest 校验、archive entitlement allowlist、Release archive 字符串检查、公网 landing URL 检查和公网 landing SEO/analytics config 校验。公网检查可用 `SKIP_NETWORK=1 ./script/launch_verify.sh` 跳过。
 
 App Store Connect metadata 导出：
 

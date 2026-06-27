@@ -15,9 +15,7 @@ final class SuggestionStoreTests: XCTestCase {
         let store = SuggestionStore(provider: StubSearchProvider())
 
         store.update(query: "peek")
-        try await Task.sleep(nanoseconds: 320_000_000)
-
-        XCTAssertEqual(store.suggestions, ["peek app", "peek browser"])
+        try await waitForSuggestions(["peek app", "peek browser"], in: store)
 
         store.clear()
         XCTAssertTrue(store.suggestions.isEmpty)
@@ -27,16 +25,29 @@ final class SuggestionStoreTests: XCTestCase {
         let store = SuggestionStore(provider: ControlledSearchProvider())
 
         store.update(query: "peek")
-        try await Task.sleep(nanoseconds: 320_000_000)
-        XCTAssertEqual(store.suggestions, ["peek app", "peek browser"])
+        try await waitForSuggestions(["peek app", "peek browser"], in: store)
 
         ControlledSearchProvider.shouldFail = true
         defer { ControlledSearchProvider.shouldFail = false }
 
         store.update(query: "offline")
-        try await Task.sleep(nanoseconds: 320_000_000)
+        try await waitForSuggestions([], in: store)
+    }
 
-        XCTAssertTrue(store.suggestions.isEmpty)
+    private func waitForSuggestions(
+        _ expected: [String],
+        in store: SuggestionStore,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) async throws {
+        for _ in 0..<50 {
+            if store.suggestions == expected {
+                return
+            }
+            try await Task.sleep(nanoseconds: 50_000_000)
+        }
+
+        XCTAssertEqual(store.suggestions, expected, file: file, line: line)
     }
 }
 
