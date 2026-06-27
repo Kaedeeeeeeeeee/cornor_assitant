@@ -356,6 +356,10 @@
 - 2026-06-28 01:15 JST 再次执行 UI test target，失败原因仍为当前 macOS 会话认证状态：
   - `Failed to initialize for UI testing`
   - `System authentication is running`
+- 2026-06-28 03:18 JST 再次执行 `xcodebuild -only-testing:CornerAssistantAppUITests test`，失败原因保持一致：
+  - `Failed to initialize for UI testing`
+  - `System authentication is running`
+  - xcresult: `/Users/user/Library/Developer/Xcode/DerivedData/CornerAssistantApp-behwnokypyiqlsayqkbbnhyatybg/Logs/Test/Test-CornerAssistantApp-2026.06.28_03-18-50-+0900.xcresult`
 
 2026-06-27 Export Compliance 收口：
 
