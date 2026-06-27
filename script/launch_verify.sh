@@ -19,6 +19,7 @@ EXPORT_OPTIONS_VALIDATOR="$ROOT_DIR/script/validate_export_options.py"
 PRIVACY_ALIGNMENT_VALIDATOR="$ROOT_DIR/script/validate_privacy_alignment.py"
 LANDING_VALIDATOR="$ROOT_DIR/script/validate_landing_public.py"
 LANDING_LOCAL_VALIDATOR="$ROOT_DIR/script/validate_landing_local.js"
+PAGES_WORKFLOW_VALIDATOR="$ROOT_DIR/script/validate_pages_workflow.py"
 APP_ICON_VALIDATOR="$ROOT_DIR/script/validate_app_icons.py"
 RELEASE_STRING_VALIDATOR="$ROOT_DIR/script/validate_release_archive_strings.py"
 declare -a CLEANUP_PATHS=()
@@ -83,6 +84,9 @@ log "Privacy alignment"
 
 log "Local landing UI"
 "$LANDING_LOCAL_VALIDATOR"
+
+log "GitHub Pages workflow"
+"$PAGES_WORKFLOW_VALIDATOR"
 
 log "App icons"
 "$APP_ICON_VALIDATOR"
