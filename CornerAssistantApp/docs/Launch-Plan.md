@@ -243,6 +243,24 @@
   - 未命中 `Bing`、`macOS 14`、`Sonoma`、selected text / 选中文字等禁用宣传词。
 - `script/launch_verify.sh` 已纳入该校验。
 
+2026-06-28 App Store metadata 导出包：
+
+- 已新增 `script/export_app_store_metadata.py`。
+- 默认导出目录：`/tmp/peek-app-store-metadata`。
+- 导出前会先复用 `script/validate_app_store_materials.py` 校验，避免把超长字段或禁用宣传词复制进 App Store Connect。
+- 当前导出内容：
+  - `app_information.json`：App record、价格、URL、隐私、年龄分级、出口合规和仍需手工填写的字段。
+  - `metadata/zh-Hans/`、`metadata/en-US/`、`metadata/ja/`：三语言 App name、subtitle、description、keywords、what's new。
+  - `app_review_notes.txt`：审核备注草稿。
+  - `README.md`：后台填写顺序和仍需手工完成的外部事项。
+- 复跑命令：
+
+```bash
+./script/export_app_store_metadata.py
+```
+
+- 2026-06-28 01:42 JST 已执行通过，生成 `/tmp/peek-app-store-metadata`。
+
 2026-06-28 Privacy / App Privacy 口径校验收口：
 
 - 已新增 `script/validate_privacy_alignment.py`。
@@ -395,6 +413,9 @@
   - `PEEK_CHECK_EXPORT=1 PEEK_CHECK_SCREENSHOT=1 ./script/check_external_readiness.py`
   - 最近输出摘要：`{"blocked": 2, "manual": 2, "ok": 9}`。
   - 当前 blocked 项：`app_store_export` 仍为 `No Accounts / no com.shifeng.peek App Store profile`；`app_store_screenshot_capture` 仍为 Screen Recording/window capture permission 不可用。
+- 2026-06-28 01:42 JST 复查结果保持一致：
+  - 默认模式：`{"manual": 2, "ok": 9, "skipped": 2}`。
+  - 扩展模式：`{"blocked": 2, "manual": 2, "ok": 9}`。
 
 ## 2. 首发完成定义
 
@@ -734,6 +755,7 @@ xcodebuild archive \
   - 当前覆盖四个 hot corner 的真实窗口定位。
 - [x] `script/capture_app_store_screenshot.sh`：可启动并展开真实面板，当前会话在 `screencapture` 阶段因截图权限/会话状态失败。
 - [x] `script/validate_app_store_materials.py`：验证三语言 App Store metadata 长度和禁用宣传词。
+- [x] `script/export_app_store_metadata.py`：导出可复制进 App Store Connect 的三语言 metadata、基础字段和审核备注材料包。
 - [x] `script/validate_privacy_alignment.py`：验证 PrivacyInfo、Xcode 权限、App Store App Privacy 口径和 landing privacy 文案一致。
 - [x] `script/validate_landing_public.py`：验证公网 landing SEO、sitemap、manifest、analytics config 和禁用宣传词。
 - [x] `script/check_external_readiness.py`：复查公网 URL、GitHub Pages/variables、GA4 配置状态，并可选复查 export/截图权限阻塞。
@@ -947,6 +969,14 @@ xcodebuild \
 
 该脚本会执行 App Store metadata 校验、Privacy/App Privacy 口径一致性校验、Release build、可自动运行的 XCTest、Release archive、归档 metadata/entitlements/privacy manifest 校验、Debug-only 字符串泄漏检查、公网 landing URL 检查和公网 landing SEO/analytics config 校验。公网检查可用 `SKIP_NETWORK=1 ./script/launch_verify.sh` 跳过。
 
+App Store Connect metadata 导出：
+
+```bash
+./script/export_app_store_metadata.py
+```
+
+默认输出到 `/tmp/peek-app-store-metadata`。登录 App Store Connect 并创建 app record 后，从该目录复制三语言 metadata、审核备注和基础字段；截图、真实联系电话、价格层级确认、DSA 和 build selection 仍需在后台手工完成。
+
 外部依赖状态复查：
 
 ```bash
@@ -965,16 +995,17 @@ PEEK_CHECK_EXPORT=1 PEEK_CHECK_SCREENSHOT=1 ./script/check_external_readiness.py
 3. 用 Organizer 或 `xcodebuild -exportArchive` 重新执行 App Store export。
 4. 验证 exported app entitlements 中 `get-task-allow = false`。
 5. 在 App Store Connect 创建 Peek app record。
-6. 填写 App Store Connect metadata、年龄分级、内容权利、App Privacy、审核备注和真实审核联系电话。
-7. 如果覆盖 EU 地区，完成 DSA trader status；如果暂不覆盖 EU，先调整 availability。
-8. 补 GA4 Measurement ID：在 GitHub repository variable 设置 `PEEK_GA_MEASUREMENT_ID`，或者明确首发先不开启 analytics。
-9. 准备截图并上传 App Store metadata。
-10. 在 Google Search Console / Bing Webmaster Tools 验证站点并提交 sitemap。
+6. 运行 `./script/export_app_store_metadata.py`，从 `/tmp/peek-app-store-metadata` 复制 metadata 和审核备注。
+7. 填写 App Store Connect 年龄分级、内容权利、App Privacy、真实审核联系电话和其他后台表单。
+8. 如果覆盖 EU 地区，完成 DSA trader status；如果暂不覆盖 EU，先调整 availability。
+9. 补 GA4 Measurement ID：在 GitHub repository variable 设置 `PEEK_GA_MEASUREMENT_ID`，或者明确首发先不开启 analytics。
+10. 准备截图并上传 App Store metadata。
+11. 在 Google Search Console / Bing Webmaster Tools 验证站点并提交 sitemap。
     - Search Console 当前需要为 `f.shera.09@gmail.com` 完成属性所有权验证。
     - Bing Webmaster Tools 当前需要 Microsoft 登录。
-11. Upload build to App Store Connect。
-12. 回填真实 App Store URL 到 landing CTA。
-13. Submit for Review。
+12. Upload build to App Store Connect。
+13. 回填真实 App Store URL 到 landing CTA。
+14. Submit for Review。
 
 ## 8. 参考链接
 
