@@ -8,6 +8,7 @@ import subprocess
 import sys
 import urllib.request
 from dataclasses import dataclass
+from html.parser import HTMLParser
 from pathlib import Path
 
 
@@ -26,6 +27,21 @@ class CheckResult:
     name: str
     status: str
     detail: str
+
+
+class MetaParser(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__()
+        self.meta: dict[str, str] = {}
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        if tag.lower() != "meta":
+            return
+        attrs_dict = {key.lower(): value or "" for key, value in attrs}
+        name = attrs_dict.get("name")
+        content = attrs_dict.get("content", "")
+        if name:
+            self.meta[name.lower()] = content
 
 
 def env_enabled(name: str) -> bool:
@@ -94,6 +110,40 @@ def check_analytics_config(results: list[CheckResult]) -> None:
         add(results, "landing_analytics_config", "manual", "GA4 id is empty; public site does not load GA")
 
 
+def check_site_verification_meta(results: list[CheckResult]) -> None:
+    try:
+        _, body = fetch_text(BASE_URL)
+    except Exception as exc:  # noqa: BLE001 - CLI status probe.
+        add(results, "google_site_verification", "blocked", str(exc))
+        add(results, "bing_site_verification", "blocked", str(exc))
+        return
+
+    parser = MetaParser()
+    parser.feed(body)
+    google_token = parser.meta.get("google-site-verification", "").strip()
+    bing_token = parser.meta.get("msvalidate.01", "").strip()
+
+    if google_token:
+        add(results, "google_site_verification", "ok", "google-site-verification meta is present")
+    else:
+        add(
+            results,
+            "google_site_verification",
+            "manual",
+            "google-site-verification meta is absent; set PEEK_GOOGLE_SITE_VERIFICATION",
+        )
+
+    if bing_token:
+        add(results, "bing_site_verification", "ok", "msvalidate.01 meta is present")
+    else:
+        add(
+            results,
+            "bing_site_verification",
+            "manual",
+            "msvalidate.01 meta is absent; set PEEK_BING_SITE_VERIFICATION",
+        )
+
+
 def check_github(results: list[CheckResult]) -> None:
     if not shutil.which("gh"):
         add(results, "github_cli", "manual", "gh is not installed")
@@ -155,10 +205,16 @@ def check_github(results: list[CheckResult]) -> None:
     else:
         data = json.loads(variables.stdout)
         names = {item.get("name") for item in data.get("variables", [])}
-        if "PEEK_GA_MEASUREMENT_ID" in names:
-            add(results, "github_actions_variables", "ok", "PEEK_GA_MEASUREMENT_ID exists")
+        expected_variables = {
+            "PEEK_GA_MEASUREMENT_ID",
+            "PEEK_GOOGLE_SITE_VERIFICATION",
+            "PEEK_BING_SITE_VERIFICATION",
+        }
+        missing = sorted(expected_variables - names)
+        if not missing:
+            add(results, "github_actions_variables", "ok", "landing config variables exist")
         else:
-            add(results, "github_actions_variables", "manual", "PEEK_GA_MEASUREMENT_ID is not set")
+            add(results, "github_actions_variables", "manual", f"missing variables: {', '.join(missing)}")
 
 
 def check_app_store_export(results: list[CheckResult]) -> None:
@@ -223,6 +279,7 @@ def main() -> int:
     results: list[CheckResult] = []
     check_public_landing(results)
     check_analytics_config(results)
+    check_site_verification_meta(results)
     check_github(results)
     check_app_store_export(results)
     check_screenshot_capture(results)

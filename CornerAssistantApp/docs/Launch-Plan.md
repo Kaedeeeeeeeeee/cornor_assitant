@@ -188,6 +188,7 @@
   - 2026-06-28 01:36 JST 再次执行 `./script/launch_verify.sh`，通过。
   - 2026-06-28 01:48 JST 再次执行 `./script/launch_verify.sh`，通过。
   - 2026-06-28 02:04 JST 再次执行 `./script/launch_verify.sh`，通过。
+  - 2026-06-28 02:13 JST 再次执行 `./script/launch_verify.sh`，通过。
 
 2026-06-28 Landing 本地验收收口：
 
@@ -414,23 +415,27 @@
   - `html_url = https://kaedeeeeeeeeee.github.io/cornor_assitant/`
   - `cname = null`
 - `gh run list --workflow pages.yml --limit 5` 最近 3 次 workflow 都是 `success`。
-- `gh api repos/Kaedeeeeeeeeee/cornor_assitant/actions/variables` 返回 `total_count = 0`；当前未设置 `PEEK_GA_MEASUREMENT_ID`。
+- `gh api repos/Kaedeeeeeeeeee/cornor_assitant/actions/variables` 返回 `total_count = 0`；当前未设置 `PEEK_GA_MEASUREMENT_ID`、`PEEK_GOOGLE_SITE_VERIFICATION`、`PEEK_BING_SITE_VERIFICATION`。
 
 2026-06-28 外部依赖状态脚本收口：
 
-- 已新增 `script/check_external_readiness.py`，用于复查 GitHub Pages、公网 URL、官网 analytics config、GitHub Actions variables、App Store export 和截图权限状态。
+- 已新增 `script/check_external_readiness.py`，用于复查 GitHub Pages、公网 URL、官网 analytics config、Google/Bing verification meta、GitHub Actions variables、App Store export 和截图权限状态。
 - 默认模式不触发 export 或截图，只做只读检查：
   - `./script/check_external_readiness.py`
-  - 最近输出摘要：`{"manual": 2, "ok": 9, "skipped": 2}`。
+  - 最近输出摘要：`{"manual": 4, "ok": 9, "skipped": 2}`。
 - 扩展模式会额外复查 App Store export 和截图权限：
   - `PEEK_CHECK_EXPORT=1 PEEK_CHECK_SCREENSHOT=1 ./script/check_external_readiness.py`
-  - 最近输出摘要：`{"blocked": 2, "manual": 2, "ok": 9}`。
+  - 最近输出摘要：`{"blocked": 2, "manual": 4, "ok": 9}`。
   - 当前 blocked 项：`app_store_export` 仍为 `No Accounts / no com.shifeng.peek App Store profile`；`app_store_screenshot_capture` 仍为 Screen Recording/window capture permission 不可用。
+  - 当前 manual 项：`PEEK_GA_MEASUREMENT_ID`、`PEEK_GOOGLE_SITE_VERIFICATION`、`PEEK_BING_SITE_VERIFICATION` 未设置；公网首页暂无 `google-site-verification` / `msvalidate.01` meta。
 - 2026-06-28 01:42 JST 复查结果保持一致：
   - 默认模式：`{"manual": 2, "ok": 9, "skipped": 2}`。
   - 扩展模式：`{"blocked": 2, "manual": 2, "ok": 9}`。
 - 2026-06-28 01:48 JST 扩展模式复查结果保持一致：`{"blocked": 2, "manual": 2, "ok": 9}`。
 - 2026-06-28 02:04 JST 扩展模式复查结果保持一致：`{"blocked": 2, "manual": 2, "ok": 9}`。
+- 2026-06-28 02:11 JST 脚本已扩展 Google/Bing verification meta 检查：
+  - 默认模式：`{"manual": 4, "ok": 9, "skipped": 2}`。
+- 2026-06-28 02:13 JST 扩展模式复查结果：`{"blocked": 2, "manual": 4, "ok": 9}`。
 
 ## 2. 首发完成定义
 
@@ -492,6 +497,10 @@
 - [x] 增加 `robots.txt`。
 - [x] 增加 `sitemap.xml`。
 - [x] 生成 `assets/social-preview.png`。
+- [x] GitHub Pages workflow 支持搜索引擎所有权验证 meta 注入：
+  - Google Search Console：GitHub repository variable `PEEK_GOOGLE_SITE_VERIFICATION`。
+  - Bing Webmaster Tools：GitHub repository variable `PEEK_BING_SITE_VERIFICATION`。
+  - token 只在部署产物中注入，不写死到仓库源码。
 - [x] 部署后检查：
   - 首页、隐私页、支持页返回 200。
   - `robots.txt` 返回 200。
@@ -508,7 +517,7 @@
 - [x] 将公网 landing SEO 校验纳入 `script/launch_verify.sh`。
 - [x] 增加外部依赖状态脚本：
   - `script/check_external_readiness.py`
-  - 默认复查公网 URL、GitHub Pages、GitHub Actions variables 和 analytics config。
+  - 默认复查公网 URL、GitHub Pages、GitHub Actions variables、analytics config 和 Google/Bing verification meta。
   - 可用 `PEEK_CHECK_EXPORT=1 PEEK_CHECK_SCREENSHOT=1` 额外复查 App Store export 和截图权限。
 - [ ] PageSpeed Insights 在线报告可后续补充，不阻塞首发。
   - 2026-06-28 通过 PageSpeed Insights API 请求移动端/桌面端报告时返回 HTTP 429 Too Many Requests；本项继续作为非阻塞补充项。
@@ -518,7 +527,11 @@
 - `robots.txt` 已公开声明 sitemap：`https://kaedeeeeeeeeee.github.io/cornor_assitant/sitemap.xml`。
 - Google Search Console 和 Bing Webmaster Tools 需要登录对应账号后提交 sitemap；不要使用旧式匿名 sitemap ping 端点作为上线证据。
 - 提交 sitemap 会改变站长工具账号状态，执行前需要确认使用哪个 Google/Microsoft 账号。
-- Search Console 当前下一步是完成 `https://kaedeeeeeeeeee.github.io/cornor_assitant/` 的所有权验证；GitHub Pages 可优先使用 HTML 文件或 HTML meta tag 验证方式。
+- Search Console 当前下一步是完成 `https://kaedeeeeeeeeee.github.io/cornor_assitant/` 的所有权验证；GitHub Pages 可优先使用 HTML meta tag 验证方式。
+- 拿到验证 token 后，在 GitHub repository variables 中设置：
+  - `PEEK_GOOGLE_SITE_VERIFICATION`：Google meta tag 的 `content` 值。
+  - `PEEK_BING_SITE_VERIFICATION`：Bing `msvalidate.01` meta tag 的 `content` 值。
+  - 设置后手动 rerun `Deploy Peek landing page` workflow 或推送 landing/workflow 变更，再运行 `./script/check_external_readiness.py` 复查 meta 是否出现在公网首页。
 
 首发关键词方向：
 
@@ -1023,6 +1036,7 @@ PEEK_CHECK_EXPORT=1 PEEK_CHECK_SCREENSHOT=1 ./script/check_external_readiness.py
 11. 在 Google Search Console / Bing Webmaster Tools 验证站点并提交 sitemap。
     - Search Console 当前需要为 `f.shera.09@gmail.com` 完成属性所有权验证。
     - Bing Webmaster Tools 当前需要 Microsoft 登录。
+    - GitHub Pages workflow 已支持通过 `PEEK_GOOGLE_SITE_VERIFICATION` / `PEEK_BING_SITE_VERIFICATION` repository variables 注入验证 meta。
 12. Upload build to App Store Connect。
 13. 回填真实 App Store URL 到 landing CTA。
 14. Submit for Review。

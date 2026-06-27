@@ -40,6 +40,55 @@ jobs:
           const body = `window.PEEK_GA_MEASUREMENT_ID = ${JSON.stringify(value)};\n`;
           fs.writeFileSync("CornerAssistantApp/landing-page/analytics-config.js", body);
           NODE
+      - name: Configure site verification
+        env:
+          PEEK_GOOGLE_SITE_VERIFICATION: ${{ vars.PEEK_GOOGLE_SITE_VERIFICATION }}
+          PEEK_BING_SITE_VERIFICATION: ${{ vars.PEEK_BING_SITE_VERIFICATION }}
+        run: |
+          node <<'NODE'
+          const fs = require("fs");
+
+          const indexPath = "CornerAssistantApp/landing-page/index.html";
+          const html = fs.readFileSync(indexPath, "utf8");
+          const tokens = [
+            {
+              name: "google-site-verification",
+              value: (process.env.PEEK_GOOGLE_SITE_VERIFICATION || "").trim(),
+            },
+            {
+              name: "msvalidate.01",
+              value: (process.env.PEEK_BING_SITE_VERIFICATION || "").trim(),
+            },
+          ];
+
+          const escapeAttribute = (value) => value
+            .replace(/&/g, "&amp;")
+            .replace(/"/g, "&quot;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;");
+
+          const invalidTokens = tokens.filter(({ value }) => value && !/^[A-Za-z0-9_-]+$/.test(value));
+          if (invalidTokens.length > 0) {
+            throw new Error(`Invalid site verification token(s): ${invalidTokens.map(({ name }) => name).join(", ")}`);
+          }
+
+          const tags = tokens
+            .filter(({ value }) => value)
+            .map(({ name, value }) => `<meta name="${name}" content="${escapeAttribute(value)}">`);
+
+          if (tags.length === 0) {
+            console.log("No site verification tokens configured.");
+            process.exit(0);
+          }
+
+          if (!html.includes("</head>")) {
+            throw new Error("index.html is missing </head>");
+          }
+
+          const nextHtml = html.replace("</head>", `    ${tags.join("\n    ")}\n</head>`);
+          fs.writeFileSync(indexPath, nextHtml);
+          console.log(`Configured ${tags.length} site verification meta tag(s).`);
+          NODE
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
