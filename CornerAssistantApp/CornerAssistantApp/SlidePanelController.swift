@@ -55,27 +55,140 @@ private enum ResizeDirection {
     case none
 }
 
-@MainActor
-final class SlidePanelController {
-    private enum Constants {
-        static let hotspotWidth: CGFloat = 12
-        static let hotspotHeight: CGFloat = 140
-        static let defaultWindowWidth: CGFloat = 528
-        static let defaultWindowHeight: CGFloat = 750
-        static let minWindowWidth: CGFloat = 576
-        static let maxWindowWidth: CGFloat = 900
-        static let minWindowHeight: CGFloat = 600
-        static let maxWindowHeight: CGFloat = 1200
-        static let animationDuration: TimeInterval = 0.18
-        static let horizontalMargin: CGFloat = 14
-        static let verticalMargin: CGFloat = 10
-        static let offscreenPadding: CGFloat = 12
-        static let widthUserDefaultsKey = "SlidePanelWindowWidth"
-        static let heightUserDefaultsKey = "SlidePanelWindowHeight"
-        static let resizeEdgeWidth: CGFloat = 20  // 拖拽边缘宽度
-        static let resizeEdgeWidthExit: CGFloat = 28  // 光标提示的宽度，减少抖动
+enum SlidePanelLayout {
+    static let hotspotWidth: CGFloat = 12
+    static let hotspotHeight: CGFloat = 140
+    static let defaultWindowWidth: CGFloat = 528
+    static let defaultWindowHeight: CGFloat = 750
+    static let minWindowWidth: CGFloat = 576
+    static let maxWindowWidth: CGFloat = 900
+    static let minWindowHeight: CGFloat = 600
+    static let maxWindowHeight: CGFloat = 1200
+    static let animationDuration: TimeInterval = 0.18
+    static let horizontalMargin: CGFloat = 14
+    static let verticalMargin: CGFloat = 10
+    static let offscreenPadding: CGFloat = 12
+    static let widthUserDefaultsKey = "SlidePanelWindowWidth"
+    static let heightUserDefaultsKey = "SlidePanelWindowHeight"
+    static let resizeEdgeWidth: CGFloat = 20
+    static let resizeEdgeWidthExit: CGFloat = 28
+
+    static func savedWidth(from value: Double) -> CGFloat {
+        guard value > 0 else { return defaultWindowWidth }
+        return max(minWindowWidth, min(maxWindowWidth, CGFloat(value)))
     }
 
+    static func savedHeight(from value: Double) -> CGFloat {
+        guard value > 0 else { return defaultWindowHeight }
+        return max(minWindowHeight, min(maxWindowHeight, CGFloat(value)))
+    }
+
+    static func maxAllowedHeight(visibleFrame: CGRect) -> CGFloat {
+        min(maxWindowHeight, visibleFrame.height - (verticalMargin * 2))
+    }
+
+    static func hotspotRect(hotCorner: HotCorner, screenFrame: CGRect) -> CGRect {
+        switch hotCorner {
+        case .bottomLeft:
+            return CGRect(
+                x: screenFrame.minX,
+                y: screenFrame.minY,
+                width: hotspotWidth,
+                height: hotspotHeight
+            )
+        case .bottomRight:
+            return CGRect(
+                x: screenFrame.maxX - hotspotWidth,
+                y: screenFrame.minY,
+                width: hotspotWidth,
+                height: hotspotHeight
+            )
+        case .topLeft:
+            return CGRect(
+                x: screenFrame.minX,
+                y: screenFrame.maxY - hotspotHeight,
+                width: hotspotWidth,
+                height: hotspotHeight
+            )
+        case .topRight:
+            return CGRect(
+                x: screenFrame.maxX - hotspotWidth,
+                y: screenFrame.maxY - hotspotHeight,
+                width: hotspotWidth,
+                height: hotspotHeight
+            )
+        }
+    }
+
+    static func shownFrame(
+        hotCorner: HotCorner,
+        visibleFrame: CGRect,
+        windowWidth: CGFloat,
+        windowHeight: CGFloat
+    ) -> CGRect {
+        let availableHeight = visibleFrame.height - (verticalMargin * 2)
+        let height = min(windowHeight, availableHeight)
+        let width = windowWidth
+
+        let x: CGFloat
+        let y: CGFloat
+
+        switch hotCorner {
+        case .bottomLeft:
+            x = visibleFrame.minX + horizontalMargin
+            y = visibleFrame.minY + verticalMargin
+        case .bottomRight:
+            x = visibleFrame.maxX - width - horizontalMargin
+            y = visibleFrame.minY + verticalMargin
+        case .topLeft:
+            x = visibleFrame.minX + horizontalMargin
+            y = visibleFrame.maxY - height - verticalMargin
+        case .topRight:
+            x = visibleFrame.maxX - width - horizontalMargin
+            y = visibleFrame.maxY - height - verticalMargin
+        }
+
+        return CGRect(x: x, y: y, width: width, height: height)
+    }
+
+    static func concealedFrame(hotCorner: HotCorner, shownFrame: CGRect) -> CGRect {
+        let dx: CGFloat
+        let dy: CGFloat
+
+        switch hotCorner {
+        case .bottomLeft:
+            dx = -(shownFrame.width + offscreenPadding)
+            dy = -(shownFrame.height + offscreenPadding)
+        case .bottomRight:
+            dx = shownFrame.width + offscreenPadding
+            dy = -(shownFrame.height + offscreenPadding)
+        case .topLeft:
+            dx = -(shownFrame.width + offscreenPadding)
+            dy = shownFrame.height + offscreenPadding
+        case .topRight:
+            dx = shownFrame.width + offscreenPadding
+            dy = shownFrame.height + offscreenPadding
+        }
+
+        return shownFrame.offsetBy(dx: dx, dy: dy)
+    }
+
+    static func shouldCollapseOnGlobalMouseDown(
+        isExpanded: Bool,
+        isResizing: Bool,
+        isPinned: Bool,
+        windowFrame: CGRect,
+        clickLocation: CGPoint
+    ) -> Bool {
+        guard isExpanded else { return false }
+        guard !isResizing else { return false }
+        guard !isPinned else { return false }
+        return !windowFrame.contains(clickLocation)
+    }
+}
+
+@MainActor
+final class SlidePanelController {
     private let window: NSWindow
     private let hostingController: NSHostingController<AnyView>
     private let resizeCursorOverlay = ResizeCursorOverlayView()
@@ -117,24 +230,18 @@ final class SlidePanelController {
     }
     
     private static func loadSavedWidth() -> CGFloat {
-        let saved = UserDefaults.standard.double(forKey: Constants.widthUserDefaultsKey)
-        if saved > 0 {
-            return max(Constants.minWindowWidth, min(Constants.maxWindowWidth, saved))
-        }
-        return Constants.defaultWindowWidth
+        let saved = UserDefaults.standard.double(forKey: SlidePanelLayout.widthUserDefaultsKey)
+        return SlidePanelLayout.savedWidth(from: saved)
     }
     
     private static func loadSavedHeight() -> CGFloat {
-        let saved = UserDefaults.standard.double(forKey: Constants.heightUserDefaultsKey)
-        if saved > 0 {
-            return max(Constants.minWindowHeight, min(Constants.maxWindowHeight, saved))
-        }
-        return Constants.defaultWindowHeight
+        let saved = UserDefaults.standard.double(forKey: SlidePanelLayout.heightUserDefaultsKey)
+        return SlidePanelLayout.savedHeight(from: saved)
     }
     
     private func saveCurrentSize() {
-        UserDefaults.standard.set(currentWindowWidth, forKey: Constants.widthUserDefaultsKey)
-        UserDefaults.standard.set(currentWindowHeight, forKey: Constants.heightUserDefaultsKey)
+        UserDefaults.standard.set(currentWindowWidth, forKey: SlidePanelLayout.widthUserDefaultsKey)
+        UserDefaults.standard.set(currentWindowHeight, forKey: SlidePanelLayout.heightUserDefaultsKey)
     }
 
     private func configureResizeCursorOverlay() {
@@ -167,10 +274,9 @@ final class SlidePanelController {
     /// 获取最大允许高度（考虑屏幕可用高度）
     private func getMaxAllowedHeight() -> CGFloat {
         guard let screen = targetScreen ?? NSScreen.main else {
-            return Constants.maxWindowHeight
+            return SlidePanelLayout.maxWindowHeight
         }
-        let availableHeight = screen.visibleFrame.height - (Constants.verticalMargin * 2)
-        return min(Constants.maxWindowHeight, availableHeight)
+        return SlidePanelLayout.maxAllowedHeight(visibleFrame: screen.visibleFrame)
     }
     
     /// 检查屏幕坐标是否在拖拽区域内，返回拖拽方向
@@ -287,7 +393,7 @@ final class SlidePanelController {
     private func makeResizeCursorRects(in bounds: CGRect) -> [(CGRect, NSCursor)] {
         guard isExpanded else { return [] }
 
-        let edgeWidth = Constants.resizeEdgeWidthExit
+        let edgeWidth = SlidePanelLayout.resizeEdgeWidthExit
         var rects: [(CGRect, NSCursor)] = []
 
         let cornerRect = getCornerResizeRect(for: bounds, size: edgeWidth)
@@ -620,7 +726,7 @@ private extension SlidePanelController {
             return event  // 传递事件
             
         case .leftMouseDown:
-            let direction = getResizeDirection(at: screenPoint, edgeWidth: Constants.resizeEdgeWidth)
+            let direction = getResizeDirection(at: screenPoint, edgeWidth: SlidePanelLayout.resizeEdgeWidth)
             if direction != .none {
                 // 开始拖拽
                 isResizing = true
@@ -671,14 +777,14 @@ private extension SlidePanelController {
                 // 窗口在左侧，拖拽右边缘
                 // 新宽度 = 鼠标 X - 窗口左边缘
                 newWidth = currentLocation.x - resizeStartFrame.origin.x
-                newWidth = max(Constants.minWindowWidth, min(Constants.maxWindowWidth, newWidth))
+                newWidth = max(SlidePanelLayout.minWindowWidth, min(SlidePanelLayout.maxWindowWidth, newWidth))
                 // X 坐标保持不变
             } else {
                 // 窗口在右侧，拖拽左边缘
                 // 右边缘固定
                 let rightEdge = resizeStartFrame.origin.x + resizeStartFrame.width
                 newWidth = rightEdge - currentLocation.x
-                newWidth = max(Constants.minWindowWidth, min(Constants.maxWindowWidth, newWidth))
+                newWidth = max(SlidePanelLayout.minWindowWidth, min(SlidePanelLayout.maxWindowWidth, newWidth))
                 newX = rightEdge - newWidth
             }
             
@@ -689,14 +795,14 @@ private extension SlidePanelController {
                 // 窗口在下边（bottomLeft/bottomRight），拖拽上边缘
                 // 底边缘固定，新高度 = 鼠标 Y - 窗口底部
                 newHeight = currentLocation.y - resizeStartFrame.origin.y
-                newHeight = max(Constants.minWindowHeight, min(maxAllowedHeight, newHeight))
+                newHeight = max(SlidePanelLayout.minWindowHeight, min(maxAllowedHeight, newHeight))
                 // Y 坐标保持 resizeStartFrame.origin.y 不变
             } else {
                 // 窗口在上边（topLeft/topRight），拖拽下边缘
                 // 顶边缘固定
                 let topEdge = resizeStartFrame.origin.y + resizeStartFrame.height
                 newHeight = topEdge - currentLocation.y
-                newHeight = max(Constants.minWindowHeight, min(maxAllowedHeight, newHeight))
+                newHeight = max(SlidePanelLayout.minWindowHeight, min(maxAllowedHeight, newHeight))
                 newY = topEdge - newHeight
             }
             
@@ -706,22 +812,22 @@ private extension SlidePanelController {
             // 水平方向
             if isHorizontalHandleOnRightEdge() {
                 newWidth = currentLocation.x - resizeStartFrame.origin.x
-                newWidth = max(Constants.minWindowWidth, min(Constants.maxWindowWidth, newWidth))
+                newWidth = max(SlidePanelLayout.minWindowWidth, min(SlidePanelLayout.maxWindowWidth, newWidth))
             } else {
                 let rightEdge = resizeStartFrame.origin.x + resizeStartFrame.width
                 newWidth = rightEdge - currentLocation.x
-                newWidth = max(Constants.minWindowWidth, min(Constants.maxWindowWidth, newWidth))
+                newWidth = max(SlidePanelLayout.minWindowWidth, min(SlidePanelLayout.maxWindowWidth, newWidth))
                 newX = rightEdge - newWidth
             }
             
             // 垂直方向
             if isVerticalHandleOnTopEdge() {
                 newHeight = currentLocation.y - resizeStartFrame.origin.y
-                newHeight = max(Constants.minWindowHeight, min(maxAllowedHeight, newHeight))
+                newHeight = max(SlidePanelLayout.minWindowHeight, min(maxAllowedHeight, newHeight))
             } else {
                 let topEdge = resizeStartFrame.origin.y + resizeStartFrame.height
                 newHeight = topEdge - currentLocation.y
-                newHeight = max(Constants.minWindowHeight, min(maxAllowedHeight, newHeight))
+                newHeight = max(SlidePanelLayout.minWindowHeight, min(maxAllowedHeight, newHeight))
                 newY = topEdge - newHeight
             }
             
@@ -768,14 +874,15 @@ private extension SlidePanelController {
     }
 
     func handleGlobalMouseDown() {
-        guard isExpanded else { return }
-        guard !isResizing else { return }  // 如果正在拖拽，不要关闭
-        // 如果窗口被固定，点击外部不收起
-        guard !panelState.isPinned else { return }
-        
         let location = NSEvent.mouseLocation
 
-        if !window.frame.contains(location) {
+        if SlidePanelLayout.shouldCollapseOnGlobalMouseDown(
+            isExpanded: isExpanded,
+            isResizing: isResizing,
+            isPinned: panelState.isPinned,
+            windowFrame: window.frame,
+            clickLocation: location
+        ) {
             collapse()
         }
     }
@@ -810,7 +917,7 @@ private extension SlidePanelController {
         }
 
         NSAnimationContext.runAnimationGroup({ context in
-            context.duration = Constants.animationDuration
+            context.duration = SlidePanelLayout.animationDuration
             context.timingFunction = CAMediaTimingFunction(name: .easeOut)
             context.allowsImplicitAnimation = true
             window.animator().setFrame(visibleFrame, display: true)
@@ -834,7 +941,7 @@ private extension SlidePanelController {
 
         let destination = concealedFrame(for: screen)
         NSAnimationContext.runAnimationGroup({ context in
-            context.duration = Constants.animationDuration
+            context.duration = SlidePanelLayout.animationDuration
             context.timingFunction = CAMediaTimingFunction(name: .easeIn)
             context.allowsImplicitAnimation = true
             window.animator().setFrame(destination, display: true)
@@ -849,84 +956,20 @@ private extension SlidePanelController {
     }
 
     func hotspotRect(for screen: NSScreen) -> CGRect {
-        switch hotCorner {
-        case .bottomLeft:
-            return CGRect(
-                x: screen.frame.minX,
-                y: screen.frame.minY,
-                width: Constants.hotspotWidth,
-                height: Constants.hotspotHeight
-            )
-        case .bottomRight:
-            return CGRect(
-                x: screen.frame.maxX - Constants.hotspotWidth,
-                y: screen.frame.minY,
-                width: Constants.hotspotWidth,
-                height: Constants.hotspotHeight
-            )
-        case .topLeft:
-            return CGRect(
-                x: screen.frame.minX,
-                y: screen.frame.maxY - Constants.hotspotHeight,
-                width: Constants.hotspotWidth,
-                height: Constants.hotspotHeight
-            )
-        case .topRight:
-            return CGRect(
-                x: screen.frame.maxX - Constants.hotspotWidth,
-                y: screen.frame.maxY - Constants.hotspotHeight,
-                width: Constants.hotspotWidth,
-                height: Constants.hotspotHeight
-            )
-        }
+        SlidePanelLayout.hotspotRect(hotCorner: hotCorner, screenFrame: screen.frame)
     }
 
     func shownFrame(for screen: NSScreen) -> CGRect {
-        let availableHeight = screen.visibleFrame.height - (Constants.verticalMargin * 2)
-        let height = min(currentWindowHeight, availableHeight)
-        let width = currentWindowWidth
-
-        let x: CGFloat
-        let y: CGFloat
-
-        switch hotCorner {
-        case .bottomLeft:
-            x = screen.visibleFrame.minX + Constants.horizontalMargin
-            y = screen.visibleFrame.minY + Constants.verticalMargin
-        case .bottomRight:
-            x = screen.visibleFrame.maxX - width - Constants.horizontalMargin
-            y = screen.visibleFrame.minY + Constants.verticalMargin
-        case .topLeft:
-            x = screen.visibleFrame.minX + Constants.horizontalMargin
-            y = screen.visibleFrame.maxY - height - Constants.verticalMargin
-        case .topRight:
-            x = screen.visibleFrame.maxX - width - Constants.horizontalMargin
-            y = screen.visibleFrame.maxY - height - Constants.verticalMargin
-        }
-
-        return CGRect(x: x, y: y, width: width, height: height)
+        SlidePanelLayout.shownFrame(
+            hotCorner: hotCorner,
+            visibleFrame: screen.visibleFrame,
+            windowWidth: currentWindowWidth,
+            windowHeight: currentWindowHeight
+        )
     }
 
     func concealedFrame(for screen: NSScreen) -> CGRect {
         let shown = shownFrame(for: screen)
-        let dx: CGFloat
-        let dy: CGFloat
-
-        switch hotCorner {
-        case .bottomLeft:
-            dx = -(shown.width + Constants.offscreenPadding)
-            dy = -(shown.height + Constants.offscreenPadding)
-        case .bottomRight:
-            dx = shown.width + Constants.offscreenPadding
-            dy = -(shown.height + Constants.offscreenPadding)
-        case .topLeft:
-            dx = -(shown.width + Constants.offscreenPadding)
-            dy = shown.height + Constants.offscreenPadding
-        case .topRight:
-            dx = shown.width + Constants.offscreenPadding
-            dy = shown.height + Constants.offscreenPadding
-        }
-
-        return shown.offsetBy(dx: dx, dy: dy)
+        return SlidePanelLayout.concealedFrame(hotCorner: hotCorner, shownFrame: shown)
     }
 }

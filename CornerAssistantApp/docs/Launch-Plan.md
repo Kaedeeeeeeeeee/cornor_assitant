@@ -196,6 +196,7 @@
   - 2026-06-28 03:11 JST 再次执行 `./script/launch_verify.sh`，通过；当前 readiness 脚本已额外覆盖 App Store export 成功后的 exported app metadata、privacy manifest 和 entitlements 验证。
   - 2026-06-28 03:17 JST 再次执行 `./script/launch_verify.sh`，通过；本轮仅更新计划文档和 QA 证据。
   - 2026-06-28 03:22 JST 再次执行 `./script/launch_verify.sh`，通过；当前测试已覆盖三语言切换和语言偏好持久化。
+  - 2026-06-28 03:28 JST 再次执行 `./script/launch_verify.sh`，通过；当前测试已覆盖面板布局、固定防收起和外部点击自动收起策略。
 
 2026-06-28 Landing 本地验收收口：
 
@@ -299,6 +300,7 @@
 
 - 已新增：
   - `CornerAssistantAppTests/LaunchReadinessTests.swift`
+  - `CornerAssistantAppTests/SlidePanelLayoutTests.swift`
   - `CornerAssistantAppTests/SlidePanelViewModelTests.swift`
   - `CornerAssistantAppTests/SuggestionStoreTests.swift`
 - `script/qa_smoke.sh` 已扩展：
@@ -311,6 +313,8 @@
   - 首发关键 UI 文案 key 存在。
   - App 语言切换：`LocalizationManager` 可切换简体中文、日语、英语，切换后 bundle 文案更新，并写入 `CornerAssistantApp.PreferredLanguage`。
   - 四个 hot corner raw value 保持稳定。
+  - 面板布局：保存尺寸 clamp、四个 hot corner hotspot rect、四个显示 frame、隐藏 frame 方向、可见高度限制。
+  - 固定窗口/自动收起策略：未展开、正在 resize、窗口固定、点击窗口内都不会自动收起；未固定且点击窗口外会收起。
   - 三语言 settings/language/hot corner 菜单文案存在。
   - Hot corner 默认值为 `bottomLeft`，保存/读取有效值正常，非法值会回退到默认值。
   - App Store 首发关键 build settings 保持一致：bundle id、product name、display name、AppIcon、Productivity 分类、version `1.0 (1)`、macOS 15.0。
@@ -325,7 +329,8 @@
   - 2026-06-28 01:47 JST `LaunchReadinessTests` 定向复跑通过。
   - 2026-06-28 03:21 JST `LaunchReadinessTests` 定向复跑通过；新增语言切换/持久化覆盖。
   - 2026-06-28 03:22 JST `xcodebuild ... -skip-testing:CornerAssistantAppUITests test` 通过。
-  - 当前 `CornerAssistantAppTests` 共 38 个 `func test...`。
+  - 2026-06-28 03:27 JST `SlidePanelLayoutTests` 定向复跑通过；完整 unit test target 通过。
+  - 当前 `CornerAssistantAppTests` 共 44 个 `func test...`。
 - `script/qa_smoke.sh` 已重新验证通过：
   - 当前 smoke 会先验证菜单栏 status item 存在。
   - 当前 smoke 会确认启动后默认没有可见 Peek 面板窗口。
@@ -884,9 +889,11 @@ xcodebuild archive \
 - [x] 四个热角设置。
   - 自动覆盖：`LaunchReadinessTests` 验证四个 hot corner raw value、菜单文案、默认值和持久化；`script/qa_smoke.sh` 验证四个 hot corner 对应的真实面板窗口定位。
 - [ ] 边缘面板唤出和自动收起。
-  - 自动覆盖了 Debug expand/collapse 和四角定位；真实鼠标边缘触发及自动收起仍需人工或更完整 UI automation。
-- [ ] 固定面板行为。
+  - 自动覆盖了 Debug expand/collapse、四角定位、hotspot rect、隐藏/显示 frame 和外部点击自动收起策略；真实鼠标边缘触发仍需人工或更完整 UI automation。
+- [x] 固定面板行为。
+  - 自动覆盖：`SlidePanelLayoutTests.testGlobalMouseDownCollapsePolicyRespectsPinnedAndResizingStates` 验证固定状态下点击外部不会自动收起，未固定且点击外部会收起。
 - [ ] 面板尺寸调整。
+  - 自动覆盖：`SlidePanelLayoutTests` 验证保存尺寸 clamp 和显示高度不会超过可见区域；真实拖拽 resize 仍需人工或更完整 UI automation。
 - [x] 搜索关键词。
   - 自动覆盖：`SearchProviderTests` 验证空查询、trim、unicode/符号查询和 Google search URL 构造。
 - [x] 直接输入 URL。
