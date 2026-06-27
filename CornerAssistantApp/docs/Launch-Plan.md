@@ -96,6 +96,9 @@
   - `error: exportArchive No Accounts`
   - `error: exportArchive No profiles for 'com.shifeng.peek' were found`
   - 当前机器 CLI/Xcode 没有可用于 App Store distribution export 的账号状态；仍需要登录 Xcode/Apple Developer 账号，并创建或刷新 `com.shifeng.peek` 的 App Store provisioning profile。
+- 2026-06-28 01:07 JST 再次执行 `xcodebuild -exportArchive`，失败原因仍为：
+  - `error: exportArchive No Accounts`
+  - `error: exportArchive No profiles for 'com.shifeng.peek' were found`
 
 2026-06-27 源码发布风险收口：
 
@@ -168,6 +171,7 @@
 - 已新增 `script/validate_landing_local.js`，启动本地静态服务并用 Playwright 校验 1440/1024/390 三个宽度、三语切换、无横向溢出、图片加载、隐私页、支持页和静态 SEO 文件。
 - `script/launch_verify.sh` 已验证通过，覆盖：
   - App Store metadata 长度和禁用词校验。
+  - Privacy/App Privacy 口径一致性校验。
   - 本地 landing UI/响应式/三语交互校验。
   - Release build。
   - 跳过 UI runner 的 XCTest。
@@ -178,7 +182,7 @@
   - Debug-only 面板命令和 hot corner smoke 命令没有进入 Release archive。
   - 公网 landing 关键 URL 均可达。
   - 公网 landing SEO 和 analytics config 校验。
-  - 2026-06-28 01:00 JST 再次执行 `./script/launch_verify.sh`，通过。
+  - 2026-06-28 01:06 JST 再次执行 `./script/launch_verify.sh`，通过。
 
 2026-06-28 Landing 本地验收收口：
 
@@ -227,6 +231,18 @@
   - 未命中 `Bing`、`macOS 14`、`Sonoma`、selected text / 选中文字等禁用宣传词。
 - `script/launch_verify.sh` 已纳入该校验。
 
+2026-06-28 Privacy / App Privacy 口径校验收口：
+
+- 已新增 `script/validate_privacy_alignment.py`。
+- 当前自动校验覆盖：
+  - `PrivacyInfo.xcprivacy` 只声明 UserDefaults required-reason API，reason 为 `CA92.1`。
+  - `PrivacyInfo.xcprivacy` 中 `NSPrivacyTracking = false`，`NSPrivacyTrackingDomains = []`，`NSPrivacyCollectedDataTypes = []`。
+  - Xcode Debug/Release build settings 中 sandbox、network client、audio input、incoming network、camera、location、user-selected files、JIT 和 export compliance 口径保持一致。
+  - `NSMicrophoneUsageDescription` 与隐私文案一致：只有网站可能请求麦克风，Peek 本身不录音。
+  - `CornerAssistantApp/docs/AppStore-Materials.md` 中 App Privacy、Age Rating、Export Compliance、support email、macOS 15.0+ 和 App 内无 analytics SDK 的首发口径存在。
+  - Landing privacy 文案中官网 analytics 明确限定为公开官网，不嵌入 macOS App。
+- `script/launch_verify.sh` 已纳入该校验。
+
 2026-06-28 QA 自动化覆盖扩展：
 
 - 已新增：
@@ -251,10 +267,10 @@
     - `corner=topLeft window id=8447 layer=3 bounds=x:14 y:43 width:528 height:750`
     - `corner=topRight window id=8447 layer=3 bounds=x:1186 y:43 width:528 height:750`
     - `qa_smoke passed`
-- 2026-06-28 01:01 JST 再次执行 `xcodebuild -exportArchive`，失败原因仍为：
+- 2026-06-28 01:07 JST 再次执行 `xcodebuild -exportArchive`，失败原因仍为：
   - `error: exportArchive No Accounts`
   - `error: exportArchive No profiles for 'com.shifeng.peek' were found`
-- 2026-06-28 01:00 JST 再次执行 `./script/launch_verify.sh`，通过。
+- 2026-06-28 01:06 JST 再次执行 `./script/launch_verify.sh`，通过。
 
 2026-06-27 Export Compliance 收口：
 
@@ -436,7 +452,7 @@
 
 - 已尝试用应用内浏览器打开 `https://appstoreconnect.apple.com/agreements/`。
 - 页面在加载阶段超时，未进入可读后台状态；没有提交任何表单，也没有接受协议。
-- 当前 Apple 后台阻塞仍以 `xcodebuild -exportArchive` 的直接错误为准：PLA 更新待接受，且没有 `com.shifeng.peek` App Store provisioning profile。
+- 当前 Apple 后台阻塞仍以 `xcodebuild -exportArchive` 的直接错误为准：本机 Xcode/CLI 没有可用账号，且没有 `com.shifeng.peek` App Store provisioning profile。登录账号后仍需检查是否有 Apple Developer PLA 更新待接受。
 
 2026-06-28 后台可达性复查：
 
@@ -625,7 +641,7 @@ xcodebuild archive \
 ./script/launch_verify.sh
 ```
 
-  - 2026-06-28 已通过。
+  - 2026-06-28 01:06 JST 已通过。
 - [ ] 上传 App Store Connect：
   - Xcode Organizer。
   - 或 Transporter。
@@ -650,6 +666,7 @@ xcodebuild archive \
   - 当前覆盖四个 hot corner 的真实窗口定位。
 - [x] `script/capture_app_store_screenshot.sh`：可启动并展开真实面板，当前会话在 `screencapture` 阶段因截图权限/会话状态失败。
 - [x] `script/validate_app_store_materials.py`：验证三语言 App Store metadata 长度和禁用宣传词。
+- [x] `script/validate_privacy_alignment.py`：验证 PrivacyInfo、Xcode 权限、App Store App Privacy 口径和 landing privacy 文案一致。
 - [x] `script/validate_landing_public.py`：验证公网 landing SEO、sitemap、manifest、analytics config 和禁用宣传词。
 - [x] 搜索 URL 构造、空查询处理、查询 trim/encode。
 - [x] URL 输入规范化：完整 URL、裸域名、localhost、普通搜索词。
@@ -858,7 +875,7 @@ xcodebuild \
 ./script/launch_verify.sh
 ```
 
-该脚本会执行 Release build、可自动运行的 XCTest、Release archive、归档 metadata/entitlements/privacy manifest 校验、Debug-only 字符串泄漏检查、公网 landing URL 检查和公网 landing SEO/analytics config 校验。公网检查可用 `SKIP_NETWORK=1 ./script/launch_verify.sh` 跳过。
+该脚本会执行 App Store metadata 校验、Privacy/App Privacy 口径一致性校验、Release build、可自动运行的 XCTest、Release archive、归档 metadata/entitlements/privacy manifest 校验、Debug-only 字符串泄漏检查、公网 landing URL 检查和公网 landing SEO/analytics config 校验。公网检查可用 `SKIP_NETWORK=1 ./script/launch_verify.sh` 跳过。
 
 ## 7. 当前下一步
 

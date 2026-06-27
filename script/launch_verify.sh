@@ -13,6 +13,7 @@ INFO_PLIST="$APP_PATH/Contents/Info.plist"
 PRIVACY_MANIFEST="$APP_PATH/Contents/Resources/PrivacyInfo.xcprivacy"
 APP_EXECUTABLE="$APP_PATH/Contents/MacOS/Peek"
 MATERIALS_VALIDATOR="$ROOT_DIR/script/validate_app_store_materials.py"
+PRIVACY_ALIGNMENT_VALIDATOR="$ROOT_DIR/script/validate_privacy_alignment.py"
 LANDING_VALIDATOR="$ROOT_DIR/script/validate_landing_public.py"
 LANDING_LOCAL_VALIDATOR="$ROOT_DIR/script/validate_landing_local.js"
 
@@ -49,6 +50,9 @@ assert_plist_value() {
 
 log "App Store materials"
 "$MATERIALS_VALIDATOR"
+
+log "Privacy alignment"
+"$PRIVACY_ALIGNMENT_VALIDATOR"
 
 log "Local landing UI"
 "$LANDING_LOCAL_VALIDATOR"
