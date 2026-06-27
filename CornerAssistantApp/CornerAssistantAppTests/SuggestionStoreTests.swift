@@ -22,6 +22,22 @@ final class SuggestionStoreTests: XCTestCase {
         store.clear()
         XCTAssertTrue(store.suggestions.isEmpty)
     }
+
+    func testSuggestionFailureClearsStaleResults() async throws {
+        let store = SuggestionStore(provider: ControlledSearchProvider())
+
+        store.update(query: "peek")
+        try await Task.sleep(nanoseconds: 320_000_000)
+        XCTAssertEqual(store.suggestions, ["peek app", "peek browser"])
+
+        ControlledSearchProvider.shouldFail = true
+        defer { ControlledSearchProvider.shouldFail = false }
+
+        store.update(query: "offline")
+        try await Task.sleep(nanoseconds: 320_000_000)
+
+        XCTAssertTrue(store.suggestions.isEmpty)
+    }
 }
 
 private struct StubSearchProvider: SearchProvider {
@@ -31,5 +47,20 @@ private struct StubSearchProvider: SearchProvider {
 
     func suggestions(for query: String) async throws -> [String] {
         ["\(query) app", "\(query) browser"]
+    }
+}
+
+private struct ControlledSearchProvider: SearchProvider {
+    static var shouldFail = false
+
+    func searchURL(for query: String) -> URL? {
+        nil
+    }
+
+    func suggestions(for query: String) async throws -> [String] {
+        if Self.shouldFail {
+            throw URLError(.notConnectedToInternet)
+        }
+        return ["\(query) app", "\(query) browser"]
     }
 }

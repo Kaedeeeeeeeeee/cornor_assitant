@@ -830,6 +830,7 @@ xcodebuild archive \
 - [x] 搜索 URL 构造、空查询处理、查询 trim/encode。
 - [x] URL 输入规范化：完整 HTTP/HTTPS URL、裸域名、路径、localhost、普通搜索词。
 - [x] 搜索建议模型：最小输入长度、debounce、clear。
+  - 当前也覆盖 suggestions 请求失败或无网络时清空旧建议，不保留 stale results。
 - [x] 标签模型：新建、切换、关闭、关闭最后普通标签后自动补新 launcher tab、排序。
 - [x] 固定网站模型：id 生成、favicon fallback、custom favicon、Codable 还原。
 - [x] 固定网站 view model：添加、打开、移除、排序、重复 URL 防护、固定 tab 关闭保护。
@@ -877,6 +878,7 @@ xcodebuild archive \
   - Notion 或其他典型工作站点。
 - [ ] 干净 macOS 用户环境测试。
 - [ ] 无网络环境下基本界面表现。
+  - 2026-06-28 已自动覆盖搜索建议请求失败路径；完整无网络 WebKit 页面表现仍需在干净用户会话人工确认。
 
 ### Phase G: GitHub Pages 部署
 
