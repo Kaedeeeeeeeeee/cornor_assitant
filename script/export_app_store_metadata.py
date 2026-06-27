@@ -11,6 +11,7 @@ from pathlib import Path
 SCRIPT_DIR = Path(__file__).resolve().parent
 ROOT = SCRIPT_DIR.parent
 DEFAULT_OUTPUT_DIR = Path("/tmp/peek-app-store-metadata")
+MANUAL_QA_PATH = ROOT / "CornerAssistantApp" / "docs" / "Manual-QA-Checklist.md"
 
 sys.path.insert(0, str(SCRIPT_DIR))
 
@@ -137,6 +138,7 @@ def write_readme(output_dir: Path, app_information: dict[str, object]) -> None:
         "",
         "- `app_information.json`: shared app record, pricing, privacy, age-rating, and compliance notes.",
         "- `app_store_connect_submission_checklist.md`: copy-paste checklist for App Store Connect forms.",
+        "- `manual_qa_checklist.md`: manual QA checklist for the clean desktop and App Store screenshot pass.",
         "- `app_review_notes.txt`: App Review notes draft.",
         "- `metadata/<locale>/app_name.txt`",
         "- `metadata/<locale>/subtitle.txt`",
@@ -255,6 +257,10 @@ def export_metadata(output_dir: Path) -> list[Path]:
     checklist_path = output_dir / "app_store_connect_submission_checklist.md"
     write_submission_checklist(output_dir, markdown, app_information)
     written.append(checklist_path)
+
+    manual_qa_path = output_dir / "manual_qa_checklist.md"
+    write_text(manual_qa_path, MANUAL_QA_PATH.read_text(encoding="utf-8"))
+    written.append(manual_qa_path)
 
     readme_path = output_dir / "README.md"
     write_readme(output_dir, app_information)

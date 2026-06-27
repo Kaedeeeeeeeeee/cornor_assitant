@@ -11,6 +11,7 @@ from pathlib import Path
 SCRIPT_DIR = Path(__file__).resolve().parent
 ROOT = SCRIPT_DIR.parent
 DEFAULT_OUTPUT_DIR = Path("/tmp/peek-app-store-metadata")
+MANUAL_QA_PATH = ROOT / "CornerAssistantApp" / "docs" / "Manual-QA-Checklist.md"
 
 sys.path.insert(0, str(SCRIPT_DIR))
 
@@ -87,6 +88,7 @@ def expected_files() -> set[Path]:
         Path("app_information.json"),
         Path("app_review_notes.txt"),
         Path("app_store_connect_submission_checklist.md"),
+        Path("manual_qa_checklist.md"),
     }
     for locale, config in LOCALIZATIONS.items():
         for field in config["fields"]:
@@ -195,6 +197,7 @@ def validate_review_notes(output_dir: Path, markdown: str, errors: list[str]) ->
 def validate_readme_and_checklist(output_dir: Path, errors: list[str]) -> None:
     readme = read_text(output_dir / "README.md")
     checklist = read_text(output_dir / "app_store_connect_submission_checklist.md")
+    manual_qa = read_text(output_dir / "manual_qa_checklist.md")
     for label, text, markers in [
         (
             "README.md",
@@ -202,6 +205,7 @@ def validate_readme_and_checklist(output_dir: Path, errors: list[str]) -> None:
             [
                 "Manual Fields Still Required",
                 "Paid Apps Agreement, tax, and banking",
+                "manual_qa_checklist.md",
                 "Do not submit screenshots or binaries from this export folder.",
             ],
         ),
@@ -217,11 +221,24 @@ def validate_readme_and_checklist(output_dir: Path, errors: list[str]) -> None:
                 "Pre-submission checklist",
             ],
         ),
+        (
+            "manual_qa_checklist.md",
+            manual_qa,
+            [
+                "# Peek Manual QA Checklist",
+                "### 菜单栏图标点击",
+                "### WebKit 常见登录页面",
+                "## 当前已知人工阻塞",
+            ],
+        ),
     ]:
         print(f"metadata_export.{label}: chars={len(text)}")
         for marker in markers:
             if marker not in text:
                 errors.append(f"{label} missing marker: {marker!r}")
+
+    if manual_qa != MANUAL_QA_PATH.read_text(encoding="utf-8"):
+        errors.append("manual_qa_checklist.md does not match current Manual-QA-Checklist.md")
 
 
 def main() -> int:

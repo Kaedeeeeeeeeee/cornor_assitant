@@ -19,6 +19,7 @@ METADATA_EXPORTER="$ROOT_DIR/script/export_app_store_metadata.py"
 METADATA_EXPORT_VALIDATOR="$ROOT_DIR/script/validate_app_store_metadata_export.py"
 EXPORT_OPTIONS_VALIDATOR="$ROOT_DIR/script/validate_export_options.py"
 PRIVACY_ALIGNMENT_VALIDATOR="$ROOT_DIR/script/validate_privacy_alignment.py"
+MANUAL_QA_VALIDATOR="$ROOT_DIR/script/validate_manual_qa_checklist.py"
 LANDING_VALIDATOR="$ROOT_DIR/script/validate_landing_public.py"
 LANDING_LOCAL_VALIDATOR="$ROOT_DIR/script/validate_landing_local.js"
 PAGES_WORKFLOW_VALIDATOR="$ROOT_DIR/script/validate_pages_workflow.py"
@@ -89,6 +90,9 @@ log "App Store export options"
 
 log "Privacy alignment"
 "$PRIVACY_ALIGNMENT_VALIDATOR"
+
+log "Manual QA checklist"
+"$MANUAL_QA_VALIDATOR"
 
 log "Local landing UI"
 "$LANDING_LOCAL_VALIDATOR"
