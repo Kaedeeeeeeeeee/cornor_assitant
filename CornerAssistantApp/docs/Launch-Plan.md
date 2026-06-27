@@ -173,7 +173,7 @@
   - Archive Info.plist 关键字段。
   - Archive entitlements。
   - Archive `PrivacyInfo.xcprivacy`。
-  - Debug-only 面板命令没有进入 Release archive。
+  - Debug-only 面板命令和 hot corner smoke 命令没有进入 Release archive。
   - 公网 landing 关键 URL 均可达。
   - 公网 landing SEO 和 analytics config 校验。
 
@@ -227,11 +227,17 @@
 - `xcodebuild ... -only-testing:CornerAssistantAppTests test` 已通过：
   - 22 tests passed, 0 failures。
 - `script/qa_smoke.sh` 已重新验证通过：
-  - 最近一次输出：`window id=8441 layer=3 bounds=["Y": 281, "Height": 750, "X": 0, "Width": 528]`。
-- 2026-06-28 00:45 JST 再次执行 `xcodebuild -exportArchive`，失败原因仍为：
+  - 当前 smoke 会逐个切换 Debug-only hot corner 命令并验证真实 Peek 面板窗口位于对应屏幕边角。
+  - 最近一次输出：
+    - `corner=bottomLeft window id=8447 layer=3 bounds=x:0 y:281 width:528 height:750`
+    - `corner=bottomRight window id=8447 layer=3 bounds=x:1186 y:271 width:528 height:750`
+    - `corner=topLeft window id=8447 layer=3 bounds=x:14 y:43 width:528 height:750`
+    - `corner=topRight window id=8447 layer=3 bounds=x:1186 y:43 width:528 height:750`
+    - `qa_smoke passed`
+- 2026-06-28 00:55 JST 再次执行 `xcodebuild -exportArchive`，失败原因仍为：
   - `error: exportArchive No Accounts`
   - `error: exportArchive No profiles for 'com.shifeng.peek' were found`
-- 2026-06-28 00:46 JST 再次执行 `./script/launch_verify.sh`，通过。
+- 2026-06-28 00:54 JST 再次执行 `./script/launch_verify.sh`，通过。
 
 2026-06-27 Export Compliance 收口：
 
@@ -623,6 +629,7 @@ xcodebuild archive \
 
 - [x] `script/build_and_run.sh --verify`：构建并启动 Debug `Peek.app`，确认进程存在。
 - [x] `script/qa_smoke.sh`：通过 Debug-only 通知展开真实面板，确认 Window Server 中存在 Peek 面板窗口。
+  - 当前覆盖四个 hot corner 的真实窗口定位。
 - [x] `script/capture_app_store_screenshot.sh`：可启动并展开真实面板，当前会话在 `screencapture` 阶段因截图权限/会话状态失败。
 - [x] `script/validate_app_store_materials.py`：验证三语言 App Store metadata 长度和禁用宣传词。
 - [x] `script/validate_landing_public.py`：验证公网 landing SEO、sitemap、manifest、analytics config 和禁用宣传词。
@@ -633,6 +640,7 @@ xcodebuild archive \
 - [x] 固定网站模型：id 生成、favicon fallback、custom favicon、Codable 还原。
 - [x] 固定网站 view model：添加、打开、移除、排序。
 - [x] 首发三语言 key 集合一致、关键 UI 文案存在、hot corner 选项稳定。
+- [x] 四个热角设置：Debug smoke 已验证真实面板窗口落在对应屏幕边角。
 - [x] Xcode unit test target 可通过 CLI 运行。
 
 当前自动化限制：

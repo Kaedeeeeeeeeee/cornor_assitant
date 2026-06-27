@@ -116,6 +116,9 @@ log "Release-only debug guard"
 if strings "$APP_EXECUTABLE" | grep -q 'com\.shifeng\.peek\.debug\.panelCommand'; then
   fail "Debug-only panel command leaked into Release archive"
 fi
+if strings "$APP_EXECUTABLE" | grep -q 'corner:'; then
+  fail "Debug-only hot corner command leaked into Release archive"
+fi
 
 if [[ "${SKIP_NETWORK:-0}" != "1" ]]; then
   log "Public landing URLs"

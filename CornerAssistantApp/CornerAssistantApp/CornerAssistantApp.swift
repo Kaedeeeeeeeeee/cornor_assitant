@@ -79,6 +79,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                     controller.expandPanel()
                 case "collapse":
                     controller.collapsePanel()
+                case let value where value.hasPrefix("corner:"):
+                    let rawCorner = String(value.dropFirst("corner:".count))
+                    if let corner = HotCorner(rawValue: rawCorner) {
+                        controller.updateHotCorner(corner)
+                    }
                 default:
                     controller.togglePanel()
                 }
