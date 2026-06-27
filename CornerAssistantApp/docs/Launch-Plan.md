@@ -212,19 +212,26 @@
 
 2026-06-28 QA 自动化覆盖扩展：
 
-- 已新增 `CornerAssistantAppTests/LaunchReadinessTests.swift`。
+- 已新增：
+  - `CornerAssistantAppTests/LaunchReadinessTests.swift`
+  - `CornerAssistantAppTests/SlidePanelViewModelTests.swift`
+  - `CornerAssistantAppTests/SuggestionStoreTests.swift`
 - 新增覆盖：
   - 首发三语言解析：`en`、`zh-Hans`、`ja`。
   - 三语言 `Localizable.strings` key 集合一致且值非空。
   - 首发关键 UI 文案 key 存在。
   - 四个 hot corner raw value 保持稳定。
+  - 标签模型：新建、切换、关闭。
+  - 固定网站模型：打开、添加、移除、排序。
+  - 搜索建议模型：最小输入长度、debounce 后填充、clear。
 - `xcodebuild ... -only-testing:CornerAssistantAppTests test` 已通过：
-  - 14 tests passed, 0 failures。
+  - 22 tests passed, 0 failures。
 - `script/qa_smoke.sh` 已重新验证通过：
-  - 最近一次输出：`window id=8439 layer=3 bounds=["Y": 281, "X": 0, "Height": 750, "Width": 528]`。
-- 2026-06-28 00:35 JST 再次执行 `xcodebuild -exportArchive`，失败原因仍为：
+  - 最近一次输出：`window id=8441 layer=3 bounds=["Y": 281, "Height": 750, "X": 0, "Width": 528]`。
+- 2026-06-28 00:45 JST 再次执行 `xcodebuild -exportArchive`，失败原因仍为：
   - `error: exportArchive No Accounts`
   - `error: exportArchive No profiles for 'com.shifeng.peek' were found`
+- 2026-06-28 00:46 JST 再次执行 `./script/launch_verify.sh`，通过。
 
 2026-06-27 Export Compliance 收口：
 
@@ -621,7 +628,10 @@ xcodebuild archive \
 - [x] `script/validate_landing_public.py`：验证公网 landing SEO、sitemap、manifest、analytics config 和禁用宣传词。
 - [x] 搜索 URL 构造、空查询处理、查询 trim/encode。
 - [x] URL 输入规范化：完整 URL、裸域名、localhost、普通搜索词。
+- [x] 搜索建议模型：最小输入长度、debounce、clear。
+- [x] 标签模型：新建、切换、关闭、排序。
 - [x] 固定网站模型：id 生成、favicon fallback、custom favicon、Codable 还原。
+- [x] 固定网站 view model：添加、打开、移除、排序。
 - [x] 首发三语言 key 集合一致、关键 UI 文案存在、hot corner 选项稳定。
 - [x] Xcode unit test target 可通过 CLI 运行。
 

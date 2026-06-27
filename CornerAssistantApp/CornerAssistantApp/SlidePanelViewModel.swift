@@ -5,15 +5,21 @@ import Combine
 final class SlidePanelViewModel: ObservableObject {
     @Published private(set) var tabs: [BrowserTab]
     @Published private(set) var pinnedSites: [PinnedSite] {
-        didSet { PinnedSiteStore.save(pinnedSites) }
+        didSet { savePinnedSites(pinnedSites) }
     }
     @Published var activeTabID: UUID
     @Published var showingLauncher: Bool
 
     private var pinnedTabIDs: [String: UUID] = [:] // pinnedSiteID -> tabID
+    private let savePinnedSites: @MainActor ([PinnedSite]) -> Void
 
-    init(initialPinnedSites: [PinnedSite]? = nil) {
-        let storedSites = PinnedSiteStore.load()
+    init(
+        initialPinnedSites: [PinnedSite]? = nil,
+        storedPinnedSites: [PinnedSite]? = nil,
+        savePinnedSites: @escaping @MainActor ([PinnedSite]) -> Void = PinnedSiteStore.save
+    ) {
+        self.savePinnedSites = savePinnedSites
+        let storedSites = storedPinnedSites ?? PinnedSiteStore.load()
         let sites = storedSites.isEmpty ? (initialPinnedSites ?? PinnedSite.defaults) : storedSites
 
         var tabMappings: [String: UUID] = [:]
