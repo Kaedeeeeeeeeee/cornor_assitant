@@ -198,6 +198,7 @@
   - 2026-06-28 03:22 JST 再次执行 `./script/launch_verify.sh`，通过；当前测试已覆盖三语言切换和语言偏好持久化。
   - 2026-06-28 03:28 JST 再次执行 `./script/launch_verify.sh`，通过；当前测试已覆盖面板布局、固定防收起和外部点击自动收起策略。
   - 2026-06-28 03:32 JST 再次执行 `./script/launch_verify.sh`，通过；当前测试已覆盖 Launch at Login 管理逻辑。
+  - 2026-06-28 03:36 JST 再次执行 `./script/launch_verify.sh`，通过；当前测试已覆盖 WebKit 登录兼容配置。
 
 2026-06-28 Landing 本地验收收口：
 
@@ -305,6 +306,7 @@
   - `CornerAssistantAppTests/SlidePanelLayoutTests.swift`
   - `CornerAssistantAppTests/SlidePanelViewModelTests.swift`
   - `CornerAssistantAppTests/SuggestionStoreTests.swift`
+  - `CornerAssistantAppTests/WebViewStoreTests.swift`
 - `script/qa_smoke.sh` 已扩展：
   - 启动 Debug app 后先用 System Events 验证 Peek status item 存在于菜单栏 accessibility tree。
   - 启动后用 Window Server 验证默认没有可见 Peek 面板窗口。
@@ -318,6 +320,7 @@
   - 面板布局：保存尺寸 clamp、四个 hot corner hotspot rect、四个显示 frame、隐藏 frame 方向、可见高度限制。
   - 固定窗口/自动收起策略：未展开、正在 resize、窗口固定、点击窗口内都不会自动收起；未固定且点击窗口外会收起。
   - Launch at Login 管理逻辑：状态读取、注册、注销、同步委托，以及底层 ServiceManagement 错误不会逃逸到 UI 调用链。
+  - WebKit 登录兼容配置：JavaScript popup、Safari-like user agent、navigation/UI delegate、back/forward gesture、Slack popup 同 WebView 打开策略。
   - 三语言 settings/language/hot corner 菜单文案存在。
   - Hot corner 默认值为 `bottomLeft`，保存/读取有效值正常，非法值会回退到默认值。
   - App Store 首发关键 build settings 保持一致：bundle id、product name、display name、AppIcon、Productivity 分类、version `1.0 (1)`、macOS 15.0。
@@ -334,7 +337,8 @@
   - 2026-06-28 03:22 JST `xcodebuild ... -skip-testing:CornerAssistantAppUITests test` 通过。
   - 2026-06-28 03:27 JST `SlidePanelLayoutTests` 定向复跑通过；完整 unit test target 通过。
   - 2026-06-28 03:31 JST `LaunchAtLoginManagerTests` 定向复跑通过；完整 unit test target 通过。
-  - 当前 `CornerAssistantAppTests` 共 49 个 `func test...`。
+  - 2026-06-28 03:35 JST `WebViewStoreTests` 定向复跑通过；完整 unit test target 通过。
+  - 当前 `CornerAssistantAppTests` 共 52 个 `func test...`。
 - `script/qa_smoke.sh` 已重新验证通过：
   - 当前 smoke 会先验证菜单栏 status item 存在。
   - 当前 smoke 会确认启动后默认没有可见 Peek 面板窗口。
@@ -920,6 +924,7 @@ xcodebuild archive \
   - Google account page。
   - Slack。
   - Notion 或其他典型工作站点。
+  - 自动覆盖：`WebViewStoreTests` 验证 Safari-like user agent、JavaScript popup、delegate、back/forward gesture，以及 Slack popup 同 WebView 打开策略；真实 Google/Slack/Notion 登录页仍需可见桌面人工实测。
 - [ ] 干净 macOS 用户环境测试。
 - [ ] 无网络环境下基本界面表现。
   - 2026-06-28 已自动覆盖搜索建议请求失败路径；完整无网络 WebKit 页面表现仍需在干净用户会话人工确认。

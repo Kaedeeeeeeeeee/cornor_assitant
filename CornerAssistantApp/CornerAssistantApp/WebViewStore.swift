@@ -2,6 +2,22 @@ import SwiftUI
 import Combine
 import WebKit
 
+enum WebViewPolicy {
+    static let slackHostMarker = "slack.com"
+    static let safariUserAgentSuffix = "Version/17.0 Safari/605.1.15"
+    static let browserUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 15_0) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15"
+
+    static func configure(_ configuration: WKWebViewConfiguration) {
+        configuration.preferences.javaScriptCanOpenWindowsAutomatically = true
+        configuration.applicationNameForUserAgent = safariUserAgentSuffix
+    }
+
+    static func shouldOpenPopupInSameView(url: URL?) -> Bool {
+        guard let host = url?.host?.lowercased() else { return false }
+        return host.contains(slackHostMarker)
+    }
+}
+
 @MainActor
 final class WebViewStore: NSObject, ObservableObject, WKNavigationDelegate, WKUIDelegate {
     let webView: WKWebView
@@ -11,15 +27,10 @@ final class WebViewStore: NSObject, ObservableObject, WKNavigationDelegate, WKUI
     var onFaviconChange: ((URL) -> Void)?
 
     private var popupWindows: [ObjectIdentifier: NSWindow] = [:]
-    private let slackHostMarker = "slack.com"
-
-    private static let safariUserAgentSuffix = "Version/17.0 Safari/605.1.15"
-    private static let aggressiveUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 15_0) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15"
 
     override init() {
         let configuration = WKWebViewConfiguration()
-        configuration.preferences.javaScriptCanOpenWindowsAutomatically = true
-        configuration.applicationNameForUserAgent = Self.safariUserAgentSuffix
+        WebViewPolicy.configure(configuration)
 
         webView = WKWebView(frame: .zero, configuration: configuration)
         super.init()
@@ -28,7 +39,7 @@ final class WebViewStore: NSObject, ObservableObject, WKNavigationDelegate, WKUI
         webView.uiDelegate = self
         webView.allowsBackForwardNavigationGestures = true
         webView.underPageBackgroundColor = .clear
-        webView.customUserAgent = Self.aggressiveUserAgent
+        webView.customUserAgent = WebViewPolicy.browserUserAgent
         normalizeScrollView()
     }
 
@@ -86,19 +97,19 @@ final class WebViewStore: NSObject, ObservableObject, WKNavigationDelegate, WKUI
                  for navigationAction: WKNavigationAction,
                  windowFeatures: WKWindowFeatures) -> WKWebView? {
         if navigationAction.targetFrame == nil,
-           shouldOpenInSameView(url: navigationAction.request.url) {
+           WebViewPolicy.shouldOpenPopupInSameView(url: navigationAction.request.url) {
             webView.load(navigationAction.request)
             return nil
         }
         if configuration.applicationNameForUserAgent == nil {
-            configuration.applicationNameForUserAgent = Self.safariUserAgentSuffix
+            configuration.applicationNameForUserAgent = WebViewPolicy.safariUserAgentSuffix
         }
         let popupWebView = WKWebView(frame: .zero, configuration: configuration)
         popupWebView.navigationDelegate = self
         popupWebView.uiDelegate = self
         popupWebView.allowsBackForwardNavigationGestures = true
         popupWebView.underPageBackgroundColor = .clear
-        popupWebView.customUserAgent = Self.aggressiveUserAgent
+        popupWebView.customUserAgent = WebViewPolicy.browserUserAgent
 
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 960, height: 640),
@@ -190,7 +201,7 @@ final class WebViewStore: NSObject, ObservableObject, WKNavigationDelegate, WKUI
     }
 
     private func logSlackDiagnostics(stage: String, url: URL, queryNavigator: Bool) {
-        guard let host = url.host?.lowercased(), host.contains(slackHostMarker) else { return }
+        guard WebViewPolicy.shouldOpenPopupInSameView(url: url) else { return }
         let osVersion = ProcessInfo.processInfo.operatingSystemVersionString
         let customAgent = webView.customUserAgent ?? "nil"
         let appNameAgent = webView.configuration.applicationNameForUserAgent ?? "nil"
@@ -215,11 +226,6 @@ final class WebViewStore: NSObject, ObservableObject, WKNavigationDelegate, WKUI
                 print("[WebView][Slack][\(stage)] navigator=unknown")
             }
         }
-    }
-
-    private func shouldOpenInSameView(url: URL?) -> Bool {
-        guard let host = url?.host?.lowercased() else { return false }
-        return host.contains(slackHostMarker)
     }
 }
 
