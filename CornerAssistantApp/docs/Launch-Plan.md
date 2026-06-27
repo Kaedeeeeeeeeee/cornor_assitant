@@ -92,6 +92,10 @@
   - `error: exportArchive No profiles for 'com.shifeng.peek' were found`
   - 需要登录 Apple Developer/App Store Connect 接受 Program License Agreement 更新，并创建/刷新 `com.shifeng.peek` 的 App Store provisioning profile。
 - 2026-06-27 23:29 JST 再次执行 `xcodebuild -exportArchive`，失败原因仍为同一组 Apple 后台阻塞。
+- 2026-06-28 00:13 JST 再次执行 `xcodebuild -exportArchive`，失败原因更新为：
+  - `error: exportArchive No Accounts`
+  - `error: exportArchive No profiles for 'com.shifeng.peek' were found`
+  - 当前机器 CLI/Xcode 没有可用于 App Store distribution export 的账号状态；仍需要登录 Xcode/Apple Developer 账号，并创建或刷新 `com.shifeng.peek` 的 App Store provisioning profile。
 
 2026-06-27 源码发布风险收口：
 
@@ -156,6 +160,19 @@
   - Release archive 成功生成到 `/tmp/peek-appstore/Peek.xcarchive`。
   - Archive Info.plist、entitlements、`PrivacyInfo.xcprivacy` 均通过复核。
   - Release archive 可执行文件中未包含 `com.shifeng.peek.debug.panelCommand`。
+
+2026-06-28 发布验证脚本收口：
+
+- 已新增 `script/launch_verify.sh`，作为发布前一键 gate。
+- `script/launch_verify.sh` 已验证通过，覆盖：
+  - Release build。
+  - 跳过 UI runner 的 XCTest。
+  - Release archive。
+  - Archive Info.plist 关键字段。
+  - Archive entitlements。
+  - Archive `PrivacyInfo.xcprivacy`。
+  - Debug-only 面板命令没有进入 Release archive。
+  - 公网 landing 关键 URL 均可达。
 
 2026-06-27 Export Compliance 收口：
 
@@ -303,6 +320,7 @@
   - Google Search Console。
   - Bing Webmaster Tools。
   - Sitemap URL。
+  - 2026-06-28 检查结果：Search Console 已登录 `f.shera.09@gmail.com`，但该属性尚未验证；Bing Webmaster Tools 尚未登录。
 - [x] 部署后跑 Lighthouse，记录性能和 SEO 分数。
 - [ ] PageSpeed Insights 在线报告可后续补充，不阻塞首发。
 
@@ -311,6 +329,7 @@
 - `robots.txt` 已公开声明 sitemap：`https://kaedeeeeeeeeee.github.io/cornor_assitant/sitemap.xml`。
 - Google Search Console 和 Bing Webmaster Tools 需要登录对应账号后提交 sitemap；不要使用旧式匿名 sitemap ping 端点作为上线证据。
 - 提交 sitemap 会改变站长工具账号状态，执行前需要确认使用哪个 Google/Microsoft 账号。
+- Search Console 当前下一步是完成 `https://kaedeeeeeeeeee.github.io/cornor_assitant/` 的所有权验证；GitHub Pages 可优先使用 HTML 文件或 HTML meta tag 验证方式。
 
 首发关键词方向：
 
@@ -333,6 +352,19 @@
 - 已尝试用应用内浏览器打开 `https://appstoreconnect.apple.com/agreements/`。
 - 页面在加载阶段超时，未进入可读后台状态；没有提交任何表单，也没有接受协议。
 - 当前 Apple 后台阻塞仍以 `xcodebuild -exportArchive` 的直接错误为准：PLA 更新待接受，且没有 `com.shifeng.peek` App Store provisioning profile。
+
+2026-06-28 后台可达性复查：
+
+- App Store Connect agreements：
+  - 浏览器可到达 `https://appstoreconnect.apple.com/login?targetUrl=/agreements/`。
+  - 当前没有已登录 App Store Connect 会话，无法进入 Agreements, Tax, and Banking；没有提交任何表单。
+- Google Search Console：
+  - 当前浏览器已登录 `f.shera.09@gmail.com`。
+  - `https://kaedeeeeeeeeee.github.io/cornor_assitant/` 属性未验证，页面提示“このプロパティへのアクセス権がありません”。
+  - 点击“所有権を証明”在当前浏览器自动化会话中超时，未进入验证方式页，也没有提交验证。
+- Bing Webmaster Tools：
+  - 当前停留在公开介绍页 `https://www.bing.com/webmasters/about`。
+  - 没有已登录 Microsoft Webmaster Tools 会话；未提交站点。
 
 2026-06-27 App Store Connect 表单材料补齐：
 
@@ -438,7 +470,7 @@
 
 ### Phase E: App Build Readiness
 
-状态：本地 Release build 和 archive 已通过，权限已收窄；App Store distribution export 被 Apple 后台阻塞。
+状态：本地 Release build 和 archive 已通过，权限已收窄；App Store distribution export 被 Xcode account/profile/Apple 后台阻塞。
 
 - [x] 明确当前 dirty worktree 哪些是本次上线工作，哪些是用户已有改动。
 - [x] 确认版本号：
@@ -485,7 +517,15 @@ xcodebuild archive \
 
 - [ ] 用 Xcode Organizer 或 `xcodebuild -exportArchive` 走 App Store distribution。
   - 已新增 `export_options_app_store.plist`。
-  - 当前 export 被 Apple 后台阻塞：PLA 更新待接受，且没有 `com.shifeng.peek` profile。
+  - 当前 export 被 Xcode account/profile 阻塞：`No Accounts`，且没有 `com.shifeng.peek` profile。
+  - 登录账号后仍需确认 Apple Developer PLA 是否已接受。
+- [x] 发布前一键验证脚本：
+
+```bash
+./script/launch_verify.sh
+```
+
+  - 2026-06-28 已通过。
 - [ ] 上传 App Store Connect：
   - Xcode Organizer。
   - 或 Transporter。
@@ -615,6 +655,7 @@ curl -I https://kaedeeeeeeeeee.github.io/cornor_assitant/sitemap.xml
 - [ ] GA4 Measurement ID。
   - GitHub Pages 已支持通过 repository variable `PEEK_GA_MEASUREMENT_ID` 注入；仍需真实 ID。
 - [ ] Apple Developer/App Store Connect 登录权限。
+- [ ] Xcode Settings > Accounts 中登录可用 Apple Developer 账号。
 - [ ] Paid Apps Agreement、税务、银行信息。
 - [ ] App Store Connect App record。
 - [ ] Apple Developer PLA update acceptance。
@@ -625,6 +666,8 @@ curl -I https://kaedeeeeeeeeee.github.io/cornor_assitant/sitemap.xml
 - [ ] 如果包含 EU 地区：DSA trader status 和可公开联系信息。
 - [ ] App Review release mode；建议首发使用 Manual release。
 - [ ] 真实 Mac App Store URL。
+- [ ] Google Search Console 所有权验证。
+- [ ] Bing Webmaster Tools Microsoft 登录和站点提交。
 - [x] GitHub Pages Settings 中启用 GitHub Actions Pages。
 
 ## 5. 文案红线
@@ -693,6 +736,14 @@ xcodebuild \
   build
 ```
 
+发布前一键验证：
+
+```bash
+./script/launch_verify.sh
+```
+
+该脚本会执行 Release build、可自动运行的 XCTest、Release archive、归档 metadata/entitlements/privacy manifest 校验、Debug-only 字符串泄漏检查和公网 landing URL 检查。公网检查可用 `SKIP_NETWORK=1 ./script/launch_verify.sh` 跳过。
+
 ## 7. 当前下一步
 
 按顺序执行：
@@ -706,7 +757,9 @@ xcodebuild \
 7. 如果覆盖 EU 地区，完成 DSA trader status；如果暂不覆盖 EU，先调整 availability。
 8. 补 GA4 Measurement ID：在 GitHub repository variable 设置 `PEEK_GA_MEASUREMENT_ID`，或者明确首发先不开启 analytics。
 9. 准备截图并上传 App Store metadata。
-10. 在 Google Search Console / Bing Webmaster Tools 提交 sitemap。
+10. 在 Google Search Console / Bing Webmaster Tools 验证站点并提交 sitemap。
+    - Search Console 当前需要为 `f.shera.09@gmail.com` 完成属性所有权验证。
+    - Bing Webmaster Tools 当前需要 Microsoft 登录。
 11. Upload build to App Store Connect。
 12. 回填真实 App Store URL 到 landing CTA。
 13. Submit for Review。
