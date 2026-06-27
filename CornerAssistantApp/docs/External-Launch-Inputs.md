@@ -1,6 +1,6 @@
 # Peek External Launch Inputs
 
-最后更新：2026-06-28 05:31 JST
+最后更新：2026-06-28 05:37 JST
 
 这个文件只记录代码和本机 CLI 无法安全代办的外部账号、后台表单、真实联系方式和最终 URL。执行这些项目时，不要在聊天或日志里粘贴密码、验证码、恢复码、API private key 或完整付款/银行信息。
 
@@ -37,6 +37,7 @@ PEEK_BING_SITE_VERIFICATION=bing_token \
 ## Apple Developer And App Store Connect
 
 - [ ] Apple Developer Program account access.
+  - 当前本机状态：`Apple Distribution` identity for team `Y4FV6WUU4V` 已安装。
   - 需要输入/确认：登录 Xcode Settings > Accounts 的 Apple Developer 账号，并确保 Team ID 为 `Y4FV6WUU4V` 或更新 `CornerAssistantApp/export_options_app_store.plist`。
 - [ ] Apple Developer Program License Agreement.
   - 需要输入/确认：账号持有人在 Apple Developer/App Store Connect 接受最新 PLA。
@@ -62,6 +63,7 @@ PEEK_BING_SITE_VERIFICATION=bing_token \
 ## Provisioning, Export, And Upload
 
 - [ ] `com.shifeng.peek` App Store provisioning profile.
+  - 当前本机状态：没有 `com.shifeng.peek` App Store profile；同 team 只发现 `Notation Mac App Store (Y4FV6WUU4V.com.shifengzhang.notation)`。
   - 当前 CLI 阻塞：`No Accounts / no com.shifeng.peek App Store profile`
   - 需要输入/确认：Xcode 已登录可用 Apple Developer 账号，并创建或刷新 App Store profile。
 - [ ] App Store distribution export.

@@ -1,6 +1,6 @@
 # Peek 上线准备计划
 
-最后更新：2026-06-28 05:31 JST
+最后更新：2026-06-28 05:37 JST
 
 这个文档是 Peek 从当前本地项目走到公开 landing page 和 Mac App Store 首发的工作台。后续执行、验收、补漏都以这里为准；如果产品、定价、域名、隐私口径或 App Store 配置发生变化，先更新本文件，再改代码或页面。
 
@@ -594,6 +594,11 @@
   - 已新增 `CornerAssistantApp/docs/External-Launch-Inputs.md`，把 GA4、Search Console/Bing、Apple Developer/App Store Connect、provisioning/export/upload、截图、审核电话、DSA 和最终 App Store URL 拆成明确需要用户或账号持有人处理的输入项。
   - 已新增 `script/validate_external_launch_inputs.py` 并纳入 `script/launch_verify.sh`，确保外部输入清单不会遗漏关键阻塞项。
   - `script/export_app_store_metadata.py` 现在会把 `external_launch_inputs.md` 一并放入 `/tmp/peek-app-store-metadata`；`script/validate_app_store_metadata_export.py` 会验证导出副本和源码清单一致。
+- 2026-06-28 05:37 JST App Store 签名资产复查细化：
+  - `script/check_external_readiness.py` 现在默认只读检查 Apple Distribution identity 和本机 provisioning profile。
+  - 当前本机已安装 `Apple Distribution` identity for team `Y4FV6WUU4V`。
+  - 当前本机没有 `com.shifeng.peek` 的 App Store provisioning profile；同 team 下只发现 `Notation Mac App Store (Y4FV6WUU4V.com.shifengzhang.notation)`。
+  - 默认 readiness 当前为 `{"manual": 4, "ok": 13, "skipped": 3}`；新增 manual 项是缺少 Peek App Store profile。
 
 ## 2. 首发完成定义
 
@@ -1182,7 +1187,10 @@ curl -I https://kaedeeeeeeeeee.github.io/cornor_assitant/sitemap.xml
 - [ ] Paid Apps Agreement、税务、银行信息。
 - [ ] App Store Connect App record。
 - [ ] Apple Developer PLA update acceptance。
+- [x] Apple Distribution certificate installed.
+  - 2026-06-28 05:37 JST `script/check_external_readiness.py` 确认 team `Y4FV6WUU4V` 的 Apple Distribution identity 已安装。
 - [ ] `com.shifeng.peek` App Store provisioning profile。
+  - 2026-06-28 05:37 JST 本机仅发现同 team 的 `Notation` App Store profile，未发现 `com.shifeng.peek` profile。
 - [ ] App Store SKU 最终确认；建议 `peek-macos-001`。
 - [ ] App Store 截图素材。
 - [ ] App Review 真实联系电话。
@@ -1311,7 +1319,7 @@ PEEK_CHECK_QA_SMOKE=1 ./script/check_external_readiness.py
 PEEK_CHECK_EXPORT=1 PEEK_CHECK_SCREENSHOT=1 ./script/check_external_readiness.py
 ```
 
-默认模式只读，不触发 App Store export、截图或本机 UI 控制。扩展模式会写入 `/tmp/peek-appstore/external-readiness-export`、启动截图脚本或启动 Debug app smoke QA，用于复查账号/profile、Screen Recording 权限和本机菜单栏/面板 QA 是否已经解除或仍通过。
+默认模式只读，不触发 App Store export、截图或本机 UI 控制；当前也会读取本机 code signing identity 和 provisioning profile，拆分证书/profile 状态。扩展模式会写入 `/tmp/peek-appstore/external-readiness-export`、启动截图脚本或启动 Debug app smoke QA，用于复查账号/profile、Screen Recording 权限和本机菜单栏/面板 QA 是否已经解除或仍通过。
 
 Landing 性能复查：
 

@@ -19,6 +19,8 @@ BASE_URL = "https://kaedeeeeeeeeee.github.io/cornor_assitant/"
 REPO = "Kaedeeeeeeeeee/cornor_assitant"
 PAGES_WORKFLOW = "pages.yml"
 EXPECTED_PAGES_URL = BASE_URL
+TEAM_ID = "Y4FV6WUU4V"
+BUNDLE_ID = "com.shifeng.peek"
 EXPECTED_SITEMAP_URLS = {
     BASE_URL,
     f"{BASE_URL}privacy.html",
@@ -31,6 +33,7 @@ SEARCH_BOT_USER_AGENTS = {
 ARCHIVE_PATH = Path("/tmp/peek-appstore/Peek.xcarchive")
 EXPORT_PATH = Path("/tmp/peek-appstore/external-readiness-export")
 EXPORT_OPTIONS = ROOT / "CornerAssistantApp" / "export_options_app_store.plist"
+PROVISIONING_PROFILE_DIR = Path.home() / "Library" / "MobileDevice" / "Provisioning Profiles"
 SCREENSHOT_OUTPUT_DIR = Path("/tmp/peek-app-store-screenshots")
 EXPECTED_SCREENSHOTS = [
     "01-hot-corner-panel-2880x1800.png",
@@ -108,7 +111,7 @@ def validate_exported_app(export_path: Path) -> str:
 
     info = read_plist(info_plist)
     expected_info = {
-        "CFBundleIdentifier": "com.shifeng.peek",
+        "CFBundleIdentifier": BUNDLE_ID,
         "CFBundleShortVersionString": "1.0",
         "CFBundleVersion": "1",
         "LSMinimumSystemVersion": "15.0",
@@ -363,6 +366,76 @@ def pages_stale_status(pages_head_sha: str) -> tuple[str, str] | None:
     return "ok", "latest Pages run succeeded; no landing/page workflow changes since that run"
 
 
+def check_signing_assets(results: list[CheckResult]) -> None:
+    identities = run(["security", "find-identity", "-v", "-p", "codesigning"], timeout=30)
+    identity_output = "\n".join([identities.stdout, identities.stderr])
+    if identities.returncode != 0:
+        add(results, "apple_distribution_identity", "manual", "could not read code signing identities")
+    elif f"Apple Distribution:" in identity_output and f"({TEAM_ID})" in identity_output:
+        add(results, "apple_distribution_identity", "ok", f"Apple Distribution identity for team {TEAM_ID} is installed")
+    else:
+        add(results, "apple_distribution_identity", "manual", f"missing Apple Distribution identity for team {TEAM_ID}")
+
+    if not PROVISIONING_PROFILE_DIR.is_dir():
+        add(results, "app_store_profile", "manual", f"provisioning profile directory missing: {PROVISIONING_PROFILE_DIR}")
+        return
+
+    profile_paths = sorted(
+        [
+            *PROVISIONING_PROFILE_DIR.glob("*.provisionprofile"),
+            *PROVISIONING_PROFILE_DIR.glob("*.mobileprovision"),
+        ]
+    )
+    matching_profiles: list[str] = []
+    same_team_profiles: list[str] = []
+    for path in profile_paths:
+        decoded = run(["security", "cms", "-D", "-i", str(path)], timeout=30)
+        if decoded.returncode != 0:
+            continue
+        try:
+            profile = plistlib.loads(decoded.stdout.encode("utf-8"))
+        except Exception:
+            continue
+        if not isinstance(profile, dict):
+            continue
+
+        entitlements = profile.get("Entitlements")
+        if not isinstance(entitlements, dict):
+            continue
+        app_identifier = str(
+            entitlements.get("com.apple.application-identifier")
+            or entitlements.get("application-identifier")
+            or ""
+        )
+        team_identifier = str(entitlements.get("com.apple.developer.team-identifier") or "")
+        name = str(profile.get("Name") or path.name)
+        has_provisioned_devices = "ProvisionedDevices" in profile
+        platform = profile.get("Platform")
+        platform_values = platform if isinstance(platform, list) else []
+        is_macos_profile = "OSX" in platform_values or "MacOS" in platform_values
+
+        if team_identifier == TEAM_ID:
+            same_team_profiles.append(f"{name} ({app_identifier})")
+
+        if (
+            app_identifier == f"{TEAM_ID}.{BUNDLE_ID}"
+            and team_identifier == TEAM_ID
+            and is_macos_profile
+            and not has_provisioned_devices
+        ):
+            matching_profiles.append(name)
+
+    if matching_profiles:
+        add(results, "app_store_profile", "ok", f"{len(matching_profiles)} matching App Store profile(s) for {BUNDLE_ID}")
+    elif same_team_profiles:
+        preview = ", ".join(same_team_profiles[:3])
+        if len(same_team_profiles) > 3:
+            preview += ", ..."
+        add(results, "app_store_profile", "manual", f"no App Store profile for {BUNDLE_ID}; same-team profiles: {preview}")
+    else:
+        add(results, "app_store_profile", "manual", f"no App Store profile for {BUNDLE_ID}")
+
+
 def check_app_store_export(results: list[CheckResult]) -> None:
     if not env_enabled("PEEK_CHECK_EXPORT"):
         add(results, "app_store_export", "skipped", "set PEEK_CHECK_EXPORT=1 to run xcodebuild -exportArchive")
@@ -473,6 +546,7 @@ def main() -> int:
     check_analytics_config(results)
     check_site_verification_meta(results)
     check_github(results)
+    check_signing_assets(results)
     check_app_store_export(results)
     check_screenshot_capture(results)
     check_local_qa_smoke(results)
