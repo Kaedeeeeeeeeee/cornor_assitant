@@ -31,6 +31,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var copyMenuItem: NSMenuItem?
     private var pasteMenuItem: NSMenuItem?
     private var selectAllMenuItem: NSMenuItem?
+    #if DEBUG
+    private var debugPanelCommandObserver: NSObjectProtocol?
+    #endif
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         configureApplication()
@@ -40,6 +43,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         controller.start()
         self.controller = controller
         applyLocalization()
+        #if DEBUG
+        installDebugPanelCommands(for: controller)
+        #endif
 
         localizationCancellable = LocalizationManager.shared.$currentLanguage
             .sink { [weak self] _ in
@@ -49,8 +55,37 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationWillTerminate(_ notification: Notification) {
         localizationCancellable?.cancel()
+        #if DEBUG
+        if let debugPanelCommandObserver {
+            DistributedNotificationCenter.default().removeObserver(debugPanelCommandObserver)
+        }
+        #endif
         controller?.stop()
     }
+
+    #if DEBUG
+    private func installDebugPanelCommands(for controller: SlidePanelController) {
+        debugPanelCommandObserver = DistributedNotificationCenter.default().addObserver(
+            forName: Notification.Name("com.shifeng.peek.debug.panelCommand"),
+            object: nil,
+            queue: .main
+        ) { [weak controller] notification in
+            let command = notification.userInfo?["command"] as? String ?? "toggle"
+
+            Task { @MainActor [weak controller] in
+                guard let controller else { return }
+                switch command {
+                case "expand":
+                    controller.expandPanel()
+                case "collapse":
+                    controller.collapsePanel()
+                default:
+                    controller.togglePanel()
+                }
+            }
+        }
+    }
+    #endif
 
     private func configureApplication() {
         NSApp.setActivationPolicy(.accessory)

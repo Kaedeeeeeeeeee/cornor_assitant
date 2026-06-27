@@ -1,6 +1,6 @@
 # Peek 上线准备计划
 
-最后更新：2026-06-27 JST
+最后更新：2026-06-28 JST
 
 这个文档是 Peek 从当前本地项目走到公开 landing page 和 Mac App Store 首发的工作台。后续执行、验收、补漏都以这里为准；如果产品、定价、域名、隐私口径或 App Store 配置发生变化，先更新本文件，再改代码或页面。
 
@@ -127,6 +127,35 @@
 - 完整 UI test 当前无法作为自动 gate：
   - `xcodebuild test` 的 UI runner 初始化失败：`System authentication is running` / `Authentication canceled`。
   - 这属于当前 macOS 用户会话/系统认证状态阻塞；不作为代码失败处理。
+
+2026-06-27 本地运行和 smoke QA 收口：
+
+- 已新增项目本地运行入口：
+  - `script/build_and_run.sh`
+  - `.codex/environments/environment.toml`
+- `script/build_and_run.sh --verify` 已验证通过：
+  - 构建 `CornerAssistantApp.xcodeproj`。
+  - 启动 `DerivedData/PeekRun/Build/Products/Debug/Peek.app`。
+  - 确认 `Peek` 进程存在。
+- 已新增 Debug-only 面板控制通知：
+  - `com.shifeng.peek.debug.panelCommand`
+  - 支持 `expand`、`collapse`、`toggle`。
+  - 仅在 `#if DEBUG` 编译，不进入 Release/App Store 构建。
+- 已新增 `script/qa_smoke.sh` 并验证通过：
+  - 启动 Debug app。
+  - 发送 debug `expand` 命令。
+  - 从 Window Server 确认真实 Peek 面板窗口可见。
+  - 最近一次输出：`window id=8359 layer=3 bounds=["Y": 281, "Height": 750, "Width": 528, "X": 0]`。
+- 自动截图尝试结果：
+  - `screencapture` 产物为全黑图。
+  - `screencapture -l` 对可见窗口返回 `could not create image from window`。
+  - 当前 Codex/shell 会话不能作为 App Store 截图来源；需要在授予 Screen Recording 权限、可见桌面和干净测试环境中采集真实截图。
+- Debug-only 面板命令加入后已重新验证：
+  - Release build 成功。
+  - `xcodebuild ... -skip-testing:CornerAssistantAppUITests test` 成功。
+  - Release archive 成功生成到 `/tmp/peek-appstore/Peek.xcarchive`。
+  - Archive Info.plist、entitlements、`PrivacyInfo.xcprivacy` 均通过复核。
+  - Release archive 可执行文件中未包含 `com.shifeng.peek.debug.panelCommand`。
 
 2026-06-27 Export Compliance 收口：
 
@@ -398,6 +427,7 @@
 - 不展示未实现功能。
 - 尽量覆盖中文、英文或日文中的至少一种主语言；如果 App Store Connect 支持本地化截图，后续再补全三语。
 - 当前机器已有 `/Applications/Peek.app` 运行；为避免干扰用户当前桌面，本次没有自动控制该实例采集截图。
+- 当前自动化会话已能用 `script/qa_smoke.sh` 展开真实 Debug 面板，但 `screencapture` 在该会话下只能得到黑图，不能作为 App Store 截图素材。
 - 建议截图采集方式：
   - 使用 `/tmp/peek-appstore/Peek.xcarchive/Products/Applications/Peek.app` 或最终 exported app。
   - 在干净桌面/测试用户中打开 app。
@@ -475,6 +505,8 @@ xcodebuild archive \
 
 已自动覆盖：
 
+- [x] `script/build_and_run.sh --verify`：构建并启动 Debug `Peek.app`，确认进程存在。
+- [x] `script/qa_smoke.sh`：通过 Debug-only 通知展开真实面板，确认 Window Server 中存在 Peek 面板窗口。
 - [x] 搜索 URL 构造、空查询处理、查询 trim/encode。
 - [x] URL 输入规范化：完整 URL、裸域名、localhost、普通搜索词。
 - [x] 固定网站模型：id 生成、favicon fallback、custom favicon、Codable 还原。
@@ -483,6 +515,7 @@ xcodebuild archive \
 当前自动化限制：
 
 - [ ] UI test runner 在当前 macOS 会话被系统认证状态阻塞，需要在干净用户会话或手动关闭系统认证提示后重跑。
+- [ ] App Store 截图在当前 Codex/shell 会话被 Screen Recording/可见桌面状态阻塞；自动截图得到黑图，不能提交。
 
 必须覆盖：
 
