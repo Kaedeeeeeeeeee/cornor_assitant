@@ -17,6 +17,7 @@ METADATA_EXPORTER="$ROOT_DIR/script/export_app_store_metadata.py"
 PRIVACY_ALIGNMENT_VALIDATOR="$ROOT_DIR/script/validate_privacy_alignment.py"
 LANDING_VALIDATOR="$ROOT_DIR/script/validate_landing_public.py"
 LANDING_LOCAL_VALIDATOR="$ROOT_DIR/script/validate_landing_local.js"
+APP_ICON_VALIDATOR="$ROOT_DIR/script/validate_app_icons.py"
 declare -a CLEANUP_PATHS=()
 
 cleanup() {
@@ -75,6 +76,9 @@ log "Privacy alignment"
 
 log "Local landing UI"
 "$LANDING_LOCAL_VALIDATOR"
+
+log "App icons"
+"$APP_ICON_VALIDATOR"
 
 log "Release build"
 xcodebuild \

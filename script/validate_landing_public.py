@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import re
+import struct
 import sys
 import urllib.request
 import xml.etree.ElementTree as ET
@@ -82,6 +83,21 @@ def fetch_text(url: str) -> str:
         return response.read().decode("utf-8")
 
 
+def fetch_bytes(url: str) -> bytes:
+    request = urllib.request.Request(url, headers={"User-Agent": "PeekLaunchVerifier/1.0"})
+    with urllib.request.urlopen(request, timeout=20) as response:
+        status = getattr(response, "status", 200)
+        if status != 200:
+            raise ValueError(f"{url} returned HTTP {status}")
+        return response.read()
+
+
+def png_size(data: bytes, label: str) -> tuple[int, int]:
+    if len(data) < 24 or data[:8] != b"\x89PNG\r\n\x1a\n" or data[12:16] != b"IHDR":
+        raise ValueError(f"{label} is not a PNG image")
+    return struct.unpack(">II", data[16:24])
+
+
 def validate_homepage(errors: list[str]) -> None:
     html = fetch_text(BASE_URL)
     parser = LandingHTMLParser()
@@ -149,6 +165,35 @@ def validate_manifest_and_analytics(errors: list[str]) -> None:
     print(f"landing.manifest.name: {manifest.get('name')}")
     if manifest.get("name") != "Peek":
         errors.append("site.webmanifest name is not Peek")
+
+    manifest_icons = manifest.get("icons")
+    if not isinstance(manifest_icons, list):
+        errors.append("site.webmanifest icons is not a list")
+    else:
+        matching_icons = [
+            icon for icon in manifest_icons
+            if isinstance(icon, dict) and icon.get("src") == "assets/icon.png"
+        ]
+        if not matching_icons:
+            errors.append("site.webmanifest does not reference assets/icon.png")
+        else:
+            sizes = {
+                size
+                for icon in matching_icons
+                for size in str(icon.get("sizes", "")).split()
+            }
+            print(f"landing.manifest.icon_sizes: {sorted(sizes)}")
+            if "1024x1024" not in sizes:
+                errors.append("site.webmanifest assets/icon.png entry does not declare 1024x1024")
+
+    icon_size = png_size(fetch_bytes(f"{BASE_URL}assets/icon.png"), "assets/icon.png")
+    social_preview_size = png_size(fetch_bytes(f"{BASE_URL}assets/social-preview.png"), "assets/social-preview.png")
+    print(f"landing.icon.size: {icon_size[0]}x{icon_size[1]}")
+    print(f"landing.social_preview.size: {social_preview_size[0]}x{social_preview_size[1]}")
+    if icon_size != (1024, 1024):
+        errors.append(f"assets/icon.png expected 1024x1024, got {icon_size[0]}x{icon_size[1]}")
+    if social_preview_size != (1200, 630):
+        errors.append(f"assets/social-preview.png expected 1200x630, got {social_preview_size[0]}x{social_preview_size[1]}")
 
     analytics_config = fetch_text(f"{BASE_URL}analytics-config.js").strip()
     print(f"landing.analytics_config: {analytics_config}")

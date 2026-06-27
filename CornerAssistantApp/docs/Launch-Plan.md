@@ -31,7 +31,7 @@
 - 当前代码没有系统选中文字读取逻辑；不能在 landing 或 App Store 文案中宣传 selected text search。
 - Landing 源设计来自 `/Users/user/Downloads/项目 Landing Page 设计.zip`，其中 `.dc.html` 是设计稿，不是生产站点。
 - Landing 生产目录为 `CornerAssistantApp/landing-page`。
-- App icon 已核对：`CornerAssistantApp/landing-page/assets/icon.png` 与 Xcode AppIcon 512@2x 像素一致，SHA-256 为 `1fdd1e4c18c4ce6bb80d1264807c8034c0af28a83aa9471a98a3d25a6ec436b0`，无需替换。
+- App icon 已核对：`CornerAssistantApp/landing-page/assets/icon.png` 与 Xcode AppIcon 512@2x 像素一致，SHA-256 为 `1fdd1e4c18c4ce6bb80d1264807c8034c0af28a83aa9471a98a3d25a6ec436b0`，无需替换；`script/validate_app_icons.py` 已把该检查固化。
 - `CornerAssistantApp/build/` 和历史 `.xcarchive` 里的导出产物视为陈旧产物，不能直接提交 App Store Connect。
 
 ## 1.1 本次本地验证记录
@@ -463,6 +463,11 @@
   - PageSpeed Insights API desktop/mobile：HTTP 429 Too Many Requests，继续作为 manual / 非阻塞记录。
   - 本机 Chrome Lighthouse desktop：Performance 100、Accessibility 100、Best Practices 100、SEO 100。
   - Lighthouse JSON 产物：`/tmp/peek-lighthouse/public-desktop.json`。
+- 2026-06-28 03:52 JST 已新增并运行 `script/validate_app_icons.py`：
+  - `landing-page/assets/icon.png` 为 1024x1024。
+  - Xcode AppIcon 512@2x 为 1024x1024，且与 landing icon SHA-256 完全一致。
+  - `assets/social-preview.png` 为 1200x630。
+  - `site.webmanifest` 中 `assets/icon.png` 尺寸声明已修正为 `1024x1024`。
 - 首页 JSON-LD `applicationCategory` 已从 `UtilitiesApplication` 调整为 `Productivity`，与 App Store 分类保持一致。
 
 2026-06-28 01:24 JST GitHub Pages / analytics 复查：
@@ -565,6 +570,7 @@
 - [x] 增加 `SoftwareApplication` JSON-LD。
   - `applicationCategory = Productivity`
 - [x] 增加 `site.webmanifest`。
+  - `assets/icon.png` 声明为 `1024x1024`，与真实 PNG 尺寸一致。
 - [x] 增加 `robots.txt`。
 - [x] 增加 `sitemap.xml`。
 - [x] 生成 `assets/social-preview.png`。
@@ -810,6 +816,7 @@ PEEK_BING_SITE_VERIFICATION=... \
   - `script/check_external_readiness.py` 已扩展：App Store export 成功后会定位 exported `.app`，验证 bundle metadata、`PrivacyInfo.xcprivacy`、sandbox/network/audio entitlements，并拒绝 `com.apple.security.get-task-allow`。
 - [x] 确认 `PrivacyInfo.xcprivacy` 已加入 target 并打包进 app。
 - [x] 确认 app icon 和 bundle icon 使用真实 Peek icon。
+  - 自动覆盖：`script/validate_app_icons.py` 验证 AppIcon 全尺寸 PNG、landing icon、manifest icon 声明、social preview 尺寸和 landing 页面 icon/social image 引用。
 - [x] 确认 menu bar icon 在真实运行环境中显示正常。
   - `script/qa_smoke.sh` 已用 System Events 验证 Peek status item 存在于菜单栏 accessibility tree。
 - [x] 设置 App category：
@@ -877,7 +884,8 @@ xcodebuild archive \
 - [x] `script/validate_app_store_materials.py`：验证三语言 App Store metadata 长度和禁用宣传词。
 - [x] `script/export_app_store_metadata.py`：导出可复制进 App Store Connect 的三语言 metadata、基础字段、审核备注和提交表单清单材料包。
 - [x] `script/validate_privacy_alignment.py`：验证 PrivacyInfo、Xcode 权限、App Store App Privacy 口径和 landing privacy 文案一致。
-- [x] `script/validate_landing_public.py`：验证公网 landing SEO、sitemap、manifest、analytics config 和禁用宣传词。
+- [x] `script/validate_landing_public.py`：验证公网 landing SEO、sitemap、manifest、icon/social preview 尺寸、analytics config 和禁用宣传词。
+- [x] `script/validate_app_icons.py`：验证 Xcode AppIcon、landing icon、web manifest icon 和 social preview 尺寸/一致性。
 - [x] `script/check_external_readiness.py`：复查公网 URL、GitHub Pages/variables、GA4 配置状态，并可选复查 export/截图权限阻塞。
   - 当前也覆盖 App Store export 成功后的 exported app metadata、privacy manifest 和 entitlements 验证。
 - [x] `script/configure_app_store_url.py`：真实 App Store URL 出来后激活 landing CTA、更新三语言 CTA 文案和 JSON-LD，并复跑本地 landing 校验。
@@ -1110,7 +1118,7 @@ xcodebuild \
 ./script/launch_verify.sh
 ```
 
-该脚本会执行 App Store metadata 校验、App Store metadata 导出包校验、Privacy/App Privacy 口径一致性校验、Release build、可自动运行的 XCTest、Release archive、归档 metadata/entitlements/privacy manifest 校验、Debug-only 字符串泄漏检查、公网 landing URL 检查和公网 landing SEO/analytics config 校验。公网检查可用 `SKIP_NETWORK=1 ./script/launch_verify.sh` 跳过。
+该脚本会执行 App Store metadata 校验、App Store metadata 导出包校验、Privacy/App Privacy 口径一致性校验、本地 landing 校验、App icon/landing icon 一致性校验、Release build、可自动运行的 XCTest、Release archive、归档 metadata/entitlements/privacy manifest 校验、Debug-only 字符串泄漏检查、公网 landing URL 检查和公网 landing SEO/analytics config 校验。公网检查可用 `SKIP_NETWORK=1 ./script/launch_verify.sh` 跳过。
 
 App Store Connect metadata 导出：
 
