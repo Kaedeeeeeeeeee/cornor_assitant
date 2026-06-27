@@ -453,6 +453,12 @@
   - Accessibility: 100
   - Best Practices: 100
   - SEO: 100
+- 2026-06-28 03:39 JST 使用本机 Chrome + `npx lighthouse@latest` 复跑公网 desktop Lighthouse：
+  - Performance: 95
+  - Accessibility: 100
+  - Best Practices: 100
+  - SEO: 100
+  - `color-contrast`、`document-title`、`meta-description`、`canonical`、`crawlable-anchors` 均通过。
 - 首页 JSON-LD `applicationCategory` 已从 `UtilitiesApplication` 调整为 `Productivity`，与 App Store 分类保持一致。
 
 2026-06-28 01:24 JST GitHub Pages / analytics 复查：
@@ -586,6 +592,7 @@
   - 可用 `PEEK_CHECK_EXPORT=1 PEEK_CHECK_SCREENSHOT=1` 额外复查 App Store export 和截图权限。
 - [ ] PageSpeed Insights 在线报告可后续补充，不阻塞首发。
   - 2026-06-28 通过 PageSpeed Insights API 请求移动端/桌面端报告时返回 HTTP 429 Too Many Requests；本项继续作为非阻塞补充项。
+  - 2026-06-28 03:39 JST 复查 PageSpeed Insights API，desktop/mobile 仍返回 HTTP 429 Too Many Requests；公网 Lighthouse 已复跑并通过。
 
 搜索引擎提交说明：
 
@@ -664,6 +671,7 @@ PEEK_BING_SITE_VERIFICATION=... \
   - 当前仍跳转到公开介绍页 `https://www.bing.com/webmasters/about?...`，页面显示 Sign In / Get started；未登录，未提交站点。
 - PageSpeed Insights API：
   - mobile 和 desktop 请求仍返回 HTTP 429 Too Many Requests；继续作为非阻塞补充项。
+  - 2026-06-28 03:39 JST 复查结果保持一致；改用本机 Chrome + Lighthouse 复核公网性能和 SEO。
 
 2026-06-27 App Store Connect 表单材料补齐：
 
