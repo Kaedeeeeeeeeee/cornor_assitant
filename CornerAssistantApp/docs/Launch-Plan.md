@@ -193,6 +193,8 @@
   - 2026-06-28 02:42 JST 再次执行 `./script/launch_verify.sh`，通过；当前脚本已额外验证 App Store metadata 导出包。
   - 2026-06-28 02:50 JST 再次执行 `./script/launch_verify.sh`，通过；当前脚本已额外验证 screenshot `scenario:` 调试入口不进入 Release archive。
   - 2026-06-28 02:57 JST 再次执行 `./script/launch_verify.sh`，通过；当前测试已覆盖 status menu 结构、热角菜单项、语言菜单项和 Launch at Login 菜单标题。
+  - 2026-06-28 03:11 JST 再次执行 `./script/launch_verify.sh`，通过；当前 readiness 脚本已额外覆盖 App Store export 成功后的 exported app metadata、privacy manifest 和 entitlements 验证。
+  - 2026-06-28 03:17 JST 再次执行 `./script/launch_verify.sh`，通过；本轮仅更新计划文档和 QA 证据。
 
 2026-06-28 Landing 本地验收收口：
 
@@ -342,6 +344,15 @@
 - 2026-06-28 01:48 JST 再次执行 `script/qa_smoke.sh` 和 `./script/launch_verify.sh`，均通过。
 - 2026-06-28 02:04 JST 再次执行 `script/qa_smoke.sh` 和 `./script/launch_verify.sh`，均通过。
 - 2026-06-28 02:06 JST 再次执行 `script/qa_smoke.sh`，通过。
+- 2026-06-28 03:13 JST 再次执行 `script/qa_smoke.sh`，通过：
+  - `status_item=title= description=Peek x:1523 y:4 w:24 h:24`
+  - `panel_hidden=true`
+  - `corner=bottomLeft window id=8754 layer=3 bounds=x:0 y:281 width:528 height:750`
+  - `corner=bottomRight window id=8754 layer=3 bounds=x:1186 y:271 width:528 height:750`
+  - `corner=topLeft window id=8754 layer=3 bounds=x:14 y:43 width:528 height:750`
+  - `corner=topRight window id=8754 layer=3 bounds=x:1186 y:43 width:528 height:750`
+  - `qa_smoke passed`
+- 2026-06-28 03:14 JST 尝试用 CGEvent 坐标点击和 System Events `click` 验证菜单栏左键；两者都能定位 status item，但未触发真实面板展开，因此菜单栏左键/右键仍保留为人工或更完整 UI automation 项。
 - 2026-06-28 01:15 JST 再次执行 UI test target，失败原因仍为当前 macOS 会话认证状态：
   - `Failed to initialize for UI testing`
   - `System authentication is running`
@@ -461,6 +472,9 @@
   - 无效 host 会失败，避免把非 App Store 链接写入 landing CTA。
   - `script/validate_landing_local.js` 已扩展 CTA 状态校验：disabled CTA 必须保持 `href="#"` / `aria-disabled="true"` / `is-disabled`，active CTA 必须指向 `https://apps.apple.com/` 且不能保留 coming-soon 文案。
 - 2026-06-28 02:18 JST Pages workflow `28296237761` 成功；公网 `script/validate_landing_public.py` 通过；默认 readiness 结果为 `{"manual": 4, "ok": 9, "skipped": 2}`。
+- 2026-06-28 03:12 JST 默认 readiness 复查结果保持一致：`{"manual": 4, "ok": 9, "skipped": 2}`。
+- 2026-06-28 03:12 JST `PEEK_CHECK_EXPORT=1 ./script/check_external_readiness.py` 复查结果：`{"blocked": 1, "manual": 4, "ok": 9, "skipped": 1}`；blocked 项仍为 `No Accounts / no com.shifeng.peek App Store profile`。
+- 2026-06-28 03:14 JST `PEEK_CHECK_SCREENSHOT=1 ./script/check_external_readiness.py` 复查结果：`{"blocked": 1, "manual": 4, "ok": 9, "skipped": 1}`；blocked 项仍为 Screen Recording/window capture permission 不可用。
 
 ## 2. 首发完成定义
 
@@ -859,19 +873,26 @@ xcodebuild archive \
 - [ ] 菜单栏图标点击。
   - 2026-06-28 已确认 status item 存在；但 AXPress/AppleScript click 在当前会话未触发真实左键行为，本项仍需手动或更完整 UI automation 验证。
 - [ ] 菜单栏右键/control-click 菜单。
-- [ ] 四个热角设置。
+- [x] 四个热角设置。
+  - 自动覆盖：`LaunchReadinessTests` 验证四个 hot corner raw value、菜单文案、默认值和持久化；`script/qa_smoke.sh` 验证四个 hot corner 对应的真实面板窗口定位。
 - [ ] 边缘面板唤出和自动收起。
+  - 自动覆盖了 Debug expand/collapse 和四角定位；真实鼠标边缘触发及自动收起仍需人工或更完整 UI automation。
 - [ ] 固定面板行为。
 - [ ] 面板尺寸调整。
-- [ ] 搜索关键词。
-- [ ] 直接输入 URL。
-- [ ] 搜索建议。
-- [ ] 新建标签页。
-- [ ] 关闭标签页。
-- [ ] 切换标签页。
-- [ ] 固定网站添加。
-- [ ] 固定网站打开。
-- [ ] 固定网站移除。
+- [x] 搜索关键词。
+  - 自动覆盖：`SearchProviderTests` 验证空查询、trim、unicode/符号查询和 Google search URL 构造。
+- [x] 直接输入 URL。
+  - 自动覆盖：`SearchProviderTests` 验证 HTTP/HTTPS、裸域名、路径、localhost 和普通搜索词区分。
+- [x] 搜索建议。
+  - 自动覆盖：`SuggestionStoreTests` 验证最小输入长度、debounce、clear，以及请求失败/无网络时清空旧建议。
+- [x] 新建标签页。
+- [x] 关闭标签页。
+- [x] 切换标签页。
+  - 自动覆盖：`SlidePanelViewModelTests` 验证新建、切换、关闭、关闭最后普通标签后的 replacement launcher tab。
+- [x] 固定网站添加。
+- [x] 固定网站打开。
+- [x] 固定网站移除。
+  - 自动覆盖：`SlidePanelViewModelTests` 和 `PinnedSiteTests` 验证 pinned site 添加、打开、移除、排序、重复 URL 防护、固定 tab 关闭保护和 favicon fallback。
 - [ ] Launch at Login。
 - [ ] App 语言切换：简体中文、英语、日语。
 - [ ] WebKit 常见登录页面：
