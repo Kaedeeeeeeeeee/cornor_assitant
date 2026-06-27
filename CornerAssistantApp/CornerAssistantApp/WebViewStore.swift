@@ -27,7 +27,7 @@ final class WebViewStore: NSObject, ObservableObject, WKNavigationDelegate, WKUI
         webView.navigationDelegate = self
         webView.uiDelegate = self
         webView.allowsBackForwardNavigationGestures = true
-        webView.setValue(false, forKey: "drawsBackground")
+        webView.underPageBackgroundColor = .clear
         webView.customUserAgent = Self.aggressiveUserAgent
         normalizeScrollView()
     }
@@ -89,7 +89,7 @@ final class WebViewStore: NSObject, ObservableObject, WKNavigationDelegate, WKUI
         popupWebView.navigationDelegate = self
         popupWebView.uiDelegate = self
         popupWebView.allowsBackForwardNavigationGestures = true
-        popupWebView.setValue(false, forKey: "drawsBackground")
+        popupWebView.underPageBackgroundColor = .clear
         popupWebView.customUserAgent = Self.aggressiveUserAgent
 
         let window = NSWindow(

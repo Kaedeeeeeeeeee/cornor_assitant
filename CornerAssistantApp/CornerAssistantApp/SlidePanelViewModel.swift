@@ -151,4 +151,25 @@ final class SlidePanelViewModel: ObservableObject {
         pinnedSites.removeAll { $0.id == site.id }
         pinnedTabIDs.removeValue(forKey: site.id)
     }
+
+    func movePinnedSite(from source: Int, to destination: Int) {
+        guard source != destination,
+              pinnedSites.indices.contains(source),
+              pinnedSites.indices.contains(destination) else { return }
+        let item = pinnedSites.remove(at: source)
+        pinnedSites.insert(item, at: destination)
+    }
+
+    func moveRegularTab(from source: Int, to destination: Int) {
+        let regular = regularTabs
+        guard source != destination,
+              regular.indices.contains(source),
+              regular.indices.contains(destination) else { return }
+        let sourceTab = regular[source]
+        let destTab = regular[destination]
+        guard let sourceIdx = tabs.firstIndex(where: { $0.id == sourceTab.id }),
+              let destIdx = tabs.firstIndex(where: { $0.id == destTab.id }) else { return }
+        let tab = tabs.remove(at: sourceIdx)
+        tabs.insert(tab, at: destIdx)
+    }
 }

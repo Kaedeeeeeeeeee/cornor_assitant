@@ -2,6 +2,7 @@ import SwiftUI
 import WebKit
 import Combine
 import AppKit
+import UniformTypeIdentifiers
 
 struct SlidePanelView: View {
     @EnvironmentObject private var localization: LocalizationManager
@@ -10,6 +11,8 @@ struct SlidePanelView: View {
     @StateObject private var suggestionStore: SuggestionStore
     @State private var address: String = ""
     @FocusState private var isAddressFocused: Bool
+    @State private var draggingPinnedSiteID: String?
+    @State private var draggingTabID: UUID?
     private let searchProvider: any SearchProvider
 
     init(state: SlidePanelState) {
@@ -86,6 +89,16 @@ struct SlidePanelView: View {
                             viewModel.unpin(site: site)
                         }
                     }
+                    .opacity(draggingPinnedSiteID == site.id ? 0.5 : 1.0)
+                    .onDrag {
+                        draggingPinnedSiteID = site.id
+                        return NSItemProvider(object: site.id as NSString)
+                    }
+                    .onDrop(of: [.text], delegate: PinnedSiteDropDelegate(
+                        site: site,
+                        viewModel: viewModel,
+                        draggingID: $draggingPinnedSiteID
+                    ))
                 }
             }
             Divider()
@@ -102,6 +115,16 @@ struct SlidePanelView: View {
                             onClose: { viewModel.close(tab: tab) },
                             onPin: { viewModel.pin(tab: tab) }
                         )
+                        .opacity(draggingTabID == tab.id ? 0.5 : 1.0)
+                        .onDrag {
+                            draggingTabID = tab.id
+                            return NSItemProvider(object: tab.id.uuidString as NSString)
+                        }
+                        .onDrop(of: [.text], delegate: RegularTabDropDelegate(
+                            tab: tab,
+                            viewModel: viewModel,
+                            draggingID: $draggingTabID
+                        ))
                     }
                     SidebarButton(
                         isActive: viewModel.showingLauncher,
@@ -345,6 +368,67 @@ private struct SidebarButton: View {
         } catch {
             return nil
         }
+    }
+}
+
+// MARK: - Drop Delegates
+
+private struct PinnedSiteDropDelegate: DropDelegate {
+    let site: PinnedSite
+    let viewModel: SlidePanelViewModel
+    @Binding var draggingID: String?
+
+    func performDrop(info: DropInfo) -> Bool {
+        draggingID = nil
+        return true
+    }
+
+    func dropEntered(info: DropInfo) {
+        guard let draggingID,
+              draggingID != site.id,
+              let from = viewModel.pinnedSites.firstIndex(where: { $0.id == draggingID }),
+              let to = viewModel.pinnedSites.firstIndex(where: { $0.id == site.id }) else { return }
+        withAnimation(.easeInOut(duration: 0.2)) {
+            viewModel.movePinnedSite(from: from, to: to)
+        }
+    }
+
+    func dropUpdated(info: DropInfo) -> DropProposal? {
+        DropProposal(operation: .move)
+    }
+
+    func validateDrop(info: DropInfo) -> Bool {
+        draggingID != nil
+    }
+}
+
+private struct RegularTabDropDelegate: DropDelegate {
+    let tab: BrowserTab
+    let viewModel: SlidePanelViewModel
+    @Binding var draggingID: UUID?
+
+    func performDrop(info: DropInfo) -> Bool {
+        draggingID = nil
+        return true
+    }
+
+    func dropEntered(info: DropInfo) {
+        guard let draggingID,
+              draggingID != tab.id else { return }
+        let regularTabs = viewModel.regularTabs
+        guard let from = regularTabs.firstIndex(where: { $0.id == draggingID }),
+              let to = regularTabs.firstIndex(where: { $0.id == tab.id }) else { return }
+        withAnimation(.easeInOut(duration: 0.2)) {
+            viewModel.moveRegularTab(from: from, to: to)
+        }
+    }
+
+    func dropUpdated(info: DropInfo) -> DropProposal? {
+        DropProposal(operation: .move)
+    }
+
+    func validateDrop(info: DropInfo) -> Bool {
+        draggingID != nil
     }
 }
 

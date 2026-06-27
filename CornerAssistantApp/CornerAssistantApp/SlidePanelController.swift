@@ -370,25 +370,11 @@ final class SlidePanelController {
         }
     }
     
-    /// NWSE 方向的对角线光标（↖↘）- 尝试使用系统光标
-    private static let nwseCursor: NSCursor = {
-        // 尝试使用系统私有 API 获取原生光标
-        if let cursor = NSCursor.perform(NSSelectorFromString("_windowResizeNorthWestSouthEastCursor"))?.takeUnretainedValue() as? NSCursor {
-            return cursor
-        }
-        // 回退到自定义光标
-        return createDiagonalCursor(nwse: true)
-    }()
-    
-    /// NESW 方向的对角线光标（↗↙）- 尝试使用系统光标
-    private static let neswCursor: NSCursor = {
-        // 尝试使用系统私有 API 获取原生光标
-        if let cursor = NSCursor.perform(NSSelectorFromString("_windowResizeNorthEastSouthWestCursor"))?.takeUnretainedValue() as? NSCursor {
-            return cursor
-        }
-        // 回退到自定义光标
-        return createDiagonalCursor(nwse: false)
-    }()
+    /// NWSE 方向的对角线光标（↖↘）
+    private static let nwseCursor: NSCursor = createDiagonalCursor(nwse: true)
+
+    /// NESW 方向的对角线光标（↗↙）
+    private static let neswCursor: NSCursor = createDiagonalCursor(nwse: false)
     
     /// 创建自定义对角线光标（作为回退方案）
     private static func createDiagonalCursor(nwse: Bool) -> NSCursor {

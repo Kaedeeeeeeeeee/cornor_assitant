@@ -85,11 +85,31 @@
 当前发现的发布门槛：
 
 - 本地 Release build 仍使用 `Apple Development` 签名，entitlements 里有 `com.apple.security.get-task-allow = true`；这个产物不能直接提交 App Store Connect，必须用 App Store distribution archive/export 重新签名。
+- `/tmp/peek-appstore/Peek.xcarchive` 里的 archive app 已确认不含 `get-task-allow`，但 archive metadata 仍显示自动签名使用 `Apple Development`；最终提交物仍必须通过 App Store export/Organizer 重新签为 distribution。
 - 当前保留 `audio-input`，用于内置 WebKit 页面可能请求的网页通话或语音输入；隐私页和 Info.plist 已同步说明。
 - App Store export 已尝试，但失败：
   - `error: exportArchive Unable to process request - PLA Update available`
   - `error: exportArchive No profiles for 'com.shifeng.peek' were found`
   - 需要登录 Apple Developer/App Store Connect 接受 Program License Agreement 更新，并创建/刷新 `com.shifeng.peek` 的 App Store provisioning profile。
+
+2026-06-27 源码发布风险收口：
+
+- 已确认当前 5 个未提交源码文件均与上线准备相关：
+  - `LaunchAtLoginManager.swift`: 从手写 LaunchAgent/`launchctl` 改为 `SMAppService.mainApp`。
+  - `SlidePanelController.swift`: 移除私有 cursor selector，改用自定义公开 API cursor。
+  - `WebViewStore.swift`: 移除 `drawsBackground` KVC，改用 `underPageBackgroundColor = .clear`。
+  - `SlidePanelView.swift` / `SlidePanelViewModel.swift`: 增加固定站点和普通标签拖拽排序；固定站点排序通过现有 `PinnedSiteStore` 保存。
+- 发布风险扫描已通过，源码中没有再命中：
+  - `NSSelectorFromString`
+  - `drawsBackground`
+  - `setValue(`
+  - `launchctl`
+  - `LaunchAgents`
+  - `ProgramArguments`
+- 清理后再次验证：
+  - Release build 成功。
+  - Archive 成功生成到 `/tmp/peek-appstore/Peek.xcarchive`。
+  - Archive Info.plist、entitlements、`PrivacyInfo.xcprivacy` 均已从归档产物中复核。
 
 ## 1.2 本次部署记录
 
@@ -268,12 +288,19 @@
 - 不出现开发工具、测试数据、个人隐私信息。
 - 不展示未实现功能。
 - 尽量覆盖中文、英文或日文中的至少一种主语言；如果 App Store Connect 支持本地化截图，后续再补全三语。
+- 当前机器已有 `/Applications/Peek.app` 运行；为避免干扰用户当前桌面，本次没有自动控制该实例采集截图。
+- 建议截图采集方式：
+  - 使用 `/tmp/peek-appstore/Peek.xcarchive/Products/Applications/Peek.app` 或最终 exported app。
+  - 在干净桌面/测试用户中打开 app。
+  - 用菜单栏图标或热角展示面板。
+  - 只截取 app 窗口或经过清理的完整桌面。
+  - 采集完成后保存到 `CornerAssistantApp/docs/app-store-screenshots/` 或外部素材目录，再决定是否提交进仓库。
 
 ### Phase E: App Build Readiness
 
-状态：本地 Release build 已通过，权限已收窄；App Store distribution archive/export 待执行。
+状态：本地 Release build 和 archive 已通过，权限已收窄；App Store distribution export 被 Apple 后台阻塞。
 
-- [ ] 明确当前 dirty worktree 哪些是本次上线工作，哪些是用户已有改动。
+- [x] 明确当前 dirty worktree 哪些是本次上线工作，哪些是用户已有改动。
 - [ ] 确认版本号：
   - `MARKETING_VERSION = 1.0`
   - `CURRENT_PROJECT_VERSION` 每次上传递增。
@@ -285,9 +312,11 @@
 - [x] 确认 App Sandbox entitlement。
 - [x] 确认 WebKit 浏览需要的 network client entitlement。
 - [x] 检查是否真的需要 audio input entitlement；保留给 WebKit 页面请求麦克风，Info.plist 和 privacy copy 已同步。
-- [ ] 确认 distribution build 没有 `com.apple.security.get-task-allow`。
+- [x] 确认 archive app entitlements 没有 `com.apple.security.get-task-allow`。
+- [ ] 确认最终 App Store exported app 没有 `com.apple.security.get-task-allow`。
 - [x] 确认 `PrivacyInfo.xcprivacy` 已加入 target 并打包进 app。
-- [ ] 确认 app icon、menu bar icon 和 bundle icon 正常。
+- [x] 确认 app icon 和 bundle icon 使用真实 Peek icon。
+- [ ] 确认 menu bar icon 在真实运行环境中显示正常。
 - [x] 设置 App category：
   - `public.app-category.productivity`
 - [x] 运行 Release build：
@@ -309,7 +338,8 @@ xcodebuild archive \
   -scheme CornerAssistantApp \
   -configuration Release \
   -destination 'generic/platform=macOS' \
-  -archivePath CornerAssistantApp/build/Peek.xcarchive
+  -archivePath /tmp/peek-appstore/Peek.xcarchive \
+  -allowProvisioningUpdates
 ```
 
 - [ ] 用 Xcode Organizer 或 `xcodebuild -exportArchive` 走 App Store distribution。
@@ -326,7 +356,7 @@ xcodebuild archive \
 - 历史 `CornerAssistantApp/build/` 和 `.xcarchive` 只作为参考，不能作为首发提交物。
 - 当前本地 Release build 是开发签名，不是最终提交物。
 - 最终提交物必须验证 `get-task-allow = false`。
-- 上线前必须复核是否真的需要 `network.server`、`audio-input`、`files.user-selected.read-only`、`cs.allow-jit`。
+- 已移除 `network.server`、`files.user-selected.read-only`、`cs.allow-jit`；保留 `audio-input`。
 
 ### Phase F: 产品 QA
 
@@ -437,7 +467,7 @@ curl -I https://kaedeeeeeeeeee.github.io/cornor_assitant/sitemap.xml
 - [ ] App Store 截图素材。
 - [ ] App Review release mode；建议首发使用 Manual release。
 - [ ] 真实 Mac App Store URL。
-- [ ] GitHub Pages Settings 中启用 GitHub Actions Pages。
+- [x] GitHub Pages Settings 中启用 GitHub Actions Pages。
 
 ## 5. 文案红线
 
@@ -509,15 +539,16 @@ xcodebuild \
 
 按顺序执行：
 
-1. 完成本地 landing 视觉和技术验证。
-2. 补 GA4 Measurement ID，或者明确首发先不开启 analytics。
-3. 在 App Store Connect 创建 Peek app record。
-4. 回填真实 App Store URL 到 landing CTA。
-5. 准备截图并上传 App Store metadata。
-6. 创建 App Store distribution archive。
-7. 验证 distribution entitlements 中 `get-task-allow = false`。
+1. 接受 Apple Developer Program License Agreement 更新。
+2. 创建/刷新 `com.shifeng.peek` 的 App Store provisioning profile。
+3. 用 Organizer 或 `xcodebuild -exportArchive` 重新执行 App Store export。
+4. 验证 exported app entitlements 中 `get-task-allow = false`。
+5. 在 App Store Connect 创建 Peek app record。
+6. 补 GA4 Measurement ID，或者明确首发先不开启 analytics。
+7. 准备截图并上传 App Store metadata。
 8. Upload build to App Store Connect。
-9. Submit for Review。
+9. 回填真实 App Store URL 到 landing CTA。
+10. Submit for Review。
 
 ## 8. 参考链接
 
