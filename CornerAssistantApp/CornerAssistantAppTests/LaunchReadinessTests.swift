@@ -3,6 +3,7 @@ import XCTest
 
 final class LaunchReadinessTests: XCTestCase {
     private let hotCornerDefaultsKey = "CornerAssistant.HotCorner"
+    private let languageDefaultsKey = "CornerAssistantApp.PreferredLanguage"
 
     func testAppLanguageResolutionCoversLaunchLocales() {
         XCTAssertEqual(AppLanguage.resolvedDefault(from: ["en-US"]), .english)
@@ -92,6 +93,36 @@ final class LaunchReadinessTests: XCTestCase {
                 let title = strings[menuLanguage.displayKey]?.trimmingCharacters(in: .whitespacesAndNewlines)
                 XCTAssertFalse(title?.isEmpty ?? true, "\(language.rawValue) is missing language menu title \(menuLanguage.rawValue)")
             }
+        }
+    }
+
+    @MainActor
+    func testLocalizationManagerSwitchesAndPersistsLaunchLanguages() {
+        let manager = LocalizationManager.shared
+        let defaults = UserDefaults.standard
+        let previousLanguage = manager.currentLanguage
+        let previousStoredValue = defaults.string(forKey: languageDefaultsKey)
+        defer {
+            manager.use(language: previousLanguage)
+            if let previousStoredValue {
+                defaults.set(previousStoredValue, forKey: languageDefaultsKey)
+            } else {
+                defaults.removeObject(forKey: languageDefaultsKey)
+            }
+        }
+
+        let expectedSettingsTitles: [(AppLanguage, String)] = [
+            (.chineseSimplified, "界面语言"),
+            (.japanese, "表示言語"),
+            (.english, "Interface Language")
+        ]
+
+        for (language, expectedTitle) in expectedSettingsTitles {
+            manager.use(language: language)
+
+            XCTAssertEqual(manager.currentLanguage, language)
+            XCTAssertEqual(manager.localized("settings.language"), expectedTitle)
+            XCTAssertEqual(defaults.string(forKey: languageDefaultsKey), language.rawValue)
         }
     }
 

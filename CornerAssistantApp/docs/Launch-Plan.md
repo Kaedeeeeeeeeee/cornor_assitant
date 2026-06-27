@@ -195,6 +195,7 @@
   - 2026-06-28 02:57 JST 再次执行 `./script/launch_verify.sh`，通过；当前测试已覆盖 status menu 结构、热角菜单项、语言菜单项和 Launch at Login 菜单标题。
   - 2026-06-28 03:11 JST 再次执行 `./script/launch_verify.sh`，通过；当前 readiness 脚本已额外覆盖 App Store export 成功后的 exported app metadata、privacy manifest 和 entitlements 验证。
   - 2026-06-28 03:17 JST 再次执行 `./script/launch_verify.sh`，通过；本轮仅更新计划文档和 QA 证据。
+  - 2026-06-28 03:22 JST 再次执行 `./script/launch_verify.sh`，通过；当前测试已覆盖三语言切换和语言偏好持久化。
 
 2026-06-28 Landing 本地验收收口：
 
@@ -308,6 +309,7 @@
   - 首发三语言解析：`en`、`zh-Hans`、`ja`。
   - 三语言 `Localizable.strings` key 集合一致且值非空。
   - 首发关键 UI 文案 key 存在。
+  - App 语言切换：`LocalizationManager` 可切换简体中文、日语、英语，切换后 bundle 文案更新，并写入 `CornerAssistantApp.PreferredLanguage`。
   - 四个 hot corner raw value 保持稳定。
   - 三语言 settings/language/hot corner 菜单文案存在。
   - Hot corner 默认值为 `bottomLeft`，保存/读取有效值正常，非法值会回退到默认值。
@@ -321,7 +323,9 @@
 - `xcodebuild ... -only-testing:CornerAssistantAppTests test` 已通过：
   - 2026-06-28 01:23 JST 通过。
   - 2026-06-28 01:47 JST `LaunchReadinessTests` 定向复跑通过。
-  - 当前 `CornerAssistantAppTests` 共 35 个 `func test...`。
+  - 2026-06-28 03:21 JST `LaunchReadinessTests` 定向复跑通过；新增语言切换/持久化覆盖。
+  - 2026-06-28 03:22 JST `xcodebuild ... -skip-testing:CornerAssistantAppUITests test` 通过。
+  - 当前 `CornerAssistantAppTests` 共 38 个 `func test...`。
 - `script/qa_smoke.sh` 已重新验证通过：
   - 当前 smoke 会先验证菜单栏 status item 存在。
   - 当前 smoke 会确认启动后默认没有可见 Peek 面板窗口。
@@ -898,7 +902,8 @@ xcodebuild archive \
 - [x] 固定网站移除。
   - 自动覆盖：`SlidePanelViewModelTests` 和 `PinnedSiteTests` 验证 pinned site 添加、打开、移除、排序、重复 URL 防护、固定 tab 关闭保护和 favicon fallback。
 - [ ] Launch at Login。
-- [ ] App 语言切换：简体中文、英语、日语。
+- [x] App 语言切换：简体中文、英语、日语。
+  - 自动覆盖：`LaunchReadinessTests.testLocalizationManagerSwitchesAndPersistsLaunchLanguages` 验证三语言切换、bundle 文案更新和偏好持久化。
 - [ ] WebKit 常见登录页面：
   - Google account page。
   - Slack。
