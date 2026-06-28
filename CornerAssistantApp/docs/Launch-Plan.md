@@ -635,7 +635,7 @@
   - App Privacy 已发布为 `Data Not Collected`，Privacy Policy URL 指向公网 privacy page。
   - Pricing 已设置 United States (USD) `$5.99`，Availability 已设置 All Countries or Regions / 175 countries or regions。
   - App Accessibility 未填写；当前未做 VoiceOver/Larger Text 等逐项验收，不应过度声明。
-  - 截图尚未上传：Chrome connector 的 file chooser 被权限拒绝，需用户为 Codex Chrome extension 开启 `Allow access to file URLs` 或手动上传截图。
+  - 截图已上传：Chrome connector 的 file chooser 被权限拒绝后，2026-06-28 22:35 JST 改用 Computer Use 和 macOS file picker 上传 5 张正式 PNG；App Store Connect 显示 `5 of 10 Screenshots`。
 
 ## 2. 首发完成定义
 
@@ -1177,7 +1177,7 @@ curl -I https://kaedeeeeeeeeee.github.io/cornor_assitant/sitemap.xml
 
 ### Phase H: App Review 和发布
 
-状态：build 已上传并加入版本；App Store Connect 核心 metadata、隐私、价格、可售区域和年龄分级已保存；待上传截图并最终提交审核。
+状态：build 已上传并加入版本；App Store Connect 核心 metadata、隐私、价格、可售区域、年龄分级和 5 张截图已保存；待最终预览审校并提交审核。
 
 - [x] 上传 build。
   - 已上传导出包：`/tmp/peek-appstore/external-readiness-export/Corner Peek.pkg`
@@ -1188,9 +1188,10 @@ curl -I https://kaedeeeeeeeeee.github.io/cornor_assitant/sitemap.xml
   - `buildAudienceType = APP_STORE_ELIGIBLE`
 - [x] 选择 build 加入版本 `1.0`。
 - [x] 填完 metadata、隐私、年龄分级、价格、可售区域。
-- [ ] 上传 App Store screenshots。
+- [x] 上传 App Store screenshots。
   - 当前本地素材：`/tmp/peek-app-store-screenshots/01-hot-corner-panel-2880x1800.png` 至 `05-pinned-panel-2880x1800.png`。
-  - 当前阻塞：Chrome extension file upload 权限未开，connector 返回 `Not allowed`。
+  - 2026-06-28 22:35 JST 已通过 Computer Use 和 macOS file picker 上传到 App Store Connect；页面显示 `5 of 10 Screenshots`。
+  - 提交审核前仍需人工确认 App Store Connect 页面预览顺序和缩略图渲染。
 - [x] 检查所有链接都是公网 HTTPS 且返回 200。
   - `script/validate_app_store_urls.py --check-network` 已验证 App Store materials 中 Marketing / Privacy Policy / Support URL 均为 HTTPS 且返回 200。
 - [ ] Submit for Review。
@@ -1244,9 +1245,10 @@ curl -I https://kaedeeeeeeeeee.github.io/cornor_assitant/sitemap.xml
   - 2026-06-28 17:49 JST 已生成并安装 `Corner Peek Mac App Store` profile；`script/check_external_readiness.py` 默认检查已识别到 1 个 matching App Store profile。
 - [x] App Store SKU 最终确认：`corner-peek-macos-001`。
 - [x] App Store 截图候选素材。
-- [ ] App Review 真实联系电话。
+- [x] App Store 截图已上传。
+- [x] App Review 真实联系电话。
 - [ ] 如果包含 EU 地区：DSA trader status 和可公开联系信息。
-- [ ] App Review release mode；建议首发使用 Manual release。
+- [x] App Review release mode：Manual release。
 - [ ] 真实 Mac App Store URL。
 - [x] Google Search Console 所有权验证。
 - [ ] Google Search Console sitemap 处理状态复查。
@@ -1398,6 +1400,7 @@ Landing 性能复查：
    - 确认后在该属性下创建 Web data stream：URL `https://kaedeeeeeeeeee.github.io/cornor_assitant/`，stream name 建议 `Corner Peek Landing Page`。
    - 拿到 `G-...` 后用 `script/configure_landing_variables.sh` 设置 `PEEK_GA_MEASUREMENT_ID`，或者明确首发先不开启 analytics。
 8. 准备截图并上传 App Store metadata。
+   - 2026-06-28 22:35 JST 已完成；App Store Connect 显示 `5 of 10 Screenshots`。
 9. 复查搜索引擎后台。
     - Google Search Console 已验证；下一步是复查 sitemap 从“无法读取”变为成功或给出更具体错误。
     - Bing Webmaster Tools 当前需要 Microsoft 登录并获取/配置 `PEEK_BING_SITE_VERIFICATION`。

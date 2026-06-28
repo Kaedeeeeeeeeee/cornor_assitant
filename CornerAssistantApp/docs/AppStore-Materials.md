@@ -376,13 +376,13 @@ Support contact: f.shera.09@gmail.com
 
 - [ ] Paid Apps Agreement 已签署。
 - [ ] 税务和银行信息已配置。
-- [ ] 价格设为 US$5.99 对应价格层级。
+- [x] 价格设为 US$5.99 对应价格层级。
 - [x] Marketing / Privacy / Support URL 均为公网 HTTPS 且返回 200。
-- [ ] 三语言 metadata 已填。
+- [x] 三语言 metadata 已填。
 - [x] 截图候选图已生成。
-- [ ] 截图已上传。
-- [ ] App Privacy 与 Privacy Policy 一致。
-- [ ] Age Rating 已填。
+- [x] 截图已上传。
+- [x] App Privacy 与 Privacy Policy 一致。
+- [x] Age Rating 已填。
 - [ ] Export compliance 已填。
-- [ ] Review notes 已填。
-- [ ] Build 已上传并通过处理。
+- [x] Review notes 已填。
+- [x] Build 已上传并通过处理。

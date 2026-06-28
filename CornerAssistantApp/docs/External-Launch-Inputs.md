@@ -127,10 +127,10 @@ xcrun altool --build-status \
 
   - 已生成 `/tmp/peek-app-store-screenshots/01-hot-corner-panel-2880x1800.png` 至 `05-pinned-panel-2880x1800.png`，全部为 2880x1800。
   - 2026-06-28 15:45 JST 视觉快检通过：未发现黑图、个人信息、Xcode/终端痕迹或旧名。
-- [ ] Upload App Store screenshots.
+- [x] Upload App Store screenshots.
   - 2026-06-28 21:49 JST 尝试用 Chrome browser connector 上传 5 张 PNG，但 `fileChooser.setFiles` 返回 `Not allowed`。
-  - 当前阻塞：Chrome 安全策略不允许我打开 `chrome://extensions` 帮用户切换权限；需要用户手动到 Chrome Extensions 中为 Codex extension 打开 `Allow access to file URLs`，或用户自行上传截图。
-  - 截图上传完成后仍需在 App Store Connect 中按最终页面预览做一次人工顺序审校。
+  - 2026-06-28 22:35 JST 改用 Computer Use 通过 macOS file picker 上传 5 张正式 PNG，App Store Connect 显示 `5 of 10 Screenshots`。
+  - 截图上传完成；提交审核前仍需在 App Store Connect 中按最终页面预览做一次人工顺序审校。
 
 ## Final Store URL
 
