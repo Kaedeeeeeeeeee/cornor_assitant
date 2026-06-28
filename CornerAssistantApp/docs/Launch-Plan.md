@@ -1,6 +1,6 @@
 # Corner Peek 上线准备计划
 
-最后更新：2026-06-28 20:36 JST
+最后更新：2026-06-28 22:10 JST
 
 这个文档是 Corner Peek 从当前本地项目走到公开 landing page 和 Mac App Store 首发的工作台。后续执行、验收、补漏都以这里为准；如果产品、定价、域名、隐私口径或 App Store 配置发生变化，先更新本文件，再改代码或页面。
 
@@ -626,6 +626,16 @@
   - 2026-06-28 20:33 JST `xcrun altool --validate-app` 通过，验证文件为 `/tmp/peek-appstore/external-readiness-export/Corner Peek.pkg`。
   - 2026-06-28 20:35 JST `xcrun altool --upload-package` 上传成功，Delivery UUID 为 `1381454e-1354-4bf6-9ad9-b89482779afe`。
   - `xcrun altool --build-status --delivery-id 1381454e-1354-4bf6-9ad9-b89482779afe` 返回 `build-status = VALID`、`import-status = VALID`、`buildAudienceType = APP_STORE_ELIGIBLE`。
+- 2026-06-28 22:10 JST App Store Connect 表单推进：
+  - Version page 已保存 English (U.S.)、Chinese (Simplified)、Japanese metadata。
+  - Build `1.0 (1)` 已加入 version `1.0`。
+  - App Review contact、notes、support URL、marketing URL、copyright 和 manual release 已保存。
+  - App Information 已保存三语言 subtitle、Productivity 分类、Content Rights。
+  - Age Ratings 已保存；因 Unrestricted Web Access，Apple calculated rating 为 `16+`。
+  - App Privacy 已发布为 `Data Not Collected`，Privacy Policy URL 指向公网 privacy page。
+  - Pricing 已设置 United States (USD) `$5.99`，Availability 已设置 All Countries or Regions / 175 countries or regions。
+  - App Accessibility 未填写；当前未做 VoiceOver/Larger Text 等逐项验收，不应过度声明。
+  - 截图尚未上传：Chrome connector 的 file chooser 被权限拒绝，需用户为 Codex Chrome extension 开启 `Allow access to file URLs` 或手动上传截图。
 
 ## 2. 首发完成定义
 
@@ -1167,7 +1177,7 @@ curl -I https://kaedeeeeeeeeee.github.io/cornor_assitant/sitemap.xml
 
 ### Phase H: App Review 和发布
 
-状态：build 已上传并通过处理；待在 App Store Connect 选择 build、补齐页面资料并提交审核。
+状态：build 已上传并加入版本；App Store Connect 核心 metadata、隐私、价格、可售区域和年龄分级已保存；待上传截图并最终提交审核。
 
 - [x] 上传 build。
   - 已上传导出包：`/tmp/peek-appstore/external-readiness-export/Corner Peek.pkg`
@@ -1176,8 +1186,11 @@ curl -I https://kaedeeeeeeeeee.github.io/cornor_assitant/sitemap.xml
   - `build-status = VALID`
   - `import-status = VALID`
   - `buildAudienceType = APP_STORE_ELIGIBLE`
-- [ ] 选择 build 加入版本 `1.0`。
-- [ ] 填完 metadata、截图、隐私、年龄分级、价格、可售区域。
+- [x] 选择 build 加入版本 `1.0`。
+- [x] 填完 metadata、隐私、年龄分级、价格、可售区域。
+- [ ] 上传 App Store screenshots。
+  - 当前本地素材：`/tmp/peek-app-store-screenshots/01-hot-corner-panel-2880x1800.png` 至 `05-pinned-panel-2880x1800.png`。
+  - 当前阻塞：Chrome extension file upload 权限未开，connector 返回 `Not allowed`。
 - [x] 检查所有链接都是公网 HTTPS 且返回 200。
   - `script/validate_app_store_urls.py --check-network` 已验证 App Store materials 中 Marketing / Privacy Policy / Support URL 均为 HTTPS 且返回 200。
 - [ ] Submit for Review。

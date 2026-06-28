@@ -1,6 +1,6 @@
 # Corner Peek External Launch Inputs
 
-最后更新：2026-06-28 20:36 JST
+最后更新：2026-06-28 22:10 JST
 
 这个文件只记录代码和本机 CLI 无法安全代办的外部账号、后台表单、真实联系方式和最终 URL。执行这些项目时，不要在聊天或日志里粘贴密码、验证码、恢复码、API private key 或完整付款/银行信息。
 
@@ -59,13 +59,33 @@ PEEK_BING_SITE_VERIFICATION=bing_token \
   - Price：US$5.99，一次买断
   - Release option：Manual release
 - [ ] DSA / trader status and availability.
-  - 当前默认建议：All Countries or Regions，除非税务、银行、DSA 或地区合规要求排除。
-  - 需要输入/确认：如果包含 EU 地区，完成 DSA trader status 和可公开联系信息；如果不覆盖 EU，调整 availability。
-- [ ] Real App Review contact phone.
-  - 需要输入/确认：App Review 可联系的真实电话。不要提交占位符。
-- [ ] App Review notes.
-  - 已准备：`/tmp/peek-app-store-metadata/app_review_notes.txt`
-  - 需要输入/确认：在 App Store Connect 粘贴后确认内容未被后台格式化破坏。
+  - 2026-06-28 22:05 JST App Information 页面显示当前 developer 已为此 app 标识为 non-trader。
+  - 2026-06-28 22:00 JST App Availability 已设置为 All Countries or Regions / 175 countries or regions。
+  - 需要输入/确认：如果后续要改为 trader 或排除 EU/特定地区，需要在 Business/compliance 页面另行处理。
+- [x] Real App Review contact phone.
+  - 2026-06-28 21:50 JST 已在 App Review contact 中填写用户提供的真实电话。
+- [x] App Review notes.
+  - 2026-06-28 21:50 JST 已将 `/tmp/peek-app-store-metadata/app_review_notes.txt` 粘贴到 App Store Connect。
+  - Sign-in required 已关闭。
+
+## App Store Connect Metadata Status
+
+- [x] Version metadata and build selection.
+  - 2026-06-28 21:50 JST 已填写 English (U.S.) description、keywords、support URL、marketing URL、copyright、review contact、review notes。
+  - 2026-06-28 21:52 JST 已添加并保存 Chinese (Simplified) 与 Japanese version metadata。
+  - 2026-06-28 21:51 JST 已选择 build `1.0 (1)`，Delivery UUID `1381454e-1354-4bf6-9ad9-b89482779afe`。
+  - Release option 已保存为 manual release。
+- [x] App Information.
+  - 2026-06-28 22:03 JST 已填写 English (U.S.)、Chinese (Simplified)、Japanese subtitles。
+  - Category 已保存为 Productivity。
+  - Content Rights 已保存为 yes: app has necessary rights/permission for third-party content accessed through browser functionality.
+  - Age Ratings 已保存；因 Unrestricted Web Access，Apple calculated rating 为 `16+`。
+- [x] App Privacy.
+  - 2026-06-28 21:59 JST Privacy Policy URL 已保存为 `https://kaedeeeeeeeeee.github.io/cornor_assitant/privacy.html`。
+  - Data Collection 已保存并发布为 `Data Not Collected`。
+- [x] Pricing and availability.
+  - 2026-06-28 22:00 JST base country/region 为 United States (USD)，current price 已设置为 `$5.99`，覆盖 175 countries or regions。
+  - Availability 已设置为 All Countries or Regions。
 
 ## Provisioning, Export, And Upload
 
@@ -107,7 +127,10 @@ xcrun altool --build-status \
 
   - 已生成 `/tmp/peek-app-store-screenshots/01-hot-corner-panel-2880x1800.png` 至 `05-pinned-panel-2880x1800.png`，全部为 2880x1800。
   - 2026-06-28 15:45 JST 视觉快检通过：未发现黑图、个人信息、Xcode/终端痕迹或旧名。
-  - 上传前仍需在 App Store Connect 中按最终页面预览做一次人工顺序审校。
+- [ ] Upload App Store screenshots.
+  - 2026-06-28 21:49 JST 尝试用 Chrome browser connector 上传 5 张 PNG，但 `fileChooser.setFiles` 返回 `Not allowed`。
+  - 当前阻塞：Chrome 安全策略不允许我打开 `chrome://extensions` 帮用户切换权限；需要用户手动到 Chrome Extensions 中为 Codex extension 打开 `Allow access to file URLs`，或用户自行上传截图。
+  - 截图上传完成后仍需在 App Store Connect 中按最终页面预览做一次人工顺序审校。
 
 ## Final Store URL
 
