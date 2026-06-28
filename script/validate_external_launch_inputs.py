@@ -55,10 +55,26 @@ def main() -> int:
         if marker not in text:
             errors.append(f"missing marker: {marker!r}")
 
-    checkbox_count = text.count("- [ ]")
-    print(f"external_inputs.checkbox_count: {checkbox_count}")
-    if checkbox_count < 13:
-        errors.append(f"expected at least 13 unchecked input items, found {checkbox_count}")
+    unchecked_count = text.count("- [ ]")
+    checked_count = text.count("- [x]")
+    checklist_count = unchecked_count + checked_count
+    print(f"external_inputs.unchecked_count: {unchecked_count}")
+    print(f"external_inputs.checked_count: {checked_count}")
+    if checklist_count < 13:
+        errors.append(f"expected at least 13 checklist items, found {checklist_count}")
+
+    required_unchecked_items = [
+        "- [ ] Google Search Console sitemap status.",
+        "- [ ] Bing Webmaster Tools.",
+        "- [ ] Paid Apps Agreement, tax, and banking.",
+        "- [ ] `com.shifeng.peek` App Store provisioning profile.",
+        "- [ ] App Store distribution export.",
+        "- [ ] Upload build to App Store Connect.",
+        "- [ ] True Mac App Store URL.",
+    ]
+    for item in required_unchecked_items:
+        if item not in text:
+            errors.append(f"missing required unchecked item: {item}")
 
     for pattern in FORBIDDEN_COPY:
         match = pattern.search(text)

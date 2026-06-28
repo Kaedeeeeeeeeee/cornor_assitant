@@ -1,6 +1,6 @@
 # Corner Peek External Launch Inputs
 
-最后更新：2026-06-28 15:25 JST
+最后更新：2026-06-28 15:46 JST
 
 这个文件只记录代码和本机 CLI 无法安全代办的外部账号、后台表单、真实联系方式和最终 URL。执行这些项目时，不要在聊天或日志里粘贴密码、验证码、恢复码、API private key 或完整付款/银行信息。
 
@@ -72,7 +72,8 @@ PEEK_BING_SITE_VERIFICATION=bing_token \
 - [ ] `com.shifeng.peek` App Store provisioning profile.
   - 当前本机状态：没有 `com.shifeng.peek` App Store profile；同 team 只发现 `Notation Mac App Store (Y4FV6WUU4V.com.shifengzhang.notation)`。Apple Developer Identifier 已创建，可继续创建/刷新 App Store profile。
   - 当前 CLI 阻塞：`No Accounts / no com.shifeng.peek App Store profile`
-  - 需要输入/确认：Xcode 已登录可用 Apple Developer 账号，并创建或刷新 App Store profile。
+  - 当前 Apple Developer 表单状态：已选 `Mac App Store Connect`、App ID `Peek (Y4FV6WUU4V.com.shifeng.peek)`、Distribution certificate `SHIFENG ZHANG (Distribution)`，profile 名称已填 `Corner Peek Mac App Store`。
+  - 需要输入/确认：点击 `Generate` 会在 Apple Developer 账号里创建 profile；执行前需要账号持有人明确确认。
 - [ ] App Store distribution export.
   - 账号/profile 准备好后执行：
 
@@ -86,17 +87,17 @@ PEEK_CHECK_EXPORT=1 PEEK_ALLOW_PROVISIONING_UPDATES=1 ./script/check_external_re
 
 ## Screenshots
 
-- [ ] Screen Recording permission.
-  - 当前 CLI 阻塞：`Screen Recording/window capture permission is not usable`
-  - 需要输入/确认：在可见干净桌面中授予当前终端/Codex 宿主或截图工具 Screen Recording 权限。
-- [ ] Generate App Store screenshots.
+- [x] Screen Recording permission.
+  - 2026-06-28 15:45 JST `PEEK_CHECK_SCREENSHOT=1 PEEK_CHECK_QA_SMOKE=1 ./script/check_external_readiness.py` 已确认截图权限可用。
+- [x] Generate App Store screenshots.
 
 ```bash
 ./script/capture_app_store_screenshot.sh
 ```
 
-  - 成功时应生成 `/tmp/peek-app-store-screenshots/01-hot-corner-panel-2880x1800.png` 至 `05-pinned-panel-2880x1800.png`。
-  - 上传前同时按 `CornerAssistantApp/docs/Manual-QA-Checklist.md` 做截图内容审校。
+  - 已生成 `/tmp/peek-app-store-screenshots/01-hot-corner-panel-2880x1800.png` 至 `05-pinned-panel-2880x1800.png`，全部为 2880x1800。
+  - 2026-06-28 15:45 JST 视觉快检通过：未发现黑图、个人信息、Xcode/终端痕迹或旧名。
+  - 上传前仍需在 App Store Connect 中按最终页面预览做一次人工顺序审校。
 
 ## Final Store URL
 

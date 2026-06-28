@@ -1,6 +1,6 @@
 # Corner Peek 上线准备计划
 
-最后更新：2026-06-28 15:25 JST
+最后更新：2026-06-28 15:46 JST
 
 这个文档是 Corner Peek 从当前本地项目走到公开 landing page 和 Mac App Store 首发的工作台。后续执行、验收、补漏都以这里为准；如果产品、定价、域名、隐私口径或 App Store 配置发生变化，先更新本文件，再改代码或页面。
 
@@ -611,6 +611,12 @@
   - Bing Webmaster Tools 当前仍是未登录公开介绍页，显示 `Sign In` / `Get started`。
   - App Store Connect 当前仍停在 Apple Account 邮箱/密码登录页，URL 为 `https://appstoreconnect.apple.com/login?targetUrl=%2Fapps&authResult=FAILED`。
   - `PEEK_CHECK_QA_SMOKE=1 ./script/check_external_readiness.py` 单独顺序复跑通过，结果为 `{"manual": 4, "ok": 14, "skipped": 2}`；不要把截图 readiness 和 QA smoke 作为并行进程同时运行，否则两个检查都会启动 Debug Corner Peek 并干扰窗口判定。
+- 2026-06-28 15:45 JST 发布资产复查：
+  - App Store Connect app record 已存在：`Corner Peek` / app id `6785167787`。
+  - Apple Developer profile 创建表单已准备好：类型 `Mac App Store Connect`，App ID `Peek (Y4FV6WUU4V.com.shifeng.peek)`，证书 `SHIFENG ZHANG (Distribution)`，名称 `Corner Peek Mac App Store`；下一步点击 `Generate` 前需要账号持有人确认。
+  - `/tmp/peek-appstore/Corner Peek.xcarchive` 已复核：`com.shifeng.peek`、`1.0 (1)`、universal `x86_64` + `arm64`、`LSMinimumSystemVersion = 15.0`、`public.app-category.productivity`、`ITSAppUsesNonExemptEncryption = false`、PrivacyInfo 无 collected data、entitlements 为 App Sandbox/network client/audio input。
+  - `/tmp/peek-app-store-metadata` 已按当前文档重新导出并通过 `./script/validate_app_store_metadata_export.py`。
+  - `PEEK_CHECK_SCREENSHOT=1 PEEK_CHECK_QA_SMOKE=1 ./script/check_external_readiness.py` 通过截图和 QA 扩展检查，结果为 `{"manual": 4, "ok": 15, "skipped": 1}`；已生成 5 张 2880x1800 App Store 候选截图到 `/tmp/peek-app-store-screenshots`。
 
 ## 2. 首发完成定义
 
@@ -1074,10 +1080,10 @@ xcodebuild archive \
 
 - [ ] UI test runner 在当前 macOS 会话被系统认证状态阻塞，需要在干净用户会话或手动关闭系统认证提示后重跑。
   - 2026-06-28 05:10 JST 单独运行 UI launch test 仍失败：`Authentication canceled. System authentication is running.`
-- [ ] App Store 截图在当前 Codex/shell 会话被 Screen Recording/可见桌面状态阻塞；自动截图得到黑图，不能提交。
-  - 2026-06-28 05:10 JST `PEEK_CHECK_SCREENSHOT=1 ./script/check_external_readiness.py` 仍显示 `Screen Recording/window capture permission is not usable`。
-  - 可复跑命令：`./script/capture_app_store_screenshot.sh`
-  - 脚本成功时应生成 `/tmp/peek-app-store-screenshots/01-hot-corner-panel-2880x1800.png` 至 `05-pinned-panel-2880x1800.png`。
+- [x] App Store 截图候选图已在当前 Codex/shell 会话生成。
+  - 2026-06-28 15:45 JST `PEEK_CHECK_SCREENSHOT=1 PEEK_CHECK_QA_SMOKE=1 ./script/check_external_readiness.py` 通过截图权限和 QA smoke 检查。
+  - 已生成 `/tmp/peek-app-store-screenshots/01-hot-corner-panel-2880x1800.png` 至 `05-pinned-panel-2880x1800.png`，全部为 2880x1800。
+  - 视觉快检通过；上传前仍需在 App Store Connect 截图排序页面做最终人工审校。
 
 必须覆盖：
 
@@ -1209,8 +1215,9 @@ curl -I https://kaedeeeeeeeeee.github.io/cornor_assitant/sitemap.xml
 - [ ] `com.shifeng.peek` App Store provisioning profile。
   - 2026-06-28 05:37 JST 本机仅发现同 team 的 `Notation` App Store profile，未发现 `com.shifeng.peek` profile。
   - 2026-06-28 13:00 JST Identifier 已存在，可继续创建/刷新 App Store profile。
+  - 2026-06-28 15:45 JST Apple Developer profile 创建表单已填好并停在 `Generate` 前；等待账号持有人确认生成。
 - [x] App Store SKU 最终确认：`corner-peek-macos-001`。
-- [ ] App Store 截图素材。
+- [x] App Store 截图候选素材。
 - [ ] App Review 真实联系电话。
 - [ ] 如果包含 EU 地区：DSA trader status 和可公开联系信息。
 - [ ] App Review release mode；建议首发使用 Manual release。
