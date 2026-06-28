@@ -158,8 +158,9 @@ final class LaunchReadinessTests: XCTestCase {
     func testAppTargetBuildSettingsMatchStoreLaunchPlan() throws {
         let project = try projectFileContents()
         XCTAssertEqual(project.count(of: "PRODUCT_BUNDLE_IDENTIFIER = com.shifeng.peek;"), 2)
-        XCTAssertEqual(project.count(of: "PRODUCT_NAME = Peek;"), 2)
-        XCTAssertEqual(project.count(of: "INFOPLIST_KEY_CFBundleDisplayName = Peek;"), 2)
+        XCTAssertEqual(project.count(of: "PRODUCT_NAME = \"Corner Peek\";"), 2)
+        XCTAssertEqual(project.count(of: "PRODUCT_MODULE_NAME = Peek;"), 2)
+        XCTAssertEqual(project.count(of: "INFOPLIST_KEY_CFBundleDisplayName = \"Corner Peek\";"), 2)
         XCTAssertEqual(project.count(of: "ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;"), 2)
         XCTAssertEqual(project.count(of: "INFOPLIST_KEY_LSApplicationCategoryType = \"public.app-category.productivity\";"), 2)
         XCTAssertEqual(project.count(of: "MARKETING_VERSION = 1.0;"), 6)

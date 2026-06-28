@@ -1,14 +1,14 @@
-# Peek 上线准备计划
+# Corner Peek 上线准备计划
 
-最后更新：2026-06-28 05:45 JST
+最后更新：2026-06-28 15:25 JST
 
-这个文档是 Peek 从当前本地项目走到公开 landing page 和 Mac App Store 首发的工作台。后续执行、验收、补漏都以这里为准；如果产品、定价、域名、隐私口径或 App Store 配置发生变化，先更新本文件，再改代码或页面。
+这个文档是 Corner Peek 从当前本地项目走到公开 landing page 和 Mac App Store 首发的工作台。后续执行、验收、补漏都以这里为准；如果产品、定价、域名、隐私口径或 App Store 配置发生变化，先更新本文件，再改代码或页面。
 
 ## 0. 已确认决策
 
 | 项目 | 决策 |
 | --- | --- |
-| App 名称 | Peek |
+| App 名称 | Corner Peek |
 | 发布者/版权名 | Zhang Shifeng |
 | Bundle ID | `com.shifeng.peek` |
 | 首发系统要求 | macOS 15.0 或更高版本 |
@@ -26,7 +26,7 @@
 ## 1. 当前事实基线
 
 - 当前项目是 macOS SwiftUI/AppKit/WebKit 应用，Xcode 工程位于 `CornerAssistantApp/CornerAssistantApp.xcodeproj`。
-- 当前 app 产品名为 Peek，包名工程仍保留 `CornerAssistantApp` 命名。
+- 当前 app 产品名为 Corner Peek，包名工程仍保留 `CornerAssistantApp` 命名。
 - `SlidePanelView.swift` 当前直接使用 `GoogleSearchProvider()`；未使用的 `BingSearchProvider.swift` 已移除，Release archive 会检查 Bing provider/endpoint 字符串不得进入二进制。
 - 当前代码没有系统选中文字读取逻辑；不能在 landing 或 App Store 文案中宣传 selected text search。未使用的 OCR history 残留已移除，Release archive 会检查 OCR history 字符串不得进入二进制。
 - Landing 源设计来自 `/Users/user/Downloads/项目 Landing Page 设计.zip`，其中 `.dc.html` 是设计稿，不是生产站点。
@@ -51,7 +51,7 @@
 - Xcode Release build 通过：
   - `xcodebuild -project CornerAssistantApp.xcodeproj -scheme CornerAssistantApp -configuration Release -destination 'platform=macOS' build`
 - Build 产物确认：
-  - `CFBundleDisplayName = Peek`
+  - `CFBundleDisplayName = Corner Peek`
   - `CFBundleIdentifier = com.shifeng.peek`
   - `CFBundleShortVersionString = 1.0`
   - `CFBundleVersion = 1`
@@ -68,11 +68,11 @@
   - 保留 App Sandbox、network client、audio input。
 - Info.plist 已更新：
   - `NSHumanReadableCopyright = Copyright 2026 Zhang Shifeng`
-  - `NSMicrophoneUsageDescription = Websites opened in Peek may request microphone access for features such as calls or voice input.`
+  - `NSMicrophoneUsageDescription = Websites opened in Corner Peek may request microphone access for features such as calls or voice input.`
 - App Store 上架材料已重写：`CornerAssistantApp/docs/AppStore-Materials.md`。
 - App Category 已设置为 `public.app-category.productivity`，避免 Xcode archive validation warning。
 - 已新增 App Store export 配置：`CornerAssistantApp/export_options_app_store.plist`。
-- App Store archive 已生成到 `/tmp/peek-appstore/Peek.xcarchive`。
+- App Store archive 已生成到 `/tmp/peek-appstore/Corner Peek.xcarchive`。
 - Archive 产物确认：
   - universal: `x86_64` + `arm64`
   - bundle id: `com.shifeng.peek`
@@ -85,7 +85,7 @@
 当前发现的发布门槛：
 
 - 本地 Release build 仍使用 `Apple Development` 签名，entitlements 里有 `com.apple.security.get-task-allow = true`；这个产物不能直接提交 App Store Connect，必须用 App Store distribution archive/export 重新签名。
-- `/tmp/peek-appstore/Peek.xcarchive` 里的 archive app 已确认不含 `get-task-allow`，但 archive metadata 仍显示自动签名使用 `Apple Development`；最终提交物仍必须通过 App Store export/Organizer 重新签为 distribution。
+- `/tmp/peek-appstore/Corner Peek.xcarchive` 里的 archive app 已确认不含 `get-task-allow`，但 archive metadata 仍显示自动签名使用 `Apple Development`；最终提交物仍必须通过 App Store export/Organizer 重新签为 distribution。
 - 当前保留 `audio-input`，用于内置 WebKit 页面可能请求的网页通话或语音输入；隐私页和 Info.plist 已同步说明。
 - App Store export 已尝试，但失败：
   - `error: exportArchive Unable to process request - PLA Update available`
@@ -104,8 +104,8 @@
   - `error: exportArchive No profiles for 'com.shifeng.peek' were found`
 - 2026-06-28 13:00 JST Apple Developer 后台状态更新：
   - 已接受最新 Apple Developer Program License Agreement；App Store Connect apps 列表不再显示协议更新横幅。
-  - 已在 Certificates, Identifiers & Profiles 注册 `Peek` / `com.shifeng.peek`，App ID Prefix 为 `Y4FV6WUU4V`。
-  - 仍未创建 App Store Connect app record；New App 表单已打开并开始填写，但屏幕/窗口捕获变为不可可靠核对后已停止，未点击 `Create`。
+  - 已在 Certificates, Identifiers & Profiles 注册 `Corner Peek` / `com.shifeng.peek`，App ID Prefix 为 `Y4FV6WUU4V`。
+  - 2026-06-28 15:25 JST 已创建 `Corner Peek` App Store Connect app record，app id 为 `6785167787`。
   - 仍需要创建/刷新 `com.shifeng.peek` 的 App Store provisioning profile，并让 Xcode/CLI 获得可用账号状态。
 
 2026-06-27 源码发布风险收口：
@@ -124,13 +124,13 @@
   - `ProgramArguments`
 - 清理后再次验证：
   - Release build 成功。
-  - Archive 成功生成到 `/tmp/peek-appstore/Peek.xcarchive`。
+  - Archive 成功生成到 `/tmp/peek-appstore/Corner Peek.xcarchive`。
   - Archive Info.plist、entitlements、`PrivacyInfo.xcprivacy` 均已从归档产物中复核。
 
 2026-06-27 自动化测试收口：
 
 - 已新增 shared Xcode scheme：`CornerAssistantApp.xcodeproj/xcshareddata/xcschemes/CornerAssistantApp.xcscheme`。
-- 已修复 `CornerAssistantAppTests` 的 `TEST_HOST`，从旧的 `CornerAssistantApp.app/CornerAssistantApp` 改为实际产物 `Peek.app/Peek`。
+- 已修复 `CornerAssistantAppTests` 的 `TEST_HOST`，从旧的 `CornerAssistantApp.app/CornerAssistantApp` 改为实际产物 `Corner Peek.app/Corner Peek`。
 - 已新增 unit tests：
   - `CornerAssistantAppTests/SearchProviderTests.swift`
   - `CornerAssistantAppTests/PinnedSiteTests.swift`
@@ -150,8 +150,8 @@
   - `.codex/environments/environment.toml`
 - `script/build_and_run.sh --verify` 已验证通过：
   - 构建 `CornerAssistantApp.xcodeproj`。
-  - 启动 `DerivedData/PeekRun/Build/Products/Debug/Peek.app`。
-  - 确认 `Peek` 进程存在。
+  - 启动 `DerivedData/CornerPeekRun/Build/Products/Debug/Corner Peek.app`。
+  - 确认 `Corner Peek` 进程存在。
 - 已新增 Debug-only 面板控制通知：
   - `com.shifeng.peek.debug.panelCommand`
   - 支持 `expand`、`collapse`、`toggle`。
@@ -159,7 +159,7 @@
 - 已新增 `script/qa_smoke.sh` 并验证通过：
   - 启动 Debug app。
   - 发送 debug `expand` 命令。
-  - 从 Window Server 确认真实 Peek 面板窗口可见。
+  - 从 Window Server 确认真实 Corner Peek 面板窗口可见。
   - 最近一次输出：`window id=8359 layer=3 bounds=["Y": 281, "Height": 750, "Width": 528, "X": 0]`。
 - 自动截图尝试结果：
   - `screencapture` 产物为全黑图。
@@ -168,7 +168,7 @@
 - Debug-only 面板命令加入后已重新验证：
   - Release build 成功。
   - `xcodebuild ... -skip-testing:CornerAssistantAppUITests test` 成功。
-  - Release archive 成功生成到 `/tmp/peek-appstore/Peek.xcarchive`。
+  - Release archive 成功生成到 `/tmp/peek-appstore/Corner Peek.xcarchive`。
   - Archive Info.plist、entitlements、`PrivacyInfo.xcprivacy` 均通过复核。
   - Release archive 可执行文件中未包含 `com.shifeng.peek.debug.panelCommand`。
 
@@ -217,7 +217,7 @@
   - App icon 和页面图片加载正常。
   - `robots.txt`、`sitemap.xml`、`site.webmanifest`、`assets/social-preview.png` 可访问。
   - 无浏览器 console error。
-- Atlas 浏览器也已打开 `http://127.0.0.1:4173/` 验证：当前页面 `title = Peek - A Lightweight Browser from the macOS Screen Edge`，`lang = en`，`h1 = Out of sight. Right when you need it.`，图片正常，无横向溢出。
+- Atlas 浏览器也已打开 `http://127.0.0.1:4173/` 验证：当前页面 `title = Corner Peek - A Lightweight Browser from the macOS Screen Edge`，`lang = en`，`h1 = Out of sight. Right when you need it.`，图片正常，无横向溢出。
 
 2026-06-28 截图采集脚本收口：
 
@@ -225,22 +225,22 @@
 - 脚本默认输出到 `/tmp/peek-app-store-screenshots`，避免未审校截图直接进入仓库；需要保存到项目内时可设置 `OUT_DIR=CornerAssistantApp/docs/app-store-screenshots`。
 - 脚本会：
   - 启动 Debug app。
-  - 通过 Debug-only 通知展开真实 Peek 面板。
-  - 从 Window Server 定位 Peek 面板窗口。
+  - 通过 Debug-only 通知展开真实 Corner Peek 面板。
+  - 从 Window Server 定位 Corner Peek 面板窗口。
   - 用 `screencapture -l` 按窗口 ID 捕获。
   - 自动拒绝黑图/空图。
   - 生成 2880x1800 的 16:10 App Store 候选图。
 - 2026-06-28 在当前 Codex/shell 会话运行结果：
-  - 成功定位 Peek 面板窗口：`window id=8433 bounds=0,281 528x750`。
+  - 成功定位 Corner Peek 面板窗口：`window id=8433 bounds=0,281 528x750`。
   - 截图阶段失败：`could not create image from window`。
   - 结论：脚本可复跑，但当前会话仍缺少可用 Screen Recording/可见桌面截图能力；需要在已授权的可见桌面会话中重跑。
 - 2026-06-28 01:26 JST 再次执行 `./script/capture_app_store_screenshot.sh`：
-  - 成功定位 Peek 面板窗口：`window id=8513 bounds=0,281 528x750`。
+  - 成功定位 Corner Peek 面板窗口：`window id=8513 bounds=0,281 528x750`。
   - 截图阶段仍失败：`could not create image from window`。
   - 脚本提示需要给终端/Codex 宿主授予 Screen Recording 权限后重试。
 - 2026-06-28 01:34 JST 已给 `script/capture_app_store_screenshot.sh` 增加 full-screen crop fallback：
   - 先尝试 `screencapture -x -l <window-id>`。
-  - 如果窗口截图失败，则执行 `screencapture -x` 全屏截图，并按 Window Server 定位到的 Peek 窗口坐标裁剪。
+  - 如果窗口截图失败，则执行 `screencapture -x` 全屏截图，并按 Window Server 定位到的 Corner Peek 窗口坐标裁剪。
   - 当前会话复跑结果：窗口定位成功，fallback 生成 `peek-full-screen.png` 并裁剪出 `peek-panel-window.png`，但裁剪图仍被验证器判定为 blank/black。
   - 结论：脚本 fallback 已覆盖窗口级截图不稳定场景；当前仍缺 Screen Recording/可见桌面权限，不能产出可提交截图。
 - 2026-06-28 02:50 JST 已把 `script/capture_app_store_screenshot.sh` 扩展为首发 5 张套件：
@@ -302,7 +302,7 @@
   - `PrivacyInfo.xcprivacy` 只声明 UserDefaults required-reason API，reason 为 `CA92.1`。
   - `PrivacyInfo.xcprivacy` 中 `NSPrivacyTracking = false`，`NSPrivacyTrackingDomains = []`，`NSPrivacyCollectedDataTypes = []`。
   - Xcode Debug/Release build settings 中 sandbox、network client、audio input、incoming network、camera、location、user-selected files、JIT 和 export compliance 口径保持一致。
-  - `NSMicrophoneUsageDescription` 与隐私文案一致：只有网站可能请求麦克风，Peek 本身不录音。
+  - `NSMicrophoneUsageDescription` 与隐私文案一致：只有网站可能请求麦克风，Corner Peek 本身不录音。
   - `CornerAssistantApp/docs/AppStore-Materials.md` 中 App Privacy、Age Rating、Export Compliance、support email、macOS 15.0+ 和 App 内无 analytics SDK 的首发口径存在。
   - Landing privacy 文案中官网 analytics 明确限定为公开官网，不嵌入 macOS App。
 - `script/launch_verify.sh` 已纳入该校验。
@@ -317,8 +317,8 @@
   - `CornerAssistantAppTests/SuggestionStoreTests.swift`
   - `CornerAssistantAppTests/WebViewStoreTests.swift`
 - `script/qa_smoke.sh` 已扩展：
-  - 启动 Debug app 后先用 System Events 验证 Peek status item 存在于菜单栏 accessibility tree。
-  - 启动后用 Window Server 验证默认没有可见 Peek 面板窗口。
+  - 启动 Debug app 后先用 System Events 验证 Corner Peek status item 存在于菜单栏 accessibility tree。
+  - 启动后用 Window Server 验证默认没有可见 Corner Peek 面板窗口。
   - 再用 Debug-only 通知逐个验证四个 hot corner 的真实面板窗口位置。
 - 新增覆盖：
   - 首发三语言解析：`en`、`zh-Hans`、`ja`。
@@ -350,10 +350,10 @@
   - 当前 `CornerAssistantAppTests` 共 52 个 `func test...`。
 - `script/qa_smoke.sh` 已重新验证通过：
   - 当前 smoke 会先验证菜单栏 status item 存在。
-  - 当前 smoke 会确认启动后默认没有可见 Peek 面板窗口。
-  - 当前 smoke 会逐个切换 Debug-only hot corner 命令并验证真实 Peek 面板窗口位于对应屏幕边角。
+  - 当前 smoke 会确认启动后默认没有可见 Corner Peek 面板窗口。
+  - 当前 smoke 会逐个切换 Debug-only hot corner 命令并验证真实 Corner Peek 面板窗口位于对应屏幕边角。
   - 最近一次输出：
-    - `status_item=title= description=Peek x:1523 y:4 w:24 h:24`
+    - `status_item=title= description=Corner Peek x:1523 y:4 w:24 h:24`
     - `panel_hidden=true`
     - `corner=bottomLeft window id=8591 layer=3 bounds=x:0 y:281 width:528 height:750`
     - `corner=bottomRight window id=8591 layer=3 bounds=x:1186 y:271 width:528 height:750`
@@ -371,7 +371,7 @@
 - 2026-06-28 02:04 JST 再次执行 `script/qa_smoke.sh` 和 `./script/launch_verify.sh`，均通过。
 - 2026-06-28 02:06 JST 再次执行 `script/qa_smoke.sh`，通过。
 - 2026-06-28 03:13 JST 再次执行 `script/qa_smoke.sh`，通过：
-  - `status_item=title= description=Peek x:1523 y:4 w:24 h:24`
+  - `status_item=title= description=Corner Peek x:1523 y:4 w:24 h:24`
   - `panel_hidden=true`
   - `corner=bottomLeft window id=8754 layer=3 bounds=x:0 y:281 width:528 height:750`
   - `corner=bottomRight window id=8754 layer=3 bounds=x:1186 y:271 width:528 height:750`
@@ -396,7 +396,7 @@
 - 已验证 Release build 成功。
 - 已验证 unit tests 成功：
   - `xcodebuild -project CornerAssistantApp.xcodeproj -scheme CornerAssistantApp -destination 'platform=macOS' -skip-testing:CornerAssistantAppUITests test`
-- 已重新生成 `/tmp/peek-appstore/Peek.xcarchive`。
+- 已重新生成 `/tmp/peek-appstore/Corner Peek.xcarchive`。
 - Archive Info.plist 已确认：
   - `ITSAppUsesNonExemptEncryption = false`
 - App Store Connect Export Compliance 建议按“不使用非豁免加密”填写；如果后续加入自研加密、VPN、端到端加密、密码管理、加密消息、加密文件存储或第三方加密库，必须重新评估。
@@ -407,8 +407,8 @@
 
 - GitHub Pages 已通过 GitHub REST API 启用为 workflow 模式。
 - Pages HTTPS enforced。
-- 已提交并推送 commit：`fff1270 launch: prepare Peek landing and App Store release`。
-- GitHub Actions workflow `Deploy Peek landing page` 成功：
+- 已提交并推送 commit：`fff1270 launch: prepare Corner Peek landing and App Store release`。
+- GitHub Actions workflow `Deploy Corner Peek landing page` 成功：
   - Run ID: `28291446993`
 - 公网 URL 已验证：
   - `https://kaedeeeeeeeeee.github.io/cornor_assitant/` -> 200
@@ -428,7 +428,7 @@
 2026-06-27 对比度修复后重新部署：
 
 - 已提交并推送 commit：`d19795d fix: improve landing page contrast`。
-- GitHub Actions workflow `Deploy Peek landing page` 成功：
+- GitHub Actions workflow `Deploy Corner Peek landing page` 成功：
   - Run ID: `28291958776`
 - 公网 CSS 已确认更新：
   - `--accent: #0064d2`
@@ -444,7 +444,7 @@
 2026-06-27 Landing analytics 配置收口：
 
 - 已提交并推送 commit：`f8f6643 build: allow pages analytics configuration`。
-- GitHub Actions workflow `Deploy Peek landing page` 成功：
+- GitHub Actions workflow `Deploy Corner Peek landing page` 成功：
   - Run ID: `28292355748`
 - 已新增 `CornerAssistantApp/landing-page/analytics-config.js`，默认不启用 analytics。
 - 已更新 GitHub Pages workflow：部署时会读取 GitHub repository variable `PEEK_GA_MEASUREMENT_ID`。
@@ -486,11 +486,11 @@
 - 2026-06-28 04:01 JST 已移除未使用的 `BingSearchProvider.swift`，并在 `script/launch_verify.sh` 增加 Release archive guard：
   - `SKIP_NETWORK=1 ./script/launch_verify.sh` 通过。
   - `./script/qa_smoke.sh` 通过。
-  - `/tmp/peek-appstore/Peek.xcarchive/Products/Applications/Peek.app/Contents/MacOS/Peek` 未命中 `BingSearchProvider`、`bing.com` 或 `api.bing` 字符串。
+  - `/tmp/peek-appstore/Corner Peek.xcarchive/Products/Applications/Corner Peek.app/Contents/MacOS/Corner Peek` 未命中 `BingSearchProvider`、`bing.com` 或 `api.bing` 字符串。
 - 2026-06-28 04:05 JST 已移除未使用的 `OCRHistoryManager.swift`，并在 `script/launch_verify.sh` 增加 Release archive guard：
   - `SKIP_NETWORK=1 ./script/launch_verify.sh` 通过。
   - Release archive 会拒绝 `OCRHistoryManager`、`OCRHistoryItem` 或 `OCRHistory` 字符串。
-  - `/tmp/peek-appstore/Peek.xcarchive/Products/Applications/Peek.app/Contents/MacOS/Peek` 未命中 `OCRHistoryManager`、`OCRHistoryItem`、`OCRHistory`、`BingSearchProvider`、`bing.com` 或 `api.bing` 字符串。
+  - `/tmp/peek-appstore/Corner Peek.xcarchive/Products/Applications/Corner Peek.app/Contents/MacOS/Corner Peek` 未命中 `OCRHistoryManager`、`OCRHistoryItem`、`OCRHistory`、`BingSearchProvider`、`bing.com` 或 `api.bing` 字符串。
 - 2026-06-28 04:08 JST 已新增 `script/validate_release_archive_strings.py`，并将 Release archive 字符串检查从 `launch_verify.sh` 的 inline grep 收口为独立校验：
   - `SKIP_NETWORK=1 ./script/launch_verify.sh` 通过。
   - 校验 executable 不含 Debug-only panel command、Debug hot corner/scenario command、Bing provider/endpoint、OCR history 残留。
@@ -603,14 +603,14 @@
   - `script/check_external_readiness.py` 现在默认只读检查 Apple Distribution identity 和本机 provisioning profile。
   - 当前本机已安装 `Apple Distribution` identity for team `Y4FV6WUU4V`。
   - 当前本机没有 `com.shifeng.peek` 的 App Store provisioning profile；同 team 下只发现 `Notation Mac App Store (Y4FV6WUU4V.com.shifengzhang.notation)`。
-  - 默认 readiness 当前为 `{"manual": 4, "ok": 13, "skipped": 3}`；新增 manual 项是缺少 Peek App Store profile。
+  - 默认 readiness 当前为 `{"manual": 4, "ok": 13, "skipped": 3}`；新增 manual 项是缺少 Corner Peek App Store profile。
 - 2026-06-28 05:45 JST 浏览器和外部 readiness 复查：
   - 内置浏览器可读 Google Search Console：`/sitemap.xml` 行仍显示类型 `不明`、提交日期 `2026/06/28`、状态 `取得できませんでした`、发现页面数 `0`；详情页显示 `サイトマップを読み込めませんでした`。
   - 公网 `sitemap.xml` 当前仍为 HTTP 200，`content-type: application/xml`，默认 UA、Googlebot UA、Bingbot UA 均能解析到 3 个预期 URL。
   - Google Analytics 仍可读账号 `ZHANG SHIFENG` / 属性 `とりあえずこの名前使う`，页面提示 `データ ストリームが見つかりませんでした`，没有 `G-...` Measurement ID；创建 Web data stream 属于后台写操作，需 action-time 确认或用户自行创建。
   - Bing Webmaster Tools 当前仍是未登录公开介绍页，显示 `Sign In` / `Get started`。
   - App Store Connect 当前仍停在 Apple Account 邮箱/密码登录页，URL 为 `https://appstoreconnect.apple.com/login?targetUrl=%2Fapps&authResult=FAILED`。
-  - `PEEK_CHECK_QA_SMOKE=1 ./script/check_external_readiness.py` 单独顺序复跑通过，结果为 `{"manual": 4, "ok": 14, "skipped": 2}`；不要把截图 readiness 和 QA smoke 作为并行进程同时运行，否则两个检查都会启动 Debug Peek 并干扰窗口判定。
+  - `PEEK_CHECK_QA_SMOKE=1 ./script/check_external_readiness.py` 单独顺序复跑通过，结果为 `{"manual": 4, "ok": 14, "skipped": 2}`；不要把截图 readiness 和 QA smoke 作为并行进程同时运行，否则两个检查都会启动 Debug Corner Peek 并干扰窗口判定。
 
 ## 2. 首发完成定义
 
@@ -652,7 +652,7 @@
 - [x] 增加 landing-only analytics loader。
 - [ ] 配置真实 GA4 Measurement ID。
   - 当前 loader 已就绪，但默认不加载任何 analytics。
-  - 拿到 ID 后用 `script/configure_landing_variables.sh` 设置 GitHub repository variable `PEEK_GA_MEASUREMENT_ID`，然后手动 rerun `Deploy Peek landing page` workflow 或加 `--rerun-pages`。
+  - 拿到 ID 后用 `script/configure_landing_variables.sh` 设置 GitHub repository variable `PEEK_GA_MEASUREMENT_ID`，然后手动 rerun `Deploy Corner Peek landing page` workflow 或加 `--rerun-pages`。
   - 2026-06-28 01:24 JST 通过 GitHub API 复查：repository actions variables 为空，`PEEK_GA_MEASUREMENT_ID` 仍未设置。
   - 2026-06-28 04:58 JST Google Analytics 只读复查：当前账号 `ZHANG SHIFENG`、属性 `とりあえずこの名前使う` 已存在，但没有 data stream；创建 Web data stream 后才能得到 `G-...` Measurement ID。创建 data stream 会改动 Google Analytics 账号配置，需行动前确认。
 - [x] 增加 GitHub Pages Actions workflow。
@@ -847,12 +847,12 @@ PEEK_BING_SITE_VERIFICATION=... \
   - App Review Information。
   - EU DSA / Trader Status 准备项。
 - 年龄分级关键口径：
-  - Peek 是 browser-like WebKit app，用户可以输入 URL、搜索或打开固定网站。
+  - Corner Peek 是 browser-like WebKit app，用户可以输入 URL、搜索或打开固定网站。
   - `Unrestricted Web Access` 必须按真实能力填写 `Yes`。
   - App 本身不内置暴力、色情、赌博、医疗、UGC、广告或原生聊天内容。
   - 最终年龄分级由 App Store Connect 根据问卷自动计算；不要在公开文案里承诺更低年龄分级。
 - 内容权利关键口径：
-  - Peek 不打包、镜像、缓存或再分发第三方内容。
+  - Corner Peek 不打包、镜像、缓存或再分发第三方内容。
   - 第三方网页只在用户主动输入 URL、搜索、点击结果或打开固定网站时访问。
   - App 自带素材、icon、landing 文案和截图应确保归开发者所有或已授权。
 
@@ -860,10 +860,10 @@ PEEK_BING_SITE_VERIFICATION=... \
 - [ ] Paid Apps Agreement 已签署。
 - [ ] Apple Developer Program License Agreement 更新已接受。
 - [ ] 税务和银行信息已配置，否则 US$5.99 付费销售无法上线。
-- [ ] 创建 macOS App 记录：
-  - Name: Peek
+- [x] 创建 macOS App 记录：
+  - Name: Corner Peek
   - Bundle ID: `com.shifeng.peek`
-  - SKU: 建议 `peek-macos-001`
+  - SKU: `corner-peek-macos-001`
   - Primary language: English (U.S.)。
 - [ ] 设置价格和销售区域：
   - Price: US$5.99 对应 Apple 价格层级。
@@ -930,13 +930,13 @@ PEEK_BING_SITE_VERIFICATION=... \
 - 不出现开发工具、测试数据、个人隐私信息。
 - 不展示未实现功能。
 - 尽量覆盖中文、英文或日文中的至少一种主语言；如果 App Store Connect 支持本地化截图，后续再补全三语。
-- 当前机器已有 `/Applications/Peek.app` 运行；为避免干扰用户当前桌面，本次没有自动控制该实例采集截图。
+- 当前机器已有 `/Applications/Corner Peek.app` 运行；为避免干扰用户当前桌面，本次没有自动控制该实例采集截图。
 - 当前自动化会话已能用 `script/qa_smoke.sh` 展开真实 Debug 面板，但 `screencapture` 在该会话下只能得到黑图，不能作为 App Store 截图素材。
 - 已新增 `script/capture_app_store_screenshot.sh` 作为可复跑截图入口；脚本支持窗口截图和 full-screen crop fallback，并会生成 5 张 2880x1800 首发候选图。当前会话运行到截图验证阶段仍被 Screen Recording/可见桌面权限阻塞。
 - 建议截图采集方式：
   - 在可见干净桌面中授予当前终端/Codex 宿主 Screen Recording 权限。
   - 先运行 `./script/capture_app_store_screenshot.sh` 采集 Debug 面板候选图；脚本会拒绝黑图并生成 5 张 2880x1800 PNG。
-  - 如果需要严格使用 distribution build，再使用 `/tmp/peek-appstore/Peek.xcarchive/Products/Applications/Peek.app` 或最终 exported app 手动采集。
+  - 如果需要严格使用 distribution build，再使用 `/tmp/peek-appstore/Corner Peek.xcarchive/Products/Applications/Corner Peek.app` 或最终 exported app 手动采集。
   - 在干净桌面/测试用户中打开 app。
   - 用菜单栏图标或热角展示面板。
   - 只截取 app 窗口或经过清理的完整桌面。
@@ -953,7 +953,7 @@ PEEK_BING_SITE_VERIFICATION=... \
   - `CURRENT_PROJECT_VERSION` 每次上传递增。
 - [x] 确认 bundle metadata：
   - Bundle ID: `com.shifeng.peek`
-  - Display name: `Peek`
+  - Display name: `Corner Peek`
   - Minimum macOS version: 15.0
   - Copyright: `© 2026 Zhang Shifeng`
   - `ITSAppUsesNonExemptEncryption = false`
@@ -965,10 +965,10 @@ PEEK_BING_SITE_VERIFICATION=... \
 - [ ] 确认最终 App Store exported app 没有 `com.apple.security.get-task-allow`。
   - `script/check_external_readiness.py` 已扩展：App Store export 成功后会定位 exported `.app`，验证 bundle metadata、`PrivacyInfo.xcprivacy`、sandbox/network/audio entitlements，并拒绝 `com.apple.security.get-task-allow`。
 - [x] 确认 `PrivacyInfo.xcprivacy` 已加入 target 并打包进 app。
-- [x] 确认 app icon 和 bundle icon 使用真实 Peek icon。
+- [x] 确认 app icon 和 bundle icon 使用真实 Corner Peek icon。
   - 自动覆盖：`script/validate_app_icons.py` 验证 AppIcon 全尺寸 PNG、landing icon、manifest icon 声明、social preview 尺寸和 landing 页面 icon/social image 引用。
 - [x] 确认 menu bar icon 在真实运行环境中显示正常。
-  - `script/qa_smoke.sh` 已用 System Events 验证 Peek status item 存在于菜单栏 accessibility tree。
+  - `script/qa_smoke.sh` 已用 System Events 验证 Corner Peek status item 存在于菜单栏 accessibility tree。
 - [x] 设置 App category：
   - `public.app-category.productivity`
 - [x] 运行 Release build：
@@ -990,7 +990,7 @@ xcodebuild archive \
   -scheme CornerAssistantApp \
   -configuration Release \
   -destination 'generic/platform=macOS' \
-  -archivePath /tmp/peek-appstore/Peek.xcarchive \
+  -archivePath /tmp/peek-appstore/Corner Peek.xcarchive \
   -allowProvisioningUpdates
 ```
 
@@ -1026,8 +1026,8 @@ xcodebuild archive \
 
 已自动覆盖：
 
-- [x] `script/build_and_run.sh --verify`：构建并启动 Debug `Peek.app`，确认进程存在。
-- [x] `script/qa_smoke.sh`：通过 Debug-only 通知展开真实面板，确认 Window Server 中存在 Peek 面板窗口。
+- [x] `script/build_and_run.sh --verify`：构建并启动 Debug `Corner Peek.app`，确认进程存在。
+- [x] `script/qa_smoke.sh`：通过 Debug-only 通知展开真实面板，确认 Window Server 中存在 Corner Peek 面板窗口。
   - 当前也覆盖菜单栏 status item 存在性。
   - 当前也覆盖启动后默认无可见面板窗口。
   - 当前覆盖四个 hot corner 的真实窗口定位。
@@ -1140,7 +1140,7 @@ xcodebuild archive \
 1. [x] 确认 landing 页面本地验证通过。
 2. [x] commit 并 push 到 `main`。
 3. [x] GitHub Pages 选择 GitHub Actions workflow build type。
-4. [x] 触发 `Deploy Peek landing page` workflow。
+4. [x] 触发 `Deploy Corner Peek landing page` workflow。
 5. [x] 打开 Actions logs，确认 artifact 上传和 deploy 成功。
 6. [x] 验证公网 URL：
 
@@ -1198,17 +1198,18 @@ curl -I https://kaedeeeeeeeeee.github.io/cornor_assitant/sitemap.xml
 - [ ] Apple Developer/App Store Connect 登录权限。
 - [ ] Xcode Settings > Accounts 中登录可用 Apple Developer 账号。
 - [ ] Paid Apps Agreement、税务、银行信息。
-- [ ] App Store Connect App record。
+- [x] App Store Connect App record。
+  - 2026-06-28 15:25 JST 已创建 `Corner Peek` macOS app record，App Store Connect app id 为 `6785167787`。
 - [x] Apple Developer PLA update acceptance。
   - 2026-06-28 13:00 JST 已接受；App Store Connect 不再显示协议更新横幅。
 - [x] Apple Developer Bundle ID / App ID。
-  - 2026-06-28 13:00 JST 已注册 `Peek` / `com.shifeng.peek`，App ID Prefix 为 `Y4FV6WUU4V`。
+  - 2026-06-28 13:00 JST 已注册 `Corner Peek` / `com.shifeng.peek`，App ID Prefix 为 `Y4FV6WUU4V`。
 - [x] Apple Distribution certificate installed.
   - 2026-06-28 05:37 JST `script/check_external_readiness.py` 确认 team `Y4FV6WUU4V` 的 Apple Distribution identity 已安装。
 - [ ] `com.shifeng.peek` App Store provisioning profile。
   - 2026-06-28 05:37 JST 本机仅发现同 team 的 `Notation` App Store profile，未发现 `com.shifeng.peek` profile。
   - 2026-06-28 13:00 JST Identifier 已存在，可继续创建/刷新 App Store profile。
-- [ ] App Store SKU 最终确认；建议 `peek-macos-001`。
+- [x] App Store SKU 最终确认：`corner-peek-macos-001`。
 - [ ] App Store 截图素材。
 - [ ] App Review 真实联系电话。
 - [ ] 如果包含 EU 地区：DSA trader status 和可公开联系信息。
@@ -1339,7 +1340,7 @@ PEEK_CHECK_EXPORT=1 PEEK_CHECK_SCREENSHOT=1 ./script/check_external_readiness.py
 
 默认模式只读，不触发 App Store export、截图或本机 UI 控制；当前也会读取本机 code signing identity 和 provisioning profile，拆分证书/profile 状态。扩展模式会写入 `/tmp/peek-appstore/external-readiness-export`、启动截图脚本或启动 Debug app smoke QA，用于复查账号/profile、Screen Recording 权限和本机菜单栏/面板 QA 是否已经解除或仍通过。
 
-UI 类扩展检查需要顺序执行，不要在多个 shell 里并行运行 `PEEK_CHECK_SCREENSHOT=1` 和 `PEEK_CHECK_QA_SMOKE=1`；两者都会启动 Debug Peek，重复实例会干扰窗口隐藏/定位断言。
+UI 类扩展检查需要顺序执行，不要在多个 shell 里并行运行 `PEEK_CHECK_SCREENSHOT=1` 和 `PEEK_CHECK_QA_SMOKE=1`；两者都会启动 Debug Corner Peek，重复实例会干扰窗口隐藏/定位断言。
 
 Landing 性能复查：
 
@@ -1353,25 +1354,24 @@ Landing 性能复查：
 
 按顺序执行：
 
-1. 在 App Store Connect 创建 Peek app record，使用已注册的 `com.shifeng.peek` Bundle ID；创建前必须能可靠核对 New App 表单内容。
-2. 创建/刷新 `com.shifeng.peek` 的 App Store provisioning profile。
-3. 用 Organizer 或 `xcodebuild -exportArchive` 重新执行 App Store export。
-4. 验证 exported app entitlements 中 `get-task-allow = false`。
-5. 运行 `./script/export_app_store_metadata.py`，从 `/tmp/peek-app-store-metadata` 复制 metadata 和审核备注。
-6. 填写 App Store Connect 年龄分级、内容权利、App Privacy、真实审核联系电话和其他后台表单。
-7. 如果覆盖 EU 地区，完成 DSA trader status；如果暂不覆盖 EU，先调整 availability。
-8. 补 GA4 Measurement ID：
+1. 创建/刷新 `com.shifeng.peek` 的 App Store provisioning profile。
+2. 用 Organizer 或 `xcodebuild -exportArchive` 重新执行 App Store export。
+3. 验证 exported app entitlements 中 `get-task-allow = false`。
+4. 运行 `./script/export_app_store_metadata.py`，从 `/tmp/peek-app-store-metadata` 复制 metadata 和审核备注。
+5. 填写 App Store Connect 年龄分级、内容权利、App Privacy、真实审核联系电话和其他后台表单。
+6. 如果覆盖 EU 地区，完成 DSA trader status；如果暂不覆盖 EU，先调整 availability。
+7. 补 GA4 Measurement ID：
    - 现有 Google Analytics 账号/属性为 `ZHANG SHIFENG` / `とりあえずこの名前使う`，但没有 data stream。
-   - 确认后在该属性下创建 Web data stream：URL `https://kaedeeeeeeeeee.github.io/cornor_assitant/`，stream name 建议 `Peek Landing Page`。
+   - 确认后在该属性下创建 Web data stream：URL `https://kaedeeeeeeeeee.github.io/cornor_assitant/`，stream name 建议 `Corner Peek Landing Page`。
    - 拿到 `G-...` 后用 `script/configure_landing_variables.sh` 设置 `PEEK_GA_MEASUREMENT_ID`，或者明确首发先不开启 analytics。
-10. 准备截图并上传 App Store metadata。
-11. 复查搜索引擎后台。
+8. 准备截图并上传 App Store metadata。
+9. 复查搜索引擎后台。
     - Google Search Console 已验证；下一步是复查 sitemap 从“无法读取”变为成功或给出更具体错误。
     - Bing Webmaster Tools 当前需要 Microsoft 登录并获取/配置 `PEEK_BING_SITE_VERIFICATION`。
     - GitHub Pages workflow 已支持通过 `PEEK_BING_SITE_VERIFICATION` repository variable 注入 Bing verification meta，可用 `script/configure_landing_variables.sh` 设置。
-12. Upload build to App Store Connect。
-13. 回填真实 App Store URL 到 landing CTA：用 `PEEK_APP_STORE_URL=... ./script/configure_app_store_url.py --dry-run` 先验证，再去掉 `--dry-run` 写入。
-14. Submit for Review。
+10. Upload build to App Store Connect。
+11. 回填真实 App Store URL 到 landing CTA：用 `PEEK_APP_STORE_URL=... ./script/configure_app_store_url.py --dry-run` 先验证，再去掉 `--dry-run` 写入。
+12. Submit for Review。
 
 ## 8. 参考链接
 

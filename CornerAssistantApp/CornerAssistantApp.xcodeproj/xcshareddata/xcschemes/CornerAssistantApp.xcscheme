@@ -16,7 +16,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "CEAAA9DA2EAE460E00A7290B"
-               BuildableName = "Peek.app"
+               BuildableName = "Corner Peek.app"
                BlueprintName = "CornerAssistantApp"
                ReferencedContainer = "container:CornerAssistantApp.xcodeproj">
             </BuildableReference>
@@ -57,7 +57,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "CEAAA9DA2EAE460E00A7290B"
-            BuildableName = "Peek.app"
+            BuildableName = "Corner Peek.app"
             BlueprintName = "CornerAssistantApp"
             ReferencedContainer = "container:CornerAssistantApp.xcodeproj">
          </BuildableReference>
@@ -78,7 +78,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "CEAAA9DA2EAE460E00A7290B"
-            BuildableName = "Peek.app"
+            BuildableName = "Corner Peek.app"
             BlueprintName = "CornerAssistantApp"
             ReferencedContainer = "container:CornerAssistantApp.xcodeproj">
          </BuildableReference>
@@ -95,7 +95,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "CEAAA9DA2EAE460E00A7290B"
-            BuildableName = "Peek.app"
+            BuildableName = "Corner Peek.app"
             BlueprintName = "CornerAssistantApp"
             ReferencedContainer = "container:CornerAssistantApp.xcodeproj">
          </BuildableReference>

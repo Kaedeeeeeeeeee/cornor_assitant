@@ -11,7 +11,7 @@ WORKFLOW_PATH = ROOT / ".github" / "workflows" / "pages.yml"
 
 
 REQUIRED_SNIPPETS = {
-    "workflow name": "name: Deploy Peek landing page",
+    "workflow name": "name: Deploy Corner Peek landing page",
     "push trigger": "push:",
     "main branch trigger": "- main",
     "landing path trigger": '- "CornerAssistantApp/landing-page/**"',

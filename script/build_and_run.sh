@@ -2,7 +2,7 @@
 set -euo pipefail
 
 MODE="${1:-run}"
-APP_NAME="Peek"
+APP_NAME="Corner Peek"
 SCHEME="CornerAssistantApp"
 PROJECT_RELATIVE_PATH="CornerAssistantApp/CornerAssistantApp.xcodeproj"
 CONFIGURATION="${CONFIGURATION:-Debug}"
@@ -11,7 +11,7 @@ DESTINATION="${DESTINATION:-platform=macOS,arch=$HOST_ARCH}"
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PROJECT_PATH="$ROOT_DIR/$PROJECT_RELATIVE_PATH"
-DERIVED_DATA_PATH="${DERIVED_DATA_PATH:-$ROOT_DIR/DerivedData/PeekRun}"
+DERIVED_DATA_PATH="${DERIVED_DATA_PATH:-$ROOT_DIR/DerivedData/CornerPeekRun}"
 APP_BUNDLE="$DERIVED_DATA_PATH/Build/Products/$CONFIGURATION/$APP_NAME.app"
 APP_EXECUTABLE="$APP_BUNDLE/Contents/MacOS/$APP_NAME"
 

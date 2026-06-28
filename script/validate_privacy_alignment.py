@@ -29,7 +29,7 @@ EXPECTED_PRIVACY_MANIFEST = {
 
 PROJECT_SETTINGS = [
     ("PRODUCT_BUNDLE_IDENTIFIER", "com.shifeng.peek", 2),
-    ("PRODUCT_NAME", "Peek", 2),
+    ("PRODUCT_NAME", '"Corner Peek"', 2),
     ("INFOPLIST_KEY_ITSAppUsesNonExemptEncryption", "NO", 2),
     ("ENABLE_APP_SANDBOX", "YES", 2),
     ("ENABLE_HARDENED_RUNTIME", "YES", 2),
@@ -68,7 +68,7 @@ LANDING_MARKERS = [
     ),
     ("local preferences", "preferences are stored locally on your Mac"),
     ("default search service", "default search service"),
-    ("no audio recording", "Peek itself does not record audio"),
+    ("no audio recording", "Corner Peek itself does not record audio"),
     (
         "public website analytics only",
         "public website only and is not embedded in the macOS app",
@@ -126,7 +126,7 @@ def validate_project_settings(errors: list[str]) -> None:
                 )
 
     microphone_marker = (
-        'INFOPLIST_KEY_NSMicrophoneUsageDescription = "Websites opened in Peek may request '
+        'INFOPLIST_KEY_NSMicrophoneUsageDescription = "Websites opened in Corner Peek may request '
         'microphone access for features such as calls or voice input.";'
     )
     microphone_count = project.count(microphone_marker)

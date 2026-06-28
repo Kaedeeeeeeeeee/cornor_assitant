@@ -69,9 +69,9 @@ FORBIDDEN_PATTERNS = [
 ]
 
 BASIC_INFO_EXPECTATIONS = {
-    "App 名称": "Peek",
+    "App 名称": "Corner Peek",
     "Bundle ID": "`com.shifeng.peek`",
-    "SKU 建议": "`peek-macos-001`",
+    "SKU 建议": "`corner-peek-macos-001`",
     "发布者/版权": "Zhang Shifeng",
     "分类": "Productivity",
     "价格": "US$5.99，一次买断",

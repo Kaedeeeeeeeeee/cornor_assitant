@@ -124,7 +124,7 @@ def check_pagespeed(results: list[CheckResult], url: str, strategy: str, timeout
     )
     request = urllib.request.Request(
         f"{PAGESPEED_ENDPOINT}?{params}",
-        headers={"User-Agent": "PeekLandingPerformance/1.0"},
+        headers={"User-Agent": "CornerPeekLandingPerformance/1.0"},
     )
 
     try:
@@ -225,7 +225,7 @@ def print_results(results: list[CheckResult]) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Check public Peek landing performance with PageSpeed Insights and local Lighthouse."
+        description="Check public Corner Peek landing performance with PageSpeed Insights and local Lighthouse."
     )
     parser.add_argument("--url", default=os.environ.get("PEEK_PERF_URL", DEFAULT_URL), help="Public landing URL")
     parser.add_argument(

@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 INPUTS_PATH = ROOT / "CornerAssistantApp" / "docs" / "External-Launch-Inputs.md"
 
 REQUIRED_MARKERS = [
-    "# Peek External Launch Inputs",
+    "# Corner Peek External Launch Inputs",
     "## Analytics",
     "## Search Consoles",
     "## Apple Developer And App Store Connect",
@@ -23,7 +23,7 @@ REQUIRED_MARKERS = [
     "./script/capture_app_store_screenshot.sh",
     "./script/configure_app_store_url.py --dry-run",
     "com.shifeng.peek",
-    "peek-macos-001",
+    "corner-peek-macos-001",
     "US$5.99",
     "Manual release",
     "Y4FV6WUU4V",
@@ -57,8 +57,8 @@ def main() -> int:
 
     checkbox_count = text.count("- [ ]")
     print(f"external_inputs.checkbox_count: {checkbox_count}")
-    if checkbox_count < 14:
-        errors.append(f"expected at least 14 unchecked input items, found {checkbox_count}")
+    if checkbox_count < 13:
+        errors.append(f"expected at least 13 unchecked input items, found {checkbox_count}")
 
     for pattern in FORBIDDEN_COPY:
         match = pattern.search(text)

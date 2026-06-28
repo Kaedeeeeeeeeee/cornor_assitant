@@ -51,9 +51,9 @@ FORBIDDEN_USER_COPY = [
 ]
 
 REQUIRED_INFO = {
-    "app_name": "Peek",
+    "app_name": "Corner Peek",
     "bundle_id": "com.shifeng.peek",
-    "sku": "peek-macos-001",
+    "sku": "corner-peek-macos-001",
     "publisher": "Zhang Shifeng",
     "copyright": "2026 Zhang Shifeng",
     "category": "Productivity",
@@ -187,7 +187,7 @@ def validate_review_notes(output_dir: Path, markdown: str, errors: list[str]) ->
     if actual != expected:
         errors.append("app_review_notes.txt does not match current AppStore-Materials.md")
     for marker in [
-        "Peek is a macOS menu bar utility. It does not require an account.",
+        "Corner Peek is a macOS menu bar utility. It does not require an account.",
         "Move the cursor to the configured hot corner",
         "f.shera.09@gmail.com",
     ]:
@@ -229,7 +229,7 @@ def validate_readme_and_checklist(output_dir: Path, errors: list[str]) -> None:
             "manual_qa_checklist.md",
             manual_qa,
             [
-                "# Peek Manual QA Checklist",
+                "# Corner Peek Manual QA Checklist",
                 "### 菜单栏图标点击",
                 "### WebKit 常见登录页面",
                 "## 当前已知人工阻塞",
@@ -239,7 +239,7 @@ def validate_readme_and_checklist(output_dir: Path, errors: list[str]) -> None:
             "external_launch_inputs.md",
             external_inputs,
             [
-                "# Peek External Launch Inputs",
+                "# Corner Peek External Launch Inputs",
                 "## Analytics",
                 "## Apple Developer And App Store Connect",
                 "## Final Store URL",
@@ -258,7 +258,7 @@ def validate_readme_and_checklist(output_dir: Path, errors: list[str]) -> None:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Validate a generated Peek App Store metadata export package.")
+    parser = argparse.ArgumentParser(description="Validate a generated Corner Peek App Store metadata export package.")
     parser.add_argument(
         "output_dir",
         nargs="?",

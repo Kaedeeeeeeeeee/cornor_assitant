@@ -30,7 +30,7 @@ SEARCH_BOT_USER_AGENTS = {
     "googlebot_sitemap_fetch": "Googlebot/2.1 (+http://www.google.com/bot.html)",
     "bingbot_sitemap_fetch": "Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)",
 }
-ARCHIVE_PATH = Path("/tmp/peek-appstore/Peek.xcarchive")
+ARCHIVE_PATH = Path("/tmp/peek-appstore/Corner Peek.xcarchive")
 EXPORT_PATH = Path("/tmp/peek-appstore/external-readiness-export")
 EXPORT_OPTIONS = ROOT / "CornerAssistantApp" / "export_options_app_store.plist"
 PROVISIONING_PROFILE_DIR = Path.home() / "Library" / "MobileDevice" / "Provisioning Profiles"
@@ -100,7 +100,7 @@ def validate_exported_app(export_path: Path) -> str:
     app_path = exported_app_path(export_path)
     info_plist = app_path / "Contents" / "Info.plist"
     privacy_manifest = app_path / "Contents" / "Resources" / "PrivacyInfo.xcprivacy"
-    executable = app_path / "Contents" / "MacOS" / "Peek"
+    executable = app_path / "Contents" / "MacOS" / "Corner Peek"
 
     if not info_plist.exists():
         raise ValueError(f"exported app Info.plist missing: {info_plist}")
@@ -140,7 +140,7 @@ def validate_exported_app(export_path: Path) -> str:
     return str(app_path)
 
 
-def fetch_text(url: str, user_agent: str = "PeekExternalReadiness/1.0") -> tuple[int, str]:
+def fetch_text(url: str, user_agent: str = "CornerPeekExternalReadiness/1.0") -> tuple[int, str]:
     request = urllib.request.Request(url, headers={"User-Agent": user_agent})
     with urllib.request.urlopen(request, timeout=20) as response:
         status = getattr(response, "status", 200)

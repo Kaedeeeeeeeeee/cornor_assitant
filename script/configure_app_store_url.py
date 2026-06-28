@@ -112,7 +112,7 @@ def run_validator() -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Activate Peek landing page App Store CTAs after the real Mac App Store URL is available."
+        description="Activate Corner Peek landing page App Store CTAs after the real Mac App Store URL is available."
     )
     parser.add_argument("--url", default=os.environ.get("PEEK_APP_STORE_URL", ""), help="Real Mac App Store URL")
     parser.add_argument("--dry-run", action="store_true", help="Validate and print planned changes without writing files")

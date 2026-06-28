@@ -11,7 +11,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_APP_PATH = Path("/tmp/peek-appstore/Peek.xcarchive/Products/Applications/Peek.app")
+DEFAULT_APP_PATH = Path("/tmp/peek-appstore/Corner Peek.xcarchive/Products/Applications/Corner Peek.app")
 
 
 @dataclass(frozen=True)
@@ -73,7 +73,7 @@ def run_strings(path: Path) -> str:
 
 def app_executable_path(app_path: Path) -> Path:
     info_plist = app_path / "Contents" / "Info.plist"
-    executable = app_path / "Contents" / "MacOS" / "Peek"
+    executable = app_path / "Contents" / "MacOS" / "Corner Peek"
     if not app_path.is_dir():
         raise ValueError(f"app bundle is missing: {app_path}")
     if not info_plist.exists():
@@ -121,13 +121,13 @@ def validate_localized_resources(app_path: Path, errors: list[str]) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Validate that the archived Peek app does not contain debug-only or unsupported launch strings."
+        description="Validate that the archived Corner Peek app does not contain debug-only or unsupported launch strings."
     )
     parser.add_argument(
         "app_path",
         nargs="?",
         default=str(DEFAULT_APP_PATH),
-        help="Path to archived/exported Peek.app",
+        help="Path to archived/exported Corner Peek.app",
     )
     args = parser.parse_args()
 

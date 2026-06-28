@@ -1,6 +1,6 @@
 {
-  "name": "Peek",
-  "short_name": "Peek",
+  "name": "Corner Peek",
+  "short_name": "Corner Peek",
   "description": "A lightweight browser from the macOS screen edge.",
   "start_url": "/cornor_assitant/",
   "scope": "/cornor_assitant/",

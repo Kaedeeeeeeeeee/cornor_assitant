@@ -1,4 +1,4 @@
-name: Deploy Peek landing page
+name: Deploy Corner Peek landing page
 
 on:
   push:

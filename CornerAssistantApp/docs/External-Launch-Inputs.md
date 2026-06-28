@@ -1,6 +1,6 @@
-# Peek External Launch Inputs
+# Corner Peek External Launch Inputs
 
-最后更新：2026-06-28 05:45 JST
+最后更新：2026-06-28 15:25 JST
 
 这个文件只记录代码和本机 CLI 无法安全代办的外部账号、后台表单、真实联系方式和最终 URL。执行这些项目时，不要在聊天或日志里粘贴密码、验证码、恢复码、API private key 或完整付款/银行信息。
 
@@ -10,7 +10,7 @@
   - 当前建议：使用当前 Google Analytics 账号 `ZHANG SHIFENG` 中的属性 `とりあえずこの名前使う` 创建 Web data stream。
   - 当前浏览器状态：2026-06-28 05:45 JST 页面仍提示 `データ ストリームが見つかりませんでした`，未发现 `G-...` Measurement ID。
   - Web stream URL：`https://kaedeeeeeeeeee.github.io/cornor_assitant/`
-  - Web stream name 建议：`Peek Landing Page`
+  - Web stream name 建议：`Corner Peek Landing Page`
   - 需要输入/确认：允许创建 Web data stream，或直接提供已有 `G-...` Measurement ID。
   - 拿到 ID 后执行：
 
@@ -45,14 +45,15 @@ PEEK_BING_SITE_VERIFICATION=bing_token \
 - [x] Apple Developer Program License Agreement.
   - 2026-06-28 13:00 JST 已在 Apple Developer 账号中接受最新 PLA；App Store Connect apps 列表不再显示协议更新横幅。
 - [x] Apple Developer Bundle ID / App ID.
-  - 2026-06-28 13:00 JST 已在 Certificates, Identifiers & Profiles 注册 `Peek` / `com.shifeng.peek`，App ID Prefix 为 `Y4FV6WUU4V`。
+  - 2026-06-28 13:00 JST 已在 Certificates, Identifiers & Profiles 注册 `Corner Peek` / `com.shifeng.peek`，App ID Prefix 为 `Y4FV6WUU4V`。
 - [ ] Paid Apps Agreement, tax, and banking.
   - 需要输入/确认：已签署 Paid Apps Agreement，并完成税务、银行和付费销售相关信息。
-- [ ] App Store Connect app record.
-  - 当前浏览器状态：2026-06-28 13:30 JST 已能进入 New App 表单，并已验证 `com.shifeng.peek` 的 Apple Developer Identifier 存在；由于当前屏幕/窗口捕获在填写过程中变为不可可靠核对，未点击 `Create`，未创建 App Store Connect app record。
-  - App name：`Peek`
+- [x] App Store Connect app record.
+  - 2026-06-28 15:25 JST 已创建 `Corner Peek` macOS app record。
+  - App Store Connect app id：`6785167787`。
+  - App name：`Corner Peek`
   - Bundle ID：`com.shifeng.peek`
-  - SKU 建议：`peek-macos-001`
+  - SKU：`corner-peek-macos-001`
   - Primary language：English (U.S.)
   - Category：Productivity
   - Price：US$5.99，一次买断

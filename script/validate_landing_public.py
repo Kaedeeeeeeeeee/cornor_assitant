@@ -78,7 +78,7 @@ class LandingHTMLParser(HTMLParser):
             self.text.append(data)
 
 
-def fetch_text(url: str, user_agent: str = "PeekLaunchVerifier/1.0") -> str:
+def fetch_text(url: str, user_agent: str = "CornerPeekLaunchVerifier/1.0") -> str:
     request = urllib.request.Request(url, headers={"User-Agent": user_agent})
     with urllib.request.urlopen(request, timeout=20) as response:
         status = getattr(response, "status", 200)
@@ -88,7 +88,7 @@ def fetch_text(url: str, user_agent: str = "PeekLaunchVerifier/1.0") -> str:
 
 
 def fetch_bytes(url: str) -> bytes:
-    request = urllib.request.Request(url, headers={"User-Agent": "PeekLaunchVerifier/1.0"})
+    request = urllib.request.Request(url, headers={"User-Agent": "CornerPeekLaunchVerifier/1.0"})
     with urllib.request.urlopen(request, timeout=20) as response:
         status = getattr(response, "status", 200)
         if status != 200:
@@ -139,8 +139,8 @@ def validate_homepage(errors: list[str]) -> None:
     else:
         app = software_apps[0]
         print(f"landing.jsonld.applicationCategory: {app.get('applicationCategory')}")
-        if app.get("name") != "Peek":
-            errors.append("homepage JSON-LD name is not Peek")
+        if app.get("name") != "Corner Peek":
+            errors.append("homepage JSON-LD name is not Corner Peek")
         if app.get("applicationCategory") != "Productivity":
             errors.append("homepage JSON-LD applicationCategory is not Productivity")
         if app.get("operatingSystem") != "macOS 15.0 or later":
@@ -179,8 +179,8 @@ def validate_robots_and_sitemap(errors: list[str]) -> None:
 def validate_manifest_and_analytics(errors: list[str]) -> None:
     manifest = json.loads(fetch_text(f"{BASE_URL}site.webmanifest"))
     print(f"landing.manifest.name: {manifest.get('name')}")
-    if manifest.get("name") != "Peek":
-        errors.append("site.webmanifest name is not Peek")
+    if manifest.get("name") != "Corner Peek":
+        errors.append("site.webmanifest name is not Corner Peek")
 
     manifest_icons = manifest.get("icons")
     if not isinstance(manifest_icons, list):

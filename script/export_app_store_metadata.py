@@ -129,7 +129,7 @@ def write_json(path: Path, value: object) -> None:
 
 def write_readme(output_dir: Path, app_information: dict[str, object]) -> None:
     lines = [
-        "# Peek App Store Metadata Export",
+        "# Corner Peek App Store Metadata Export",
         "",
         f"Source: `{MATERIALS_PATH}`",
         "",
@@ -198,7 +198,7 @@ def write_submission_checklist(
         ("Pre-submission checklist", "上架前核对"),
     ]
     lines = [
-        "# Peek App Store Connect Submission Checklist",
+        "# Corner Peek App Store Connect Submission Checklist",
         "",
         f"Source: `{MATERIALS_PATH}`",
         "",

@@ -187,7 +187,7 @@ async function validateStaticAssets(page) {
   }
 
   const manifest = JSON.parse(fs.readFileSync(path.join(landingDir, "site.webmanifest"), "utf8"));
-  if (manifest.name !== "Peek") fail("site.webmanifest name is not Peek");
+  if (manifest.name !== "Corner Peek") fail("site.webmanifest name is not Corner Peek");
 }
 
 async function main() {

@@ -47,7 +47,7 @@ def validate_https_public_url(check: URLCheck, errors: list[str]) -> None:
 def validate_network(check: URLCheck, errors: list[str]) -> None:
     request = urllib.request.Request(
         check.url,
-        headers={"User-Agent": "PeekAppStoreURLVerifier/1.0"},
+        headers={"User-Agent": "CornerPeekAppStoreURLVerifier/1.0"},
         method="GET",
     )
     try:
@@ -61,7 +61,7 @@ def validate_network(check: URLCheck, errors: list[str]) -> None:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Validate App Store Connect public URLs for Peek.")
+    parser = argparse.ArgumentParser(description="Validate App Store Connect public URLs for Corner Peek.")
     parser.add_argument(
         "--check-network",
         action="store_true",

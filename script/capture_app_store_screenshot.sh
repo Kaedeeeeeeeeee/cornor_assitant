@@ -6,6 +6,7 @@ RUN_SCRIPT="$ROOT_DIR/script/build_and_run.sh"
 OUT_DIR="${OUT_DIR:-/tmp/peek-app-store-screenshots}"
 LEGACY_APP_STORE_CAPTURE="$OUT_DIR/peek-panel-2880x1800.png"
 DEBUG_NOTIFICATION="com.shifeng.peek.debug.panelCommand"
+APP_NAME="Corner Peek"
 SCREENSHOT_SCENES=(
   "01-hot-corner-panel-2880x1800.png|launcher"
   "02-quick-search-2880x1800.png|search"
@@ -36,7 +37,7 @@ import Foundation
 let displayBounds = CGDisplayBounds(CGMainDisplayID())
 let windows = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]] ?? []
 for window in windows {
-    guard (window[kCGWindowOwnerName as String] as? String) == "Peek",
+    guard (window[kCGWindowOwnerName as String] as? String) == "Corner Peek",
           let id = window[kCGWindowNumber as String],
           let bounds = window[kCGWindowBounds as String] as? [String: Any],
           let x = bounds["X"] as? Double,
@@ -160,8 +161,8 @@ capture_scene() {
   post_panel_command "scenario:$scenario"
   sleep 1
 
-  log "Find Peek panel window"
-  WINDOW_INFO="$(find_peek_window)" || fail "Peek panel window was not visible"
+  log "Find Corner Peek panel window"
+  WINDOW_INFO="$(find_peek_window)" || fail "Corner Peek panel window was not visible"
   IFS=$'\t' read -r WINDOW_ID WINDOW_X WINDOW_Y WINDOW_WIDTH WINDOW_HEIGHT SCREEN_X SCREEN_Y SCREEN_WIDTH SCREEN_HEIGHT <<<"$WINDOW_INFO"
   printf "window id=%s bounds=%s,%s %sx%s screen=%s,%s %sx%s\n" "$WINDOW_ID" "$WINDOW_X" "$WINDOW_Y" "$WINDOW_WIDTH" "$WINDOW_HEIGHT" "$SCREEN_X" "$SCREEN_Y" "$SCREEN_WIDTH" "$SCREEN_HEIGHT"
 

@@ -4,6 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 RUN_SCRIPT="$ROOT_DIR/script/build_and_run.sh"
 DEBUG_NOTIFICATION="com.shifeng.peek.debug.panelCommand"
+APP_NAME="Corner Peek"
 
 post_panel_command() {
   local command="$1"
@@ -19,11 +20,11 @@ tell application "System Events"
         error "Accessibility UI scripting is disabled"
     end if
 
-    if not (exists process "Peek") then
-        error "Peek process is not visible to System Events"
+    if not (exists process "Corner Peek") then
+        error "Corner Peek process is not visible to System Events"
     end if
 
-    tell process "Peek"
+    tell process "Corner Peek"
         set summaries to {}
         set foundStatusItem to false
         repeat with menuBar in menu bars
@@ -50,7 +51,7 @@ tell application "System Events"
                     set sizeText to "w:" & itemWidth & " h:" & itemHeight
                 end try
 
-                if descriptionText is "Peek" and itemWidth > 0 and itemHeight > 0 then
+                if descriptionText is "Corner Peek" and itemWidth > 0 and itemHeight > 0 then
                     set foundStatusItem to true
                     set end of summaries to "title=" & titleText & " description=" & descriptionText & " " & positionText & " " & sizeText
                 end if
@@ -58,7 +59,7 @@ tell application "System Events"
         end repeat
 
         if foundStatusItem is false then
-            error "Peek status item was not found in menu bar accessibility tree"
+            error "Corner Peek status item was not found in menu bar accessibility tree"
         end if
 
         return summaries as text
@@ -77,7 +78,7 @@ import Foundation
 let corner = CommandLine.arguments[1]
 let windows = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]] ?? []
 let matches = windows.compactMap { window -> (id: Any, layer: Any, x: Double, y: Double, width: Double, height: Double)? in
-    guard (window[kCGWindowOwnerName as String] as? String) == "Peek",
+    guard (window[kCGWindowOwnerName as String] as? String) == "Corner Peek",
           let bounds = window[kCGWindowBounds as String] as? [String: Any],
           let x = bounds["X"] as? Double,
           let y = bounds["Y"] as? Double,
@@ -94,7 +95,7 @@ let matches = windows.compactMap { window -> (id: Any, layer: Any, x: Double, y:
 }
 
 guard let match = matches.first else {
-    fputs("Peek panel window was not visible after debug expand command.\n", stderr)
+    fputs("Corner Peek panel window was not visible after debug expand command.\n", stderr)
     exit(1)
 }
 
@@ -134,7 +135,7 @@ default:
 }
 
 guard horizontalOK && verticalOK else {
-    fputs("Peek panel frame did not match \(corner): x=\(match.x) y=\(match.y) width=\(match.width) height=\(match.height) left=\(leftDistance) right=\(rightDistance) top=\(topDistance) bottom=\(bottomDistance)\n", stderr)
+    fputs("Corner Peek panel frame did not match \(corner): x=\(match.x) y=\(match.y) width=\(match.width) height=\(match.height) left=\(leftDistance) right=\(rightDistance) top=\(topDistance) bottom=\(bottomDistance)\n", stderr)
     exit(1)
 }
 
@@ -149,7 +150,7 @@ import Foundation
 
 let windows = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]] ?? []
 let matches = windows.compactMap { window -> (id: Any, x: Double, y: Double, width: Double, height: Double)? in
-    guard (window[kCGWindowOwnerName as String] as? String) == "Peek",
+    guard (window[kCGWindowOwnerName as String] as? String) == "Corner Peek",
           let bounds = window[kCGWindowBounds as String] as? [String: Any],
           let x = bounds["X"] as? Double,
           let y = bounds["Y"] as? Double,
@@ -166,7 +167,7 @@ let matches = windows.compactMap { window -> (id: Any, x: Double, y: Double, wid
 
 guard matches.isEmpty else {
     let descriptions = matches.map { "id=\($0.id) x=\(Int($0.x)) y=\(Int($0.y)) width=\(Int($0.width)) height=\(Int($0.height))" }
-    fputs("Peek panel window was visible when it should be hidden: \(descriptions.joined(separator: ", "))\n", stderr)
+    fputs("Corner Peek panel window was visible when it should be hidden: \(descriptions.joined(separator: ", "))\n", stderr)
     exit(1)
 }
 

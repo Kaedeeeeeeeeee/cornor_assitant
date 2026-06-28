@@ -1,4 +1,4 @@
-# Peek Manual QA Checklist
+# Corner Peek Manual QA Checklist
 
 最后更新：2026-06-28 05:26 JST
 
@@ -16,22 +16,22 @@
 
 ### 首次启动
 
-- [ ] 启动 Peek。
-- [ ] 菜单栏出现 Peek 图标。
+- [ ] 启动 Corner Peek。
+- [ ] 菜单栏出现 Corner Peek 图标。
 - [ ] App 不弹出登录、注册、分析同意、网络权限或无关欢迎流程。
 - [ ] 初始面板默认隐藏，不挡住桌面。
 - 通过标准：用户可以不读说明直接从菜单栏或热角开始使用。
 
 ### 菜单栏图标点击
 
-- [ ] 左键点击菜单栏 Peek 图标。
+- [ ] 左键点击菜单栏 Corner Peek 图标。
 - [ ] 面板展开。
 - [ ] 再次点击或点击外部区域后，未固定面板可收起。
 - 通过标准：左键行为符合普通菜单栏工具预期，没有卡死、重复窗口或焦点异常。
 
 ### 菜单栏右键/control-click 菜单
 
-- [ ] 右键或 control-click 菜单栏 Peek 图标。
+- [ ] 右键或 control-click 菜单栏 Corner Peek 图标。
 - [ ] 菜单包含 Hot Corner、Launch at Login、Language、Quit。
 - [ ] Hot Corner 子菜单包含 top-left、top-right、bottom-left、bottom-right 四项，并能切换当前选中项。
 - [ ] Language 子菜单包含 English、简体中文、日本語，并能切换界面文案。
@@ -73,10 +73,10 @@
 ### Launch at Login
 
 - [ ] 在菜单栏菜单中开启 Launch at Login。
-- [ ] 打开 macOS Login Items 设置，确认 Peek 状态符合预期。
-- [ ] 退出并重新登录当前测试用户，确认 Peek 自动启动。
+- [ ] 打开 macOS Login Items 设置，确认 Corner Peek 状态符合预期。
+- [ ] 退出并重新登录当前测试用户，确认 Corner Peek 自动启动。
 - [ ] 关闭 Launch at Login，并确认系统设置同步移除或禁用。
-- 通过标准：系统登录项状态和 Peek 菜单状态一致，不需要额外 helper App 提示。
+- 通过标准：系统登录项状态和 Corner Peek 菜单状态一致，不需要额外 helper App 提示。
 
 ### WebKit 常见登录页面
 
@@ -84,12 +84,12 @@
 - [ ] 打开 Slack workspace 登录页。
 - [ ] 打开 Notion 或另一个典型工作站点登录页。
 - [ ] 验证弹窗、重定向、返回/前进和输入框焦点正常。
-- 通过标准：Peek 不需要处理用户凭据，但 WebKit 登录流程不能因为 user agent、popup 或 navigation delegate 明显卡住。
+- 通过标准：Corner Peek 不需要处理用户凭据，但 WebKit 登录流程不能因为 user agent、popup 或 navigation delegate 明显卡住。
 
 ### 无网络环境
 
 - [ ] 断开网络或使用系统网络设置进入无网络状态。
-- [ ] 启动 Peek。
+- [ ] 启动 Corner Peek。
 - [ ] 输入关键词和 URL。
 - [ ] 打开已有固定网站。
 - [ ] 恢复网络后重新搜索/打开页面。
@@ -107,7 +107,7 @@
 
 - [ ] 记录测试日期和 tester。
 - [ ] 记录 macOS 版本。
-- [ ] 记录 Peek build 版本：`1.0 (1)`。
+- [ ] 记录 Corner Peek build 版本：`1.0 (1)`。
 - [ ] 记录使用的 build 来源：Release archive、App Store export 或 Xcode Archive/Organizer。
 - [ ] 记录截图目录。
 - [ ] 记录任何失败项和是否阻塞 App Store 提交。

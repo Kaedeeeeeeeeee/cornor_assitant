@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CHECKLIST_PATH = ROOT / "CornerAssistantApp" / "docs" / "Manual-QA-Checklist.md"
 
 REQUIRED_MARKERS = [
-    "# Peek Manual QA Checklist",
+    "# Corner Peek Manual QA Checklist",
     "## 测试前准备",
     "## 必跑交互",
     "### 首次启动",

@@ -264,8 +264,8 @@ struct SlidePanelView: View {
             state.isPinned = false
         case "web":
             loadDebugPage(
-                title: "Peek Notes",
-                urlString: "https://peek.local/notes",
+                title: "Corner Peek Notes",
+                urlString: "https://cornerpeek.local/notes",
                 bodyTitle: "Research notes",
                 bodySubtitle: "A lightweight page opened from the screen edge.",
                 cards: ["Project brief", "Reference links", "Daily checklist"]
