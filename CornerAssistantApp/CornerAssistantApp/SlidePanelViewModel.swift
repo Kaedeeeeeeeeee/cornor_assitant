@@ -5,13 +5,17 @@ import Combine
 final class SlidePanelViewModel: ObservableObject {
     @Published private(set) var tabs: [BrowserTab]
     @Published private(set) var pinnedSites: [PinnedSite] {
-        didSet { savePinnedSites(pinnedSites) }
+        didSet {
+            guard !isSkippingPinnedSiteSave else { return }
+            savePinnedSites(pinnedSites)
+        }
     }
     @Published var activeTabID: UUID
     @Published var showingLauncher: Bool
 
     private var pinnedTabIDs: [String: UUID] = [:] // pinnedSiteID -> tabID
     private let savePinnedSites: @MainActor ([PinnedSite]) -> Void
+    private var isSkippingPinnedSiteSave = false
 
     init(
         initialPinnedSites: [PinnedSite]? = nil,
@@ -178,4 +182,37 @@ final class SlidePanelViewModel: ObservableObject {
         let tab = tabs.remove(at: sourceIdx)
         tabs.insert(tab, at: destIdx)
     }
+
+    #if DEBUG
+    func applyScreenshotDemoState() {
+        let demoSites = [
+            PinnedSite(name: "AI", url: "https://cornerpeek.local/ai"),
+            PinnedSite(name: "Docs", url: "https://cornerpeek.local/docs"),
+            PinnedSite(name: "Chat", url: "https://cornerpeek.local/chat"),
+            PinnedSite(name: "Sheets", url: "https://cornerpeek.local/sheets")
+        ]
+
+        isSkippingPinnedSiteSave = true
+        pinnedSites = demoSites
+        isSkippingPinnedSiteSave = false
+
+        pinnedTabIDs.removeAll()
+        var nextTabs: [BrowserTab] = []
+        for site in demoSites {
+            let tab = BrowserTab(webViewStore: WebViewStore())
+            tab.title = site.name
+            tab.addressText = site.url
+            tab.url = URL(string: site.url)
+            tab.faviconURL = nil
+            nextTabs.append(tab)
+            pinnedTabIDs[site.id] = tab.id
+        }
+
+        let active = BrowserTab(webViewStore: WebViewStore())
+        nextTabs.append(active)
+        tabs = nextTabs
+        activeTabID = active.id
+        showingLauncher = true
+    }
+    #endif
 }

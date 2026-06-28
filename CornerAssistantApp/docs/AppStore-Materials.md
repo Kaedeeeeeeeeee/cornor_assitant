@@ -352,13 +352,13 @@ Support contact: f.shera.09@gmail.com
 
 ## 截图计划
 
-建议首发 5 张：
+建议首发 5 张改为痛点型宣传截图：每张都包含真实 Corner Peek 面板截图、短标题、说明文案和蓝色重点标注，不直接使用第三方品牌名称或 logo。
 
-1. 热角唤出边缘面板。
-2. 搜索/URL 输入。
-3. 多标签浏览。
-4. 固定常用网站侧栏。
-5. 固定面板状态；如果后续手动采集菜单栏状态截图，也可以替换该图。
+1. Pinned daily tools：表达 AI、docs、team chat、trackers 可以从屏幕边缘快速打开。
+2. AI at the edge：表达写作、总结、改写等 AI 工作流不用切换主窗口。
+3. Docs and messages：表达临时查看 brief、note、team update 等短任务。
+4. Trackers and sheets：表达查看表格、dashboard、status tracker 等轻量查询。
+5. Your web workflow：表达把常用 web 工具固定在侧边栏。
 
 截图要求：
 
@@ -371,6 +371,7 @@ Support contact: f.shera.09@gmail.com
   - 默认输出到 `/tmp/peek-app-store-screenshots`。
   - 成功时会生成 `01-hot-corner-panel-2880x1800.png`、`02-quick-search-2880x1800.png`、`03-web-page-2880x1800.png`、`04-tabs-and-pinned-sites-2880x1800.png`、`05-pinned-panel-2880x1800.png`。
   - 2026-06-28 15:45 JST 当前 Codex/shell 会话已成功生成 5 张 2880x1800 候选截图，输出位于 `/tmp/peek-app-store-screenshots`。
+  - 2026-06-28 22:00 JST 已把截图生成器改为痛点型宣传截图：左侧为文案和蓝色重点标注，右侧为真实 Corner Peek 面板；侧边栏使用无品牌 demo pinned sites，避免第三方 logo 出现在 App Store 素材里。
 
 ## 上架前核对
 

@@ -244,6 +244,7 @@ struct SlidePanelView: View {
 
     #if DEBUG
     private func applyDebugScenario(_ scenario: String) {
+        viewModel.applyScreenshotDemoState()
         suggestionStore.clear()
 
         switch scenario {
@@ -264,28 +265,28 @@ struct SlidePanelView: View {
             state.isPinned = false
         case "web":
             loadDebugPage(
-                title: "Corner Peek Notes",
-                urlString: "https://cornerpeek.local/notes",
-                bodyTitle: "Research notes",
-                bodySubtitle: "A lightweight page opened from the screen edge.",
-                cards: ["Project brief", "Reference links", "Daily checklist"]
+                title: "Draft Assistant",
+                urlString: "https://cornerpeek.local/ai-desk",
+                bodyTitle: "AI writing desk",
+                bodySubtitle: "Summarize a note, rewrite a reply, or ask a quick question without leaving the app you are using.",
+                cards: ["Summarize", "Rewrite", "Explain"]
             )
             state.isPinned = false
         case "tabs":
             loadDebugPage(
-                title: "Team Workspace",
-                urlString: "https://peek.local/workspace",
-                bodyTitle: "Team workspace",
-                bodySubtitle: "Pinned sites and quick tabs stay close without taking over the desktop.",
-                cards: ["Docs", "Chat", "Dashboard"]
+                title: "Team Updates",
+                urlString: "https://peek.local/team",
+                bodyTitle: "Team updates",
+                bodySubtitle: "Keep short messages and project status close enough to check, then get back to your main window.",
+                cards: ["Design ready", "Review due", "Standup notes"]
             )
             viewModel.addTab()
             loadDebugPage(
-                title: "Release Checklist",
-                urlString: "https://peek.local/release",
-                bodyTitle: "Release checklist",
-                bodySubtitle: "A second tab for short review tasks.",
-                cards: ["Metadata", "Screenshots", "Review notes"]
+                title: "Project Brief",
+                urlString: "https://peek.local/brief",
+                bodyTitle: "Project brief",
+                bodySubtitle: "Open docs, checklists, and reference pages in a narrow side panel instead of changing spaces.",
+                cards: ["Spec", "Links", "Checklist"]
             )
             state.isPinned = false
         case "pinned":
@@ -293,10 +294,19 @@ struct SlidePanelView: View {
                 title: "Pinned Tools",
                 urlString: "https://peek.local/pinned",
                 bodyTitle: "Pinned tools",
-                bodySubtitle: "Keep everyday tools one click away from the side rail.",
-                cards: ["AI tools", "Docs", "Team chat"]
+                bodySubtitle: "Pin the everyday web tools you already use: AI, docs, team chat, dashboards, and quick trackers.",
+                cards: ["AI", "Docs", "Chat", "Sheets"]
             )
             state.isPinned = true
+        case "sheet":
+            loadDebugPage(
+                title: "Metrics Sheet",
+                urlString: "https://peek.local/tracker",
+                bodyTitle: "Metrics tracker",
+                bodySubtitle: "Check a small spreadsheet or project tracker without opening another full browser window.",
+                cards: ["Launch tasks", "Owner", "Status", "Next"]
+            )
+            state.isPinned = false
         default:
             break
         }
@@ -311,8 +321,9 @@ struct SlidePanelView: View {
     ) {
         guard let url = URL(string: urlString) else { return }
         let cardHTML = cards
-            .map { "<li>\($0)</li>" }
+            .map { "<li><span>\($0)</span></li>" }
             .joined()
+        let accent = "#2563eb"
         let html = """
         <!doctype html>
         <html>
@@ -325,13 +336,15 @@ struct SlidePanelView: View {
               margin: 0;
               min-height: 100vh;
               font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
-              background: #f6f8fa;
+              background:
+                radial-gradient(circle at 80% 18%, rgba(37, 99, 235, 0.12), transparent 28%),
+                linear-gradient(180deg, #f8fbff 0%, #f3f6fb 100%);
               color: #18202a;
             }
-            main { max-width: 780px; margin: 0 auto; padding: 72px 56px; }
+            main { max-width: 820px; margin: 0 auto; padding: 72px 56px; }
             h1 { font-size: 42px; line-height: 1.08; margin: 0 0 18px; letter-spacing: 0; }
             p { font-size: 18px; line-height: 1.6; margin: 0 0 34px; color: #52606d; }
-            ul { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; padding: 0; margin: 0; }
+            ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; padding: 0; margin: 0; }
             li {
               list-style: none;
               border: 1px solid rgba(24, 32, 42, 0.12);
@@ -339,6 +352,12 @@ struct SlidePanelView: View {
               padding: 18px;
               background: rgba(255, 255, 255, 0.82);
               font-weight: 600;
+              box-shadow: 0 10px 24px rgba(15, 23, 42, 0.07);
+            }
+            li:first-child {
+              border-color: rgba(37, 99, 235, 0.32);
+              background: rgba(37, 99, 235, 0.08);
+              color: \(accent);
             }
             @media (prefers-color-scheme: dark) {
               body { background: #11161d; color: #f4f6f8; }

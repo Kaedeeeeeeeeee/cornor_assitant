@@ -127,9 +127,11 @@ xcrun altool --build-status \
 
   - 已生成 `/tmp/peek-app-store-screenshots/01-hot-corner-panel-2880x1800.png` 至 `05-pinned-panel-2880x1800.png`，全部为 2880x1800。
   - 2026-06-28 15:45 JST 视觉快检通过：未发现黑图、个人信息、Xcode/终端痕迹或旧名。
+  - 2026-06-28 22:00 JST 已重新生成痛点型宣传截图：每张包含真实面板、文案和蓝色重点标注；未包含第三方品牌 logo。
 - [x] Upload App Store screenshots.
   - 2026-06-28 21:49 JST 尝试用 Chrome browser connector 上传 5 张 PNG，但 `fileChooser.setFiles` 返回 `Not allowed`。
   - 2026-06-28 22:35 JST 改用 Computer Use 通过 macOS file picker 上传 5 张正式 PNG，App Store Connect 显示 `5 of 10 Screenshots`。
+  - 当前 App Store Connect 仍是 22:35 JST 上传的上一版截图；如果采用 22:00 JST 新痛点型素材，需要先删除旧截图再上传 `/tmp/peek-app-store-screenshots` 中的新 5 张。
   - 截图上传完成；提交审核前仍需在 App Store Connect 中按最终页面预览做一次人工顺序审校。
 
 ## Final Store URL

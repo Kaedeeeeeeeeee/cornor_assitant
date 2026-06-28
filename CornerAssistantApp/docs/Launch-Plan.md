@@ -253,6 +253,11 @@
   - 这些截图场景通过 `#if DEBUG` notification 触发，`script/launch_verify.sh` 已验证 `scenario:` 调试命令不会进入 Release archive。
   - `script/check_external_readiness.py` 扩展模式现在会在截图脚本成功后验证 5 张 PNG 均为 2880x1800。
   - 当前扩展模式复查仍被 Screen Recording/可见桌面权限阻塞，不能产出可提交截图。
+- 2026-06-28 22:00 JST 已把截图套件改成痛点型宣传截图：
+  - 左侧为标题、说明文案和蓝色重点标注。
+  - 右侧保留真实 Corner Peek 面板截图。
+  - Debug 截图场景会临时使用无品牌 demo pinned sites，且不会写入用户偏好。
+  - 5 张主题为 pinned daily tools、AI at the edge、docs/messages、trackers/sheets、web workflow。
 
 2026-06-28 App Store metadata 校验收口：
 
@@ -1100,7 +1105,8 @@ xcodebuild archive \
 - [x] App Store 截图候选图已在当前 Codex/shell 会话生成。
   - 2026-06-28 15:45 JST `PEEK_CHECK_SCREENSHOT=1 PEEK_CHECK_QA_SMOKE=1 ./script/check_external_readiness.py` 通过截图权限和 QA smoke 检查。
   - 已生成 `/tmp/peek-app-store-screenshots/01-hot-corner-panel-2880x1800.png` 至 `05-pinned-panel-2880x1800.png`，全部为 2880x1800。
-  - 视觉快检通过；上传前仍需在 App Store Connect 截图排序页面做最终人工审校。
+  - 2026-06-28 22:00 JST 已重新生成痛点型宣传截图，视觉快检通过：文案未溢出，面板清晰，未出现第三方品牌 logo。
+  - 上传前仍需在 App Store Connect 截图排序页面做最终人工审校。
 
 必须覆盖：
 
@@ -1191,6 +1197,7 @@ curl -I https://kaedeeeeeeeeee.github.io/cornor_assitant/sitemap.xml
 - [x] 上传 App Store screenshots。
   - 当前本地素材：`/tmp/peek-app-store-screenshots/01-hot-corner-panel-2880x1800.png` 至 `05-pinned-panel-2880x1800.png`。
   - 2026-06-28 22:35 JST 已通过 Computer Use 和 macOS file picker 上传到 App Store Connect；页面显示 `5 of 10 Screenshots`。
+  - 2026-06-28 22:00 JST 本地截图素材已更新为新痛点型宣传图；App Store Connect 需要在用户确认后删除旧图并重新上传新图。
   - 提交审核前仍需人工确认 App Store Connect 页面预览顺序和缩略图渲染。
 - [x] 检查所有链接都是公网 HTTPS 且返回 200。
   - `script/validate_app_store_urls.py --check-network` 已验证 App Store materials 中 Marketing / Privacy Policy / Support URL 均为 HTTPS 且返回 200。
