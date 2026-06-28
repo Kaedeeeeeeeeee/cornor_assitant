@@ -1,6 +1,6 @@
 # Corner Peek External Launch Inputs
 
-最后更新：2026-06-28 18:03 JST
+最后更新：2026-06-28 20:36 JST
 
 这个文件只记录代码和本机 CLI 无法安全代办的外部账号、后台表单、真实联系方式和最终 URL。执行这些项目时，不要在聊天或日志里粘贴密码、验证码、恢复码、API private key 或完整付款/银行信息。
 
@@ -79,19 +79,21 @@ PEEK_BING_SITE_VERIFICATION=bing_token \
 PEEK_CHECK_EXPORT=1 ./script/check_external_readiness.py
 ```
 
-- [ ] Upload build to App Store Connect.
-  - 当前可上传文件：`/tmp/peek-appstore/external-readiness-export/Corner Peek.pkg`
-  - 当前阻塞：本机已有 API key file `~/.appstoreconnect/private_keys/AuthKey_99STZKX674.p8`，但未找到 App Store Connect API issuer id；`altool` 上传仍需要 `--api-issuer`，或改用 Apple ID app-specific password / 已登录 Xcode Organizer / Transporter。
-  - 拿到 issuer id 后可先运行：
+- [x] Upload build to App Store Connect.
+  - 2026-06-28 20:33 JST `xcrun altool --validate-app` 通过，验证文件为 `/tmp/peek-appstore/external-readiness-export/Corner Peek.pkg`。
+  - 2026-06-28 20:35 JST `xcrun altool --upload-package` 上传成功。
+  - Delivery UUID：`1381454e-1354-4bf6-9ad9-b89482779afe`。
+  - `xcrun altool --build-status --delivery-id 1381454e-1354-4bf6-9ad9-b89482779afe` 返回 `build-status = VALID`、`import-status = VALID`、`buildAudienceType = APP_STORE_ELIGIBLE`。
+  - App Store Connect 已可继续选择 build 加入版本 `1.0`。
+  - 复查命令：
 
 ```bash
-xcrun altool --list-providers \
+xcrun altool --build-status \
+  --delivery-id 1381454e-1354-4bf6-9ad9-b89482779afe \
   --api-key 99STZKX674 \
   --api-issuer ISSUER_ID \
   --output-format json
 ```
-
-  - 确认 provider 后再上传 build，并等待 processing 完成后选择 build 加入版本 `1.0`。
 
 ## Screenshots
 

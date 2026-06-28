@@ -20,6 +20,9 @@ REQUIRED_MARKERS = [
     "PEEK_GA_MEASUREMENT_ID=G-XXXXXXXXXX",
     "PEEK_BING_SITE_VERIFICATION=bing_token",
     "PEEK_CHECK_EXPORT=1",
+    "Delivery UUID",
+    "build-status = VALID",
+    "APP_STORE_ELIGIBLE",
     "./script/capture_app_store_screenshot.sh",
     "./script/configure_app_store_url.py --dry-run",
     "com.shifeng.peek",
@@ -67,7 +70,6 @@ def main() -> int:
         "- [ ] Google Search Console sitemap status.",
         "- [ ] Bing Webmaster Tools.",
         "- [ ] Paid Apps Agreement, tax, and banking.",
-        "- [ ] Upload build to App Store Connect.",
         "- [ ] True Mac App Store URL.",
     ]
     for item in required_unchecked_items:

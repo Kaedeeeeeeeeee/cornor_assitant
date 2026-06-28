@@ -1,6 +1,6 @@
 # Corner Peek 上线准备计划
 
-最后更新：2026-06-28 18:03 JST
+最后更新：2026-06-28 20:36 JST
 
 这个文档是 Corner Peek 从当前本地项目走到公开 landing page 和 Mac App Store 首发的工作台。后续执行、验收、补漏都以这里为准；如果产品、定价、域名、隐私口径或 App Store 配置发生变化，先更新本文件，再改代码或页面。
 
@@ -623,7 +623,9 @@
   - `export_options_app_store.plist` 已切到 manual signing，显式配置 `provisioningProfiles` 和 `installerSigningCertificate = 3rd Party Mac Developer Installer`。
   - `PEEK_CHECK_EXPORT=1 ./script/check_external_readiness.py` 通过，导出并验证 `/tmp/peek-appstore/external-readiness-export/Corner Peek.pkg`，包内 app Info.plist、entitlements 和 PrivacyInfo 均通过检查。
   - `pkgutil --check-signature` 确认导出 pkg 使用 `3rd Party Mac Developer Installer: SHIFENG ZHANG (Y4FV6WUU4V)` 签名。
-  - build 上传当前被上传凭据阻塞：本机有 `AuthKey_99STZKX674.p8`，但未找到 API issuer id；`xcrun altool --list-providers --api-key 99STZKX674` 明确要求补 `--api-issuer`。
+  - 2026-06-28 20:33 JST `xcrun altool --validate-app` 通过，验证文件为 `/tmp/peek-appstore/external-readiness-export/Corner Peek.pkg`。
+  - 2026-06-28 20:35 JST `xcrun altool --upload-package` 上传成功，Delivery UUID 为 `1381454e-1354-4bf6-9ad9-b89482779afe`。
+  - `xcrun altool --build-status --delivery-id 1381454e-1354-4bf6-9ad9-b89482779afe` 返回 `build-status = VALID`、`import-status = VALID`、`buildAudienceType = APP_STORE_ELIGIBLE`。
 
 ## 2. 首发完成定义
 
@@ -958,7 +960,7 @@ PEEK_BING_SITE_VERIFICATION=... \
 
 ### Phase E: App Build Readiness
 
-状态：本地 Release build 和 archive 已通过，权限已收窄；App Store distribution export 被 Xcode account/profile/Apple 后台阻塞。
+状态：本地 Release build、archive、App Store distribution export、altool validation 和 App Store Connect upload 均已通过；下一步是在 App Store Connect 选择 build 并补齐提交资料。
 
 - [x] 明确当前 dirty worktree 哪些是本次上线工作，哪些是用户已有改动。
 - [x] 确认版本号：
@@ -975,7 +977,7 @@ PEEK_BING_SITE_VERIFICATION=... \
 - [x] 检查是否真的需要 audio input entitlement；保留给 WebKit 页面请求麦克风，Info.plist 和 privacy copy 已同步。
 - [x] 确认 archive app entitlements 没有 `com.apple.security.get-task-allow`。
   - `script/launch_verify.sh` 会精确校验 archive entitlement allowlist：`com.apple.security.app-sandbox`、`com.apple.security.network.client`、`com.apple.security.device.audio-input`。
-- [ ] 确认最终 App Store exported app 没有 `com.apple.security.get-task-allow`。
+- [x] 确认最终 App Store exported app 没有 `com.apple.security.get-task-allow`。
   - `script/check_external_readiness.py` 已扩展：App Store export 成功后会定位 exported `.app`，验证 bundle metadata、`PrivacyInfo.xcprivacy`、sandbox/network/audio entitlements，并拒绝 `com.apple.security.get-task-allow`。
 - [x] 确认 `PrivacyInfo.xcprivacy` 已加入 target 并打包进 app。
 - [x] 确认 app icon 和 bundle icon 使用真实 Corner Peek icon。
@@ -1018,10 +1020,10 @@ xcodebuild archive \
 ```
 
   - 2026-06-28 01:36 JST 已通过。
-- [ ] 上传 App Store Connect：
-  - Xcode Organizer。
-  - 或 Transporter。
-  - 或 `xcrun altool`/`notarytool` 相关流程按 Apple 当前推荐工具确认。
+- [x] 上传 App Store Connect：
+  - 2026-06-28 20:35 JST 已用 `xcrun altool --upload-package` 上传 `/tmp/peek-appstore/external-readiness-export/Corner Peek.pkg`。
+  - Delivery UUID：`1381454e-1354-4bf6-9ad9-b89482779afe`。
+  - build status：`VALID` / `APP_STORE_ELIGIBLE`。
 
 注意：
 
@@ -1165,12 +1167,15 @@ curl -I https://kaedeeeeeeeeee.github.io/cornor_assitant/sitemap.xml
 
 ### Phase H: App Review 和发布
 
-状态：待 App Store Connect。
+状态：build 已上传并通过处理；待在 App Store Connect 选择 build、补齐页面资料并提交审核。
 
-- [ ] 上传 build。
-  - 当前导出包：`/tmp/peek-appstore/external-readiness-export/Corner Peek.pkg`
-  - 当前阻塞：缺 App Store Connect API issuer id 或其它上传凭据。
-- [ ] 等待 build processing 完成。
+- [x] 上传 build。
+  - 已上传导出包：`/tmp/peek-appstore/external-readiness-export/Corner Peek.pkg`
+  - Delivery UUID：`1381454e-1354-4bf6-9ad9-b89482779afe`
+- [x] 等待 build processing 完成。
+  - `build-status = VALID`
+  - `import-status = VALID`
+  - `buildAudienceType = APP_STORE_ELIGIBLE`
 - [ ] 选择 build 加入版本 `1.0`。
 - [ ] 填完 metadata、截图、隐私、年龄分级、价格、可售区域。
 - [x] 检查所有链接都是公网 HTTPS 且返回 200。
