@@ -57,8 +57,8 @@ def main() -> int:
 
     checkbox_count = text.count("- [ ]")
     print(f"external_inputs.checkbox_count: {checkbox_count}")
-    if checkbox_count < 15:
-        errors.append(f"expected at least 15 unchecked input items, found {checkbox_count}")
+    if checkbox_count < 14:
+        errors.append(f"expected at least 14 unchecked input items, found {checkbox_count}")
 
     for pattern in FORBIDDEN_COPY:
         match = pattern.search(text)

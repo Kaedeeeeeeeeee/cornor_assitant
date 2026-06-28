@@ -42,12 +42,14 @@ PEEK_BING_SITE_VERIFICATION=bing_token \
 - [ ] Apple Developer Program account access.
   - 当前本机状态：`Apple Distribution` identity for team `Y4FV6WUU4V` 已安装。
   - 需要输入/确认：登录 Xcode Settings > Accounts 的 Apple Developer 账号，并确保 Team ID 为 `Y4FV6WUU4V` 或更新 `CornerAssistantApp/export_options_app_store.plist`。
-- [ ] Apple Developer Program License Agreement.
-  - 需要输入/确认：账号持有人在 Apple Developer/App Store Connect 接受最新 PLA。
+- [x] Apple Developer Program License Agreement.
+  - 2026-06-28 13:00 JST 已在 Apple Developer 账号中接受最新 PLA；App Store Connect apps 列表不再显示协议更新横幅。
+- [x] Apple Developer Bundle ID / App ID.
+  - 2026-06-28 13:00 JST 已在 Certificates, Identifiers & Profiles 注册 `Peek` / `com.shifeng.peek`，App ID Prefix 为 `Y4FV6WUU4V`。
 - [ ] Paid Apps Agreement, tax, and banking.
   - 需要输入/确认：已签署 Paid Apps Agreement，并完成税务、银行和付费销售相关信息。
 - [ ] App Store Connect app record.
-  - 当前浏览器状态：2026-06-28 05:45 JST App Store Connect 仍停在 Apple Account 邮箱/密码登录页，URL 为 `authResult=FAILED`。
+  - 当前浏览器状态：2026-06-28 13:30 JST 已能进入 New App 表单，并已验证 `com.shifeng.peek` 的 Apple Developer Identifier 存在；由于当前屏幕/窗口捕获在填写过程中变为不可可靠核对，未点击 `Create`，未创建 App Store Connect app record。
   - App name：`Peek`
   - Bundle ID：`com.shifeng.peek`
   - SKU 建议：`peek-macos-001`
@@ -67,7 +69,7 @@ PEEK_BING_SITE_VERIFICATION=bing_token \
 ## Provisioning, Export, And Upload
 
 - [ ] `com.shifeng.peek` App Store provisioning profile.
-  - 当前本机状态：没有 `com.shifeng.peek` App Store profile；同 team 只发现 `Notation Mac App Store (Y4FV6WUU4V.com.shifengzhang.notation)`。
+  - 当前本机状态：没有 `com.shifeng.peek` App Store profile；同 team 只发现 `Notation Mac App Store (Y4FV6WUU4V.com.shifengzhang.notation)`。Apple Developer Identifier 已创建，可继续创建/刷新 App Store profile。
   - 当前 CLI 阻塞：`No Accounts / no com.shifeng.peek App Store profile`
   - 需要输入/确认：Xcode 已登录可用 Apple Developer 账号，并创建或刷新 App Store profile。
 - [ ] App Store distribution export.

@@ -102,6 +102,11 @@
 - 2026-06-28 01:26 JST 再次执行 `xcodebuild -exportArchive`，失败原因仍为：
   - `error: exportArchive No Accounts`
   - `error: exportArchive No profiles for 'com.shifeng.peek' were found`
+- 2026-06-28 13:00 JST Apple Developer 后台状态更新：
+  - 已接受最新 Apple Developer Program License Agreement；App Store Connect apps 列表不再显示协议更新横幅。
+  - 已在 Certificates, Identifiers & Profiles 注册 `Peek` / `com.shifeng.peek`，App ID Prefix 为 `Y4FV6WUU4V`。
+  - 仍未创建 App Store Connect app record；New App 表单已打开并开始填写，但屏幕/窗口捕获变为不可可靠核对后已停止，未点击 `Create`。
+  - 仍需要创建/刷新 `com.shifeng.peek` 的 App Store provisioning profile，并让 Xcode/CLI 获得可用账号状态。
 
 2026-06-27 源码发布风险收口：
 
@@ -1194,11 +1199,15 @@ curl -I https://kaedeeeeeeeeee.github.io/cornor_assitant/sitemap.xml
 - [ ] Xcode Settings > Accounts 中登录可用 Apple Developer 账号。
 - [ ] Paid Apps Agreement、税务、银行信息。
 - [ ] App Store Connect App record。
-- [ ] Apple Developer PLA update acceptance。
+- [x] Apple Developer PLA update acceptance。
+  - 2026-06-28 13:00 JST 已接受；App Store Connect 不再显示协议更新横幅。
+- [x] Apple Developer Bundle ID / App ID。
+  - 2026-06-28 13:00 JST 已注册 `Peek` / `com.shifeng.peek`，App ID Prefix 为 `Y4FV6WUU4V`。
 - [x] Apple Distribution certificate installed.
   - 2026-06-28 05:37 JST `script/check_external_readiness.py` 确认 team `Y4FV6WUU4V` 的 Apple Distribution identity 已安装。
 - [ ] `com.shifeng.peek` App Store provisioning profile。
   - 2026-06-28 05:37 JST 本机仅发现同 team 的 `Notation` App Store profile，未发现 `com.shifeng.peek` profile。
+  - 2026-06-28 13:00 JST Identifier 已存在，可继续创建/刷新 App Store profile。
 - [ ] App Store SKU 最终确认；建议 `peek-macos-001`。
 - [ ] App Store 截图素材。
 - [ ] App Review 真实联系电话。
@@ -1344,15 +1353,14 @@ Landing 性能复查：
 
 按顺序执行：
 
-1. 接受 Apple Developer Program License Agreement 更新。
+1. 在 App Store Connect 创建 Peek app record，使用已注册的 `com.shifeng.peek` Bundle ID；创建前必须能可靠核对 New App 表单内容。
 2. 创建/刷新 `com.shifeng.peek` 的 App Store provisioning profile。
 3. 用 Organizer 或 `xcodebuild -exportArchive` 重新执行 App Store export。
 4. 验证 exported app entitlements 中 `get-task-allow = false`。
-5. 在 App Store Connect 创建 Peek app record。
-6. 运行 `./script/export_app_store_metadata.py`，从 `/tmp/peek-app-store-metadata` 复制 metadata 和审核备注。
-7. 填写 App Store Connect 年龄分级、内容权利、App Privacy、真实审核联系电话和其他后台表单。
-8. 如果覆盖 EU 地区，完成 DSA trader status；如果暂不覆盖 EU，先调整 availability。
-9. 补 GA4 Measurement ID：
+5. 运行 `./script/export_app_store_metadata.py`，从 `/tmp/peek-app-store-metadata` 复制 metadata 和审核备注。
+6. 填写 App Store Connect 年龄分级、内容权利、App Privacy、真实审核联系电话和其他后台表单。
+7. 如果覆盖 EU 地区，完成 DSA trader status；如果暂不覆盖 EU，先调整 availability。
+8. 补 GA4 Measurement ID：
    - 现有 Google Analytics 账号/属性为 `ZHANG SHIFENG` / `とりあえずこの名前使う`，但没有 data stream。
    - 确认后在该属性下创建 Web data stream：URL `https://kaedeeeeeeeeee.github.io/cornor_assitant/`，stream name 建议 `Peek Landing Page`。
    - 拿到 `G-...` 后用 `script/configure_landing_variables.sh` 设置 `PEEK_GA_MEASUREMENT_ID`，或者明确首发先不开启 analytics。
