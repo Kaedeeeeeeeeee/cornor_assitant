@@ -12,11 +12,16 @@ EXPORT_OPTIONS_PATH = ROOT / "CornerAssistantApp" / "export_options_app_store.pl
 
 EXPECTED_EXPORT_OPTIONS = {
     "destination": "export",
+    "installerSigningCertificate": "3rd Party Mac Developer Installer",
     "method": "app-store-connect",
     "signingCertificate": "Apple Distribution",
-    "signingStyle": "automatic",
+    "signingStyle": "manual",
     "stripSwiftSymbols": True,
     "uploadSymbols": True,
+}
+
+EXPECTED_PROVISIONING_PROFILES = {
+    "com.shifeng.peek": "Corner Peek Mac App Store",
 }
 
 
@@ -43,7 +48,15 @@ def main() -> int:
         if not isinstance(team_id, str) or not re.fullmatch(r"[A-Z0-9]{10}", team_id):
             errors.append("export_options.teamID must be a 10-character Apple team id")
 
-        allowed_keys = set(EXPECTED_EXPORT_OPTIONS) | {"teamID"}
+        provisioning_profiles = options.get("provisioningProfiles")
+        print(f"export_options.provisioningProfiles: {provisioning_profiles!r}")
+        if provisioning_profiles != EXPECTED_PROVISIONING_PROFILES:
+            errors.append(
+                "export_options.provisioningProfiles expected "
+                f"{EXPECTED_PROVISIONING_PROFILES!r}; got {provisioning_profiles!r}"
+            )
+
+        allowed_keys = set(EXPECTED_EXPORT_OPTIONS) | {"provisioningProfiles", "teamID"}
         unexpected_keys = sorted(set(options) - allowed_keys)
         if unexpected_keys:
             errors.append(f"export options has unexpected keys: {', '.join(unexpected_keys)}")

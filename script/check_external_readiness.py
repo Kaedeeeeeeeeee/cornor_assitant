@@ -33,6 +33,7 @@ SEARCH_BOT_USER_AGENTS = {
 ARCHIVE_PATH = Path("/tmp/peek-appstore/Corner Peek.xcarchive")
 EXPORT_PATH = Path("/tmp/peek-appstore/external-readiness-export")
 EXPORT_OPTIONS = ROOT / "CornerAssistantApp" / "export_options_app_store.plist"
+EXPANDED_PACKAGE_PATH = Path("/tmp/peek-appstore/external-readiness-expanded-pkg")
 PROVISIONING_PROFILE_DIR = Path.home() / "Library" / "MobileDevice" / "Provisioning Profiles"
 SCREENSHOT_OUTPUT_DIR = Path("/tmp/peek-app-store-screenshots")
 EXPECTED_SCREENSHOTS = [
@@ -96,8 +97,7 @@ def exported_app_path(export_path: Path) -> Path:
     return apps[0]
 
 
-def validate_exported_app(export_path: Path) -> str:
-    app_path = exported_app_path(export_path)
+def validate_app_bundle(app_path: Path) -> str:
     info_plist = app_path / "Contents" / "Info.plist"
     privacy_manifest = app_path / "Contents" / "Resources" / "PrivacyInfo.xcprivacy"
     executable = app_path / "Contents" / "MacOS" / "Corner Peek"
@@ -138,6 +138,39 @@ def validate_exported_app(export_path: Path) -> str:
             raise ValueError(f"exported app entitlements missing {required}")
 
     return str(app_path)
+
+
+def exported_package_path(export_path: Path) -> Path:
+    packages = sorted(path for path in export_path.rglob("*.pkg") if path.is_file())
+    if len(packages) != 1:
+        raise ValueError(f"expected one exported .pkg in {export_path}, found {len(packages)}")
+    return packages[0]
+
+
+def validate_exported_app(export_path: Path) -> str:
+    apps = sorted(path for path in export_path.rglob("*.app") if path.is_dir())
+    if len(apps) == 1:
+        return validate_app_bundle(apps[0])
+
+    package_path = exported_package_path(export_path)
+    signature = run(["pkgutil", "--check-signature", str(package_path)], timeout=30)
+    signature_output = "\n".join([signature.stdout, signature.stderr])
+    if signature.returncode != 0:
+        raise ValueError(f"could not read exported package signature: {' | '.join(signature_output.splitlines()[-5:])}")
+    if "3rd Party Mac Developer Installer: SHIFENG ZHANG (Y4FV6WUU4V)" not in signature_output:
+        raise ValueError("exported package is not signed by the expected Mac App Store installer certificate")
+
+    shutil.rmtree(EXPANDED_PACKAGE_PATH, ignore_errors=True)
+    expand = run(["pkgutil", "--expand-full", str(package_path), str(EXPANDED_PACKAGE_PATH)], timeout=60)
+    expand_output = "\n".join([expand.stdout, expand.stderr])
+    if expand.returncode != 0:
+        raise ValueError(f"could not expand exported package: {' | '.join(expand_output.splitlines()[-5:])}")
+
+    expanded_apps = sorted(path for path in EXPANDED_PACKAGE_PATH.rglob("*.app") if path.is_dir())
+    if len(expanded_apps) != 1:
+        raise ValueError(f"expected one .app inside exported package, found {len(expanded_apps)}")
+    app_path = validate_app_bundle(expanded_apps[0])
+    return f"{package_path} containing {app_path}"
 
 
 def fetch_text(url: str, user_agent: str = "CornerPeekExternalReadiness/1.0") -> tuple[int, str]:

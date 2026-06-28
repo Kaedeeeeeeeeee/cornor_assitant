@@ -19,7 +19,7 @@ REQUIRED_MARKERS = [
     "## Final Store URL",
     "PEEK_GA_MEASUREMENT_ID=G-XXXXXXXXXX",
     "PEEK_BING_SITE_VERIFICATION=bing_token",
-    "PEEK_CHECK_EXPORT=1 PEEK_ALLOW_PROVISIONING_UPDATES=1",
+    "PEEK_CHECK_EXPORT=1",
     "./script/capture_app_store_screenshot.sh",
     "./script/configure_app_store_url.py --dry-run",
     "com.shifeng.peek",
@@ -67,8 +67,6 @@ def main() -> int:
         "- [ ] Google Search Console sitemap status.",
         "- [ ] Bing Webmaster Tools.",
         "- [ ] Paid Apps Agreement, tax, and banking.",
-        "- [ ] `com.shifeng.peek` App Store provisioning profile.",
-        "- [ ] App Store distribution export.",
         "- [ ] Upload build to App Store Connect.",
         "- [ ] True Mac App Store URL.",
     ]

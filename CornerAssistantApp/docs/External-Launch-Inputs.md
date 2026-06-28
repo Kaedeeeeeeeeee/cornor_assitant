@@ -1,6 +1,6 @@
 # Corner Peek External Launch Inputs
 
-最后更新：2026-06-28 15:46 JST
+最后更新：2026-06-28 18:03 JST
 
 这个文件只记录代码和本机 CLI 无法安全代办的外部账号、后台表单、真实联系方式和最终 URL。执行这些项目时，不要在聊天或日志里粘贴密码、验证码、恢复码、API private key 或完整付款/银行信息。
 
@@ -39,9 +39,9 @@ PEEK_BING_SITE_VERIFICATION=bing_token \
 
 ## Apple Developer And App Store Connect
 
-- [ ] Apple Developer Program account access.
-  - 当前本机状态：`Apple Distribution` identity for team `Y4FV6WUU4V` 已安装。
-  - 需要输入/确认：登录 Xcode Settings > Accounts 的 Apple Developer 账号，并确保 Team ID 为 `Y4FV6WUU4V` 或更新 `CornerAssistantApp/export_options_app_store.plist`。
+- [x] Apple Developer Program account access.
+  - 当前本机状态：`Apple Distribution` identity、`3rd Party Mac Developer Installer` certificate 和 `com.shifeng.peek` App Store profile 均可用于本机 App Store export。
+  - 2026-06-28 18:00 JST 已将 `CornerAssistantApp/export_options_app_store.plist` 改为 manual signing，避免 CLI export 依赖 Xcode Accounts 登录态。
 - [x] Apple Developer Program License Agreement.
   - 2026-06-28 13:00 JST 已在 Apple Developer 账号中接受最新 PLA；App Store Connect apps 列表不再显示协议更新横幅。
 - [x] Apple Developer Bundle ID / App ID.
@@ -69,21 +69,29 @@ PEEK_BING_SITE_VERIFICATION=bing_token \
 
 ## Provisioning, Export, And Upload
 
-- [ ] `com.shifeng.peek` App Store provisioning profile.
-  - 当前本机状态：没有 `com.shifeng.peek` App Store profile；同 team 只发现 `Notation Mac App Store (Y4FV6WUU4V.com.shifengzhang.notation)`。Apple Developer Identifier 已创建，可继续创建/刷新 App Store profile。
-  - 当前 CLI 阻塞：`No Accounts / no com.shifeng.peek App Store profile`
-  - 当前 Apple Developer 表单状态：已选 `Mac App Store Connect`、App ID `Peek (Y4FV6WUU4V.com.shifeng.peek)`、Distribution certificate `SHIFENG ZHANG (Distribution)`，profile 名称已填 `Corner Peek Mac App Store`。
-  - 需要输入/确认：点击 `Generate` 会在 Apple Developer 账号里创建 profile；执行前需要账号持有人明确确认。
-- [ ] App Store distribution export.
-  - 账号/profile 准备好后执行：
+- [x] `com.shifeng.peek` App Store provisioning profile.
+  - 2026-06-28 17:49 JST 已创建并安装 `Corner Peek Mac App Store`，UUID `725ce297-837d-47df-b5ec-1593515efaac`。
+  - Profile App ID：`Y4FV6WUU4V.com.shifeng.peek`；Platform：`OSX`；Expires：`2027/05/17`。
+- [x] App Store distribution export.
+  - 2026-06-28 18:00 JST 以下命令通过，导出并验证 `/tmp/peek-appstore/external-readiness-export/Corner Peek.pkg`：
 
 ```bash
-PEEK_CHECK_EXPORT=1 PEEK_ALLOW_PROVISIONING_UPDATES=1 ./script/check_external_readiness.py
+PEEK_CHECK_EXPORT=1 ./script/check_external_readiness.py
 ```
 
 - [ ] Upload build to App Store Connect.
-  - 推荐方式：Xcode Organizer。
-  - 上传后需要确认 build processing 完成，并选择 build 加入版本 `1.0`。
+  - 当前可上传文件：`/tmp/peek-appstore/external-readiness-export/Corner Peek.pkg`
+  - 当前阻塞：本机已有 API key file `~/.appstoreconnect/private_keys/AuthKey_99STZKX674.p8`，但未找到 App Store Connect API issuer id；`altool` 上传仍需要 `--api-issuer`，或改用 Apple ID app-specific password / 已登录 Xcode Organizer / Transporter。
+  - 拿到 issuer id 后可先运行：
+
+```bash
+xcrun altool --list-providers \
+  --api-key 99STZKX674 \
+  --api-issuer ISSUER_ID \
+  --output-format json
+```
+
+  - 确认 provider 后再上传 build，并等待 processing 完成后选择 build 加入版本 `1.0`。
 
 ## Screenshots
 

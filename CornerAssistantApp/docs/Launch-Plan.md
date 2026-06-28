@@ -1,6 +1,6 @@
 # Corner Peek 上线准备计划
 
-最后更新：2026-06-28 15:46 JST
+最后更新：2026-06-28 18:03 JST
 
 这个文档是 Corner Peek 从当前本地项目走到公开 landing page 和 Mac App Store 首发的工作台。后续执行、验收、补漏都以这里为准；如果产品、定价、域名、隐私口径或 App Store 配置发生变化，先更新本文件，再改代码或页面。
 
@@ -617,6 +617,13 @@
   - `/tmp/peek-appstore/Corner Peek.xcarchive` 已复核：`com.shifeng.peek`、`1.0 (1)`、universal `x86_64` + `arm64`、`LSMinimumSystemVersion = 15.0`、`public.app-category.productivity`、`ITSAppUsesNonExemptEncryption = false`、PrivacyInfo 无 collected data、entitlements 为 App Sandbox/network client/audio input。
   - `/tmp/peek-app-store-metadata` 已按当前文档重新导出并通过 `./script/validate_app_store_metadata_export.py`。
   - `PEEK_CHECK_SCREENSHOT=1 PEEK_CHECK_QA_SMOKE=1 ./script/check_external_readiness.py` 通过截图和 QA 扩展检查，结果为 `{"manual": 4, "ok": 15, "skipped": 1}`；已生成 5 张 2880x1800 App Store 候选截图到 `/tmp/peek-app-store-screenshots`。
+- 2026-06-28 18:00 JST App Store profile 和 export 收口：
+  - 已在 Apple Developer 创建并下载 `Corner Peek Mac App Store` provisioning profile，UUID `725ce297-837d-47df-b5ec-1593515efaac`，App ID `Y4FV6WUU4V.com.shifeng.peek`，过期日 `2027/05/17`。
+  - 已安装到 `~/Library/MobileDevice/Provisioning Profiles/725ce297-837d-47df-b5ec-1593515efaac.provisionprofile`。
+  - `export_options_app_store.plist` 已切到 manual signing，显式配置 `provisioningProfiles` 和 `installerSigningCertificate = 3rd Party Mac Developer Installer`。
+  - `PEEK_CHECK_EXPORT=1 ./script/check_external_readiness.py` 通过，导出并验证 `/tmp/peek-appstore/external-readiness-export/Corner Peek.pkg`，包内 app Info.plist、entitlements 和 PrivacyInfo 均通过检查。
+  - `pkgutil --check-signature` 确认导出 pkg 使用 `3rd Party Mac Developer Installer: SHIFENG ZHANG (Y4FV6WUU4V)` 签名。
+  - build 上传当前被上传凭据阻塞：本机有 `AuthKey_99STZKX674.p8`，但未找到 API issuer id；`xcrun altool --list-providers --api-key 99STZKX674` 明确要求补 `--api-issuer`。
 
 ## 2. 首发完成定义
 
@@ -1000,12 +1007,10 @@ xcodebuild archive \
   -allowProvisioningUpdates
 ```
 
-- [ ] 用 Xcode Organizer 或 `xcodebuild -exportArchive` 走 App Store distribution。
+- [x] 用 Xcode Organizer 或 `xcodebuild -exportArchive` 走 App Store distribution。
   - 已新增 `export_options_app_store.plist`。
-  - `script/validate_export_options.py` 已覆盖 export options：App Store Connect method、Apple Distribution certificate、automatic signing、symbols 配置和 10 位 Apple team ID。
-  - 当前 export 被 Xcode account/profile 阻塞：`No Accounts`，且没有 `com.shifeng.peek` profile。
-  - 2026-06-28 01:26 JST 已复查，阻塞仍未解除。
-  - 登录账号后仍需确认 Apple Developer PLA 是否已接受。
+  - `script/validate_export_options.py` 已覆盖 export options：App Store Connect method、Apple Distribution certificate、manual signing、Corner Peek App Store profile、Mac installer signing certificate、symbols 配置和 10 位 Apple team ID。
+  - 2026-06-28 18:00 JST `PEEK_CHECK_EXPORT=1 ./script/check_external_readiness.py` 已通过，导出 `/tmp/peek-appstore/external-readiness-export/Corner Peek.pkg`。
 - [x] 发布前一键验证脚本：
 
 ```bash
@@ -1163,6 +1168,8 @@ curl -I https://kaedeeeeeeeeee.github.io/cornor_assitant/sitemap.xml
 状态：待 App Store Connect。
 
 - [ ] 上传 build。
+  - 当前导出包：`/tmp/peek-appstore/external-readiness-export/Corner Peek.pkg`
+  - 当前阻塞：缺 App Store Connect API issuer id 或其它上传凭据。
 - [ ] 等待 build processing 完成。
 - [ ] 选择 build 加入版本 `1.0`。
 - [ ] 填完 metadata、截图、隐私、年龄分级、价格、可售区域。
@@ -1212,10 +1219,11 @@ curl -I https://kaedeeeeeeeeee.github.io/cornor_assitant/sitemap.xml
   - 2026-06-28 13:00 JST 已注册 `Corner Peek` / `com.shifeng.peek`，App ID Prefix 为 `Y4FV6WUU4V`。
 - [x] Apple Distribution certificate installed.
   - 2026-06-28 05:37 JST `script/check_external_readiness.py` 确认 team `Y4FV6WUU4V` 的 Apple Distribution identity 已安装。
-- [ ] `com.shifeng.peek` App Store provisioning profile。
+- [x] `com.shifeng.peek` App Store provisioning profile。
   - 2026-06-28 05:37 JST 本机仅发现同 team 的 `Notation` App Store profile，未发现 `com.shifeng.peek` profile。
   - 2026-06-28 13:00 JST Identifier 已存在，可继续创建/刷新 App Store profile。
   - 2026-06-28 15:45 JST Apple Developer profile 创建表单已填好并停在 `Generate` 前；等待账号持有人确认生成。
+  - 2026-06-28 17:49 JST 已生成并安装 `Corner Peek Mac App Store` profile；`script/check_external_readiness.py` 默认检查已识别到 1 个 matching App Store profile。
 - [x] App Store SKU 最终确认：`corner-peek-macos-001`。
 - [x] App Store 截图候选素材。
 - [ ] App Review 真实联系电话。
