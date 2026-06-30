@@ -131,34 +131,29 @@ if mean < 4 or max_channel < 12:
 
 SCENES = {
     "launcher": {
-        "eyebrow": "Pinned daily tools",
-        "headline": "Keep every web tool one gesture away.",
-        "body": "Pin AI, docs, team chat, and trackers to the side rail. Move to your hot corner, open what you need, then get back to work.",
-        "callout": "No full browser switch",
+        "eyebrow": "Pinned tools",
+        "headline": "Your web tools, one gesture away.",
+        "body": "Move to the hot corner and open daily sites from the screen edge.",
     },
     "web": {
         "eyebrow": "AI at the edge",
-        "headline": "Ask, summarize, or rewrite without changing context.",
-        "body": "Open a lightweight AI workspace from the screen edge while your main app stays exactly where it is.",
-        "callout": "Quick answers beside your work",
+        "headline": "AI, one gesture away.",
+        "body": "Ask, summarize, or rewrite while your main window stays in place.",
     },
     "tabs": {
         "eyebrow": "Docs and messages",
-        "headline": "Check a brief, a note, or a team update in seconds.",
-        "body": "Corner Peek keeps short web tasks in a narrow side panel, so reference pages do not take over your desktop.",
-        "callout": "Fast context checks",
+        "headline": "Check docs without switching.",
+        "body": "Keep briefs, notes, and short updates beside your current work.",
     },
     "sheet": {
         "eyebrow": "Trackers and sheets",
-        "headline": "Look up the number you need, then close the panel.",
-        "body": "Use small spreadsheets, dashboards, and status trackers without opening another full-size browser window.",
-        "callout": "Small checks stay small",
+        "headline": "Sheets stay out of the way.",
+        "body": "Look up trackers and dashboards without opening another full browser.",
     },
     "pinned": {
         "eyebrow": "Your web workflow",
-        "headline": "Turn the screen edge into a shelf for daily apps.",
-        "body": "Pinned sites stay one click away. Use the tools you already rely on without adding another permanent window.",
-        "callout": "Pin what you already use",
+        "headline": "Pin the sites you use daily.",
+        "body": "AI, docs, chat, sheets, and dashboards stay ready on the side rail.",
     },
 }
 
@@ -214,75 +209,55 @@ def draw_wrapped(draw: ImageDraw.ImageDraw, xy: tuple[int, int], text: str, font
 
 scene = SCENES.get(scenario, SCENES["launcher"])
 
-canvas = Image.new("RGB", (2880, 1800), (247, 250, 253))
+canvas = Image.new("RGB", (2880, 1800), (255, 255, 255))
 canvas_rgba = canvas.convert("RGBA")
 draw = ImageDraw.Draw(canvas_rgba)
 
 blue = (37, 99, 235, 255)
 blue_soft = (219, 234, 254, 255)
 ink = (18, 25, 38, 255)
-muted = (80, 93, 110, 255)
+muted = (93, 105, 123, 255)
 
-# Subtle background structure that does not compete with the captured app.
-draw.rectangle((0, 0, 2880, 1800), fill=(247, 250, 253, 255))
-draw.rounded_rectangle((1580, 170, 2680, 1590), radius=46, fill=(241, 246, 252, 255), outline=(226, 233, 242, 255), width=2)
-draw.rounded_rectangle((150, 170, 1275, 1590), radius=46, fill=(255, 255, 255, 225), outline=(226, 233, 242, 255), width=2)
-draw.ellipse((2260, -360, 3260, 640), fill=(221, 235, 255, 110))
-draw.ellipse((-340, 1180, 520, 2040), fill=(232, 242, 255, 100))
+draw.rectangle((0, 0, 2880, 1800), fill=(255, 255, 255, 255))
 
 eyebrow_font = load_font(34, bold=True)
-headline_font = load_font(88, bold=True)
+headline_font = load_font(102, bold=True)
 body_font = load_font(42)
-callout_font = load_font(34, bold=True)
-small_font = load_font(28, bold=True)
 
-text_w = 950
-rounded_rect(draw, (250, 290, 250 + text_size(draw, scene["eyebrow"], eyebrow_font)[0] + 58, 350), 30, blue_soft)
-draw.text((279, 300), scene["eyebrow"], font=eyebrow_font, fill=blue)
+text_x = 300
+text_w = 830
+headline_lines = wrap_text(draw, scene["headline"], headline_font, text_w)
+body_lines = wrap_text(draw, scene["body"], body_font, 760)
+headline_h = sum(text_size(draw, line, headline_font)[1] for line in headline_lines) + max(0, len(headline_lines) - 1) * 24
+body_h = sum(text_size(draw, line, body_font)[1] for line in body_lines) + max(0, len(body_lines) - 1) * 18
+content_h = 62 + 74 + headline_h + 44 + 12 + 62 + body_h
+content_y = round((canvas_rgba.height - content_h) * 0.5)
 
-y = draw_wrapped(draw, (250, 430), scene["headline"], headline_font, ink, text_w, 18)
-y += 34
-draw.rectangle((250, y, 430, y + 10), fill=blue)
-y += 72
-y = draw_wrapped(draw, (250, y), scene["body"], body_font, muted, text_w, 18)
+pill_w = text_size(draw, scene["eyebrow"], eyebrow_font)[0] + 58
+rounded_rect(draw, (text_x, content_y, text_x + pill_w, content_y + 62), 31, blue_soft)
+draw.text((text_x + 29, content_y + 13), scene["eyebrow"], font=eyebrow_font, fill=blue)
 
-callout_top = min(y + 88, 1295)
-rounded_rect(draw, (250, callout_top, 1120, callout_top + 152), 28, (239, 246, 255, 255), outline=(174, 207, 255, 255), width=2)
-draw.ellipse((302, callout_top + 46, 362, callout_top + 106), fill=blue)
-draw.text((390, callout_top + 50), scene["callout"], font=callout_font, fill=ink)
-draw.text((390, callout_top + 96), "Open. Check. Get back to your main task.", font=small_font, fill=muted)
+y = content_y + 136
+y = draw_wrapped(draw, (text_x, y), scene["headline"], headline_font, ink, text_w, 24)
+y += 44
+draw.rectangle((text_x, y, text_x + 160, y + 12), fill=blue)
+y += 62
+y = draw_wrapped(draw, (text_x, y), scene["body"], body_font, muted, 760, 18)
 
-max_width = 1040
-max_height = 1390
-scale = min(max_width / width, max_height / height, 1.85)
+max_width = 1280
+max_height = 1640
+scale = min(max_width / width, max_height / height, 2.05)
 window = raw.resize((round(width * scale), round(height * scale)), Image.Resampling.LANCZOS)
 
-shadow = Image.new("RGBA", (window.width + 96, window.height + 96), (0, 0, 0, 0))
-shadow_alpha = Image.new("L", window.size, 125)
-shadow.paste((28, 37, 46, 125), (48, 48), shadow_alpha)
-shadow = shadow.filter(ImageFilter.GaussianBlur(30))
+shadow = Image.new("RGBA", (window.width + 150, window.height + 150), (0, 0, 0, 0))
+shadow_alpha = Image.new("L", window.size, 30)
+shadow.paste((15, 23, 42, 30), (75, 75), shadow_alpha)
+shadow = shadow.filter(ImageFilter.GaussianBlur(24))
 
-window_x = 1795 + round((700 - window.width) * 0.5)
+window_x = round(2095 - window.width * 0.5)
 window_y = round((canvas_rgba.height - window.height) * 0.5)
-if window_x + window.width > 2600:
-    window_x = 2600 - window.width
-
-draw.rounded_rectangle((1648, 314, 2628, 1486), radius=38, outline=(214, 225, 238, 255), width=2)
-draw.line((1648, 424, 2628, 424), fill=(225, 233, 243, 255), width=2)
-draw.text((1708, 354), "Corner Peek", font=small_font, fill=muted)
-draw.rounded_rectangle((2412, 352, 2576, 394), radius=21, fill=blue_soft)
-draw.text((2444, 359), "macOS", font=small_font, fill=blue)
-
-canvas_rgba.alpha_composite(shadow, (window_x - 48, window_y - 48))
+canvas_rgba.alpha_composite(shadow, (window_x - 75, window_y - 75))
 canvas_rgba.alpha_composite(window, (window_x, window_y))
-
-# Blue focus marker: reinforces that the side panel is the product, not the mock page.
-marker_x = max(window_x - 54, 1600)
-draw.rounded_rectangle((marker_x, window_y + 92, marker_x + 18, window_y + 310), radius=9, fill=blue)
-draw.line((marker_x + 18, window_y + 154, window_x + 10, window_y + 154), fill=blue, width=5)
-
-draw.text((250, 1510), "Corner Peek", font=load_font(34, bold=True), fill=ink)
-draw.text((250, 1560), "A menu bar browser for the web tools you use every day.", font=load_font(30), fill=muted)
 
 canvas_rgba.convert("RGB").save(out_path, "PNG")
 

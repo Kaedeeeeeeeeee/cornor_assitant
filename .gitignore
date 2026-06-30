@@ -15,3 +15,15 @@ __pycache__/
 .swiftpm/configuration/registries.json
 .swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
 .netrc
+
+# App Store Connect / fastlane local state
+.env.asc
+AuthKey_*.p8
+private_keys/
+fastlane/metadata/
+fastlane/screenshots/
+fastlane/Preview.html
+fastlane/report.xml
+fastlane/*.log
+.bundle/
+vendor/bundle/

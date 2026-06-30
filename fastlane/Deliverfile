@@ -1,0 +1,7 @@
+app_identifier("com.shifeng.peek")
+app(6785167787)
+team_id("Y4FV6WUU4V")
+platform("osx")
+
+skip_binary_upload(true)
+submit_for_review(false)

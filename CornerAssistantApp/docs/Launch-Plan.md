@@ -1352,6 +1352,23 @@ App Store Connect metadata 导出：
 
 默认输出到 `/tmp/peek-app-store-metadata`。登录 App Store Connect 并创建 app record 后，从该目录复制三语言 metadata、审核备注、基础字段、`app_store_connect_submission_checklist.md` 里的后台表单清单、`manual_qa_checklist.md` 的人工 QA 清单，以及 `external_launch_inputs.md` 的外部输入清单；截图、真实联系电话、价格层级确认、DSA 和 build selection 仍需在后台手工完成。
 
+App Store Connect API / fastlane 自动化：
+
+```bash
+cp .env.asc.example .env.asc
+# 填入 ASC_KEY_ID、ASC_ISSUER_ID、ASC_KEY_PATH
+set -a
+source .env.asc
+set +a
+
+bundle install
+bundle exec fastlane mac prepare_app_store_assets
+bundle exec fastlane mac upload_screenshots
+bundle exec fastlane mac upload_metadata
+```
+
+2026-06-30 已新增 `fastlane/Fastfile`、`fastlane/Deliverfile`、`fastlane/README.md`、`.env.asc.example`、`script/prepare_fastlane_metadata.sh` 和 `script/prepare_fastlane_screenshots.sh`。这条路径可以用 App Store Connect API key 上传截图、metadata 和签名后的 macOS `.pkg`，避免依赖浏览器登录状态；但 API key 仍需账号持有人在 App Store Connect 网页生成一次，Paid Apps Agreement、税务/银行、DSA/trader status、年龄分级答案、价格/可售区域等账号级或法律字段仍需在 Apple 网页确认。当前机器系统 Ruby 为 2.6，建议安装 Ruby 3.1+ 后再运行 `bundle install`。
+
 Landing repository variables 配置：
 
 ```bash
