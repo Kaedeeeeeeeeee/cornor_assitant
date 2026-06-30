@@ -136,7 +136,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: corner-peek-app-store-pkg
-          path: ${{ runner.temp }}/CornerPeekExport/*.pkg
+          path: /tmp/CornerPeekExport/*.pkg
           if-no-files-found: error
 
       - name: Upload package to App Store Connect
