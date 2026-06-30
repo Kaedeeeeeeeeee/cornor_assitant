@@ -25,6 +25,7 @@ for locale_dir in "$TMP_DIR"/metadata/*; do
   cp "$locale_dir/description.txt" "$dest_locale/description.txt"
   cp "$locale_dir/keywords.txt" "$dest_locale/keywords.txt"
   cp "$locale_dir/whats_new.txt" "$dest_locale/release_notes.txt"
+  printf "https://kaedeeeeeeeeee.github.io/cornor_assitant/privacy.html\n" > "$dest_locale/privacy_url.txt"
 done
 
 printf "Prepared fastlane metadata: %s\n" "$DEST_DIR"
