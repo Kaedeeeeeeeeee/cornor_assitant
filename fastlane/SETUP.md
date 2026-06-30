@@ -75,7 +75,7 @@ PATH="/opt/homebrew/opt/ruby/bin:$PATH" bundle exec fastlane mac upload_pkg pkg:
 Submit the prepared App Store version for review after the desired build is processed and selected:
 
 ```bash
-PATH="/opt/homebrew/opt/ruby/bin:$PATH" bundle exec fastlane mac submit_for_review build_number:2
+PATH="/opt/homebrew/opt/ruby/bin:$PATH" bundle exec fastlane mac submit_for_review build_number:3
 ```
 
 ## Screenshot Locales

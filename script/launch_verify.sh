@@ -31,7 +31,7 @@ declare -a CLEANUP_PATHS=()
 
 cleanup() {
   local path
-  for path in "${CLEANUP_PATHS[@]}"; do
+  for path in "${CLEANUP_PATHS[@]+"${CLEANUP_PATHS[@]}"}"; do
     rm -rf "$path"
   done
 }
@@ -68,6 +68,22 @@ assert_plist_value() {
   actual="$(plist_read "$key" "$plist")"
   assert_equals "$key" "$expected" "$actual"
 }
+
+log "App Store toolchain"
+if [[ "${PEEK_SKIP_APPSTORE_TOOLCHAIN_CHECK:-0}" != "1" ]]; then
+  macos_version="$(sw_vers -productVersion)"
+  macos_major="${macos_version%%.*}"
+  xcode_version="$(xcodebuild -version | awk 'NR == 1 { print $2 }')"
+  xcode_major="${xcode_version%%.*}"
+  sdk_version="$(xcrun --sdk macosx --show-sdk-version)"
+  sdk_build="$(xcrun --sdk macosx --show-sdk-build-version)"
+
+  if [[ "$macos_major" -ge 27 || "$xcode_major" -ge 26 ]]; then
+    fail "App Store upload toolchain is currently not accepted by Apple: macOS $macos_version, Xcode $xcode_version, macOS SDK $sdk_version ($sdk_build). Use a stable accepted macOS/Xcode environment for the release archive, or set PEEK_SKIP_APPSTORE_TOOLCHAIN_CHECK=1 only after Apple accepts this toolchain."
+  fi
+else
+  log "App Store toolchain check skipped"
+fi
 
 log "Repository hygiene"
 "$REPOSITORY_HYGIENE_VALIDATOR"
@@ -144,7 +160,7 @@ log "Archive Info.plist"
 assert_plist_value "$INFO_PLIST" "CFBundleDisplayName" "Corner Peek"
 assert_plist_value "$INFO_PLIST" "CFBundleIdentifier" "com.shifeng.peek"
 assert_plist_value "$INFO_PLIST" "CFBundleShortVersionString" "1.0"
-assert_plist_value "$INFO_PLIST" "CFBundleVersion" "2"
+assert_plist_value "$INFO_PLIST" "CFBundleVersion" "3"
 assert_plist_value "$INFO_PLIST" "LSMinimumSystemVersion" "15.0"
 assert_plist_value "$INFO_PLIST" "LSApplicationCategoryType" "public.app-category.productivity"
 assert_plist_value "$INFO_PLIST" "NSHumanReadableCopyright" "Copyright 2026 Zhang Shifeng"

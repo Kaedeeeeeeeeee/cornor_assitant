@@ -75,6 +75,7 @@ PEEK_BING_SITE_VERIFICATION=bing_token \
   - 2026-06-28 21:52 JST 已添加并保存 Chinese (Simplified) 与 Japanese version metadata。
   - 2026-06-28 21:51 JST 已选择 build `1.0 (1)`，Delivery UUID `1381454e-1354-4bf6-9ad9-b89482779afe`。
   - 2026-06-30 13:54 JST 已上传并改选 build `1.0 (2)`，build id `a0244425-8bd8-4d59-86f4-a11b6a270cae`，processing state `VALID`。
+  - 2026-06-30 20:06 JST 已确认 build `1.0 (2)` 不能继续用于审核：Apple 邮件返回 `ITMS-90301: This bundle is invalid - Apple is not currently accepting applications built with this version of the OS.` 当前项目 build number 已升到 `3`，需要在稳定/被 Apple 接受的 macOS + Xcode 环境重新 archive/upload。
   - Release option 已保存为 manual release。
 - [x] App Information.
   - 2026-06-28 22:03 JST 已填写 English (U.S.)、Chinese (Simplified)、Japanese subtitles。
@@ -108,6 +109,7 @@ PEEK_CHECK_EXPORT=1 ./script/check_external_readiness.py
   - `xcrun altool --build-status --delivery-id 1381454e-1354-4bf6-9ad9-b89482779afe` 返回 `build-status = VALID`、`import-status = VALID`、`buildAudienceType = APP_STORE_ELIGIBLE`。
   - App Store Connect 已可继续选择 build 加入版本 `1.0`。
   - 2026-06-30 13:52 JST 已通过 fastlane 上传 build `1.0 (2)` 的 `/tmp/peek-appstore/build2-export/Corner Peek.pkg`；2026-06-30 13:54 JST 读回状态为 `VALID`。
+  - 2026-06-30 20:06 JST 已确认当前本机 `macOS 27.0 (26A5368g)` / `Xcode 26.6 (17F113)` / `macOS SDK 26.5 (25F70)` 产出的 binary 会被 Apple 以 `ITMS-90301` 拒绝。下一次 upload 必须使用稳定/被 Apple 接受的构建环境，并上传 build `1.0 (3)`。
   - 复查命令：
 
 ```bash
