@@ -1,0 +1,146 @@
+name: Build Corner Peek App Store Package
+
+on:
+  workflow_dispatch:
+    inputs:
+      upload_to_app_store:
+        description: "Upload the exported pkg to App Store Connect"
+        required: true
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build macOS App Store package
+    runs-on: macos-15
+    timeout-minutes: 60
+
+    env:
+      APP_PROJECT: CornerAssistantApp/CornerAssistantApp.xcodeproj
+      APP_SCHEME: CornerAssistantApp
+      APP_ARCHIVE_PATH: ${{ runner.temp }}/CornerPeek.xcarchive
+      APP_EXPORT_PATH: ${{ runner.temp }}/CornerPeekExport
+      APP_EXPORT_OPTIONS: CornerAssistantApp/export_options_app_store.plist
+      APP_PROFILE_NAME: Corner Peek Mac App Store
+      APP_TEAM_ID: Y4FV6WUU4V
+      KEYCHAIN_PATH: ${{ runner.temp }}/app-signing.keychain-db
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Select stable Xcode
+        run: |
+          set -euo pipefail
+          sudo xcode-select -s /Applications/Xcode.app
+          sw_vers
+          xcodebuild -version
+          xcrun --sdk macosx --show-sdk-version
+          xcrun --sdk macosx --show-sdk-build-version
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+
+      - name: Install signing assets
+        env:
+          APP_CERTIFICATE_BASE64: ${{ secrets.PEEK_APP_CERTIFICATE_BASE64 }}
+          INSTALLER_CERTIFICATE_BASE64: ${{ secrets.PEEK_INSTALLER_CERTIFICATE_BASE64 }}
+          P12_PASSWORD: ${{ secrets.PEEK_P12_PASSWORD }}
+          PROVISION_PROFILE_BASE64: ${{ secrets.PEEK_PROVISION_PROFILE_BASE64 }}
+          KEYCHAIN_PASSWORD: ${{ secrets.PEEK_KEYCHAIN_PASSWORD }}
+        run: |
+          set -euo pipefail
+          : "${APP_CERTIFICATE_BASE64:?Missing PEEK_APP_CERTIFICATE_BASE64}"
+          : "${INSTALLER_CERTIFICATE_BASE64:?Missing PEEK_INSTALLER_CERTIFICATE_BASE64}"
+          : "${P12_PASSWORD:?Missing PEEK_P12_PASSWORD}"
+          : "${PROVISION_PROFILE_BASE64:?Missing PEEK_PROVISION_PROFILE_BASE64}"
+          : "${KEYCHAIN_PASSWORD:?Missing PEEK_KEYCHAIN_PASSWORD}"
+
+          app_certificate_path="$RUNNER_TEMP/app-certificate.p12"
+          installer_certificate_path="$RUNNER_TEMP/installer-certificate.p12"
+          profile_path="$RUNNER_TEMP/Corner_Peek_Mac_App_Store.provisionprofile"
+
+          printf '%s' "$APP_CERTIFICATE_BASE64" | base64 --decode > "$app_certificate_path"
+          printf '%s' "$INSTALLER_CERTIFICATE_BASE64" | base64 --decode > "$installer_certificate_path"
+          printf '%s' "$PROVISION_PROFILE_BASE64" | base64 --decode > "$profile_path"
+
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security import "$app_certificate_path" -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
+          security import "$installer_certificate_path" -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
+          security list-keychain -d user -s "$KEYCHAIN_PATH" login.keychain-db
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
+          mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
+          cp "$profile_path" "$HOME/Library/MobileDevice/Provisioning Profiles/Corner_Peek_Mac_App_Store.provisionprofile"
+
+      - name: Validate launch metadata
+        run: |
+          set -euo pipefail
+          ./script/validate_export_options.py
+          ./script/validate_app_store_metadata_export.py
+          ./script/validate_privacy_alignment.py
+
+      - name: Run launch readiness tests
+        run: |
+          set -euo pipefail
+          xcodebuild test \
+            -project "$APP_PROJECT" \
+            -scheme "$APP_SCHEME" \
+            -destination 'platform=macOS' \
+            -only-testing:CornerAssistantAppTests/LaunchReadinessTests
+
+      - name: Archive
+        run: |
+          set -euo pipefail
+          xcodebuild archive \
+            -project "$APP_PROJECT" \
+            -scheme "$APP_SCHEME" \
+            -configuration Release \
+            -destination 'generic/platform=macOS' \
+            -archivePath "$APP_ARCHIVE_PATH" \
+            CODE_SIGN_STYLE=Manual \
+            DEVELOPMENT_TEAM="$APP_TEAM_ID" \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
+            PROVISIONING_PROFILE_SPECIFIER="$APP_PROFILE_NAME"
+
+      - name: Export App Store package
+        run: |
+          set -euo pipefail
+          xcodebuild -exportArchive \
+            -archivePath "$APP_ARCHIVE_PATH" \
+            -exportPath "$APP_EXPORT_PATH" \
+            -exportOptionsPlist "$APP_EXPORT_OPTIONS"
+          find "$APP_EXPORT_PATH" -maxdepth 1 -name '*.pkg' -print
+
+      - name: Upload package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: corner-peek-app-store-pkg
+          path: ${{ runner.temp }}/CornerPeekExport/*.pkg
+          if-no-files-found: error
+
+      - name: Upload package to App Store Connect
+        if: ${{ inputs.upload_to_app_store == 'true' }}
+        env:
+          ASC_KEY_ID: ${{ secrets.PEEK_ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.PEEK_ASC_ISSUER_ID }}
+          ASC_KEY_CONTENT: ${{ secrets.PEEK_ASC_KEY_CONTENT_BASE64 }}
+          ASC_KEY_CONTENT_BASE64: "1"
+        run: |
+          set -euo pipefail
+          : "${ASC_KEY_ID:?Missing PEEK_ASC_KEY_ID}"
+          : "${ASC_ISSUER_ID:?Missing PEEK_ASC_ISSUER_ID}"
+          : "${ASC_KEY_CONTENT:?Missing PEEK_ASC_KEY_CONTENT_BASE64}"
+          pkg_path="$(find "$APP_EXPORT_PATH" -maxdepth 1 -name '*.pkg' -print -quit)"
+          : "${pkg_path:?Missing exported pkg}"
+          bundle exec fastlane mac upload_pkg pkg:"$pkg_path"

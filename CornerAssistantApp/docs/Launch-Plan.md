@@ -1385,6 +1385,15 @@ bundle exec fastlane mac upload_metadata
 
 2026-06-30 已新增 `fastlane/Fastfile`、`fastlane/Deliverfile`、`fastlane/README.md`、`.env.asc.example`、`script/prepare_fastlane_metadata.sh` 和 `script/prepare_fastlane_screenshots.sh`。这条路径可以用 App Store Connect API key 上传截图、metadata 和签名后的 macOS `.pkg`，避免依赖浏览器登录状态；但 API key 仍需账号持有人在 App Store Connect 网页生成一次，Paid Apps Agreement、税务/银行、DSA/trader status、年龄分级答案、价格/可售区域等账号级或法律字段仍需在 Apple 网页确认。当前机器系统 Ruby 为 2.6，建议安装 Ruby 3.1+ 后再运行 `bundle install`。
 
+2026-06-30 补充：本机当前 macOS/Xcode 版本被 App Store Connect 拒绝用于上传，Apple 邮件错误为 `ITMS-90301: This bundle is invalid - Apple is not currently accepting applications built with this version of the OS.`。已新增 `.github/workflows/app-store-build.yml` 作为稳定云构建 fallback：
+
+- 使用 GitHub Actions `macos-15` runner 构建和导出 Mac App Store `.pkg`。
+- 默认只产出 `corner-peek-app-store-pkg` artifact。
+- 配置 GitHub Actions secrets 后，可在手动触发时设置 `upload_to_app_store=true`，由 workflow 调用 `fastlane mac upload_pkg` 上传。
+- 需要的 secrets 记录在 `fastlane/SETUP.md` 的 `Stable Cloud Build Fallback` 小节。
+
+Xcode Cloud 仍可作为后续方案，但首次访问 `Corner Peek` 的 Xcode Cloud 页面时返回 `You are unauthorized to make this request.`，且 App Store Connect API 当前显示 `ciProducts` 为空。因此首发构建先以 GitHub Actions 稳定 runner 路径推进。
+
 Landing repository variables 配置：
 
 ```bash

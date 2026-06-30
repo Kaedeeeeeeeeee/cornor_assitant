@@ -78,6 +78,44 @@ Submit the prepared App Store version for review after the desired build is proc
 PATH="/opt/homebrew/opt/ruby/bin:$PATH" bundle exec fastlane mac submit_for_review build_number:3
 ```
 
+## Stable Cloud Build Fallback
+
+The local machine may be running a macOS/Xcode beta that App Store Connect does
+not yet accept for Mac App Store uploads. In that case, use the repository's
+manual GitHub Actions workflow instead of creating the final package locally:
+
+```text
+Actions -> Build Corner Peek App Store Package -> Run workflow
+```
+
+The workflow runs on `macos-15`, archives `CornerAssistantApp`, exports a Mac App
+Store `.pkg`, and publishes it as the `corner-peek-app-store-pkg` artifact. If
+`upload_to_app_store` is set to `true`, it also uploads the package with
+`fastlane mac upload_pkg`.
+
+Required GitHub Actions secrets:
+
+```text
+PEEK_APP_CERTIFICATE_BASE64        # base64 of the Apple Distribution .p12
+PEEK_INSTALLER_CERTIFICATE_BASE64  # base64 of the 3rd Party Mac Developer Installer .p12
+PEEK_P12_PASSWORD                  # password shared by the two .p12 files
+PEEK_PROVISION_PROFILE_BASE64      # base64 of Corner_Peek_Mac_App_Store.provisionprofile
+PEEK_KEYCHAIN_PASSWORD             # temporary CI keychain password
+PEEK_ASC_KEY_ID                    # App Store Connect API key id, only needed for upload_to_app_store=true
+PEEK_ASC_ISSUER_ID                 # App Store Connect issuer id, only needed for upload_to_app_store=true
+PEEK_ASC_KEY_CONTENT_BASE64        # base64 of the AuthKey_*.p8 content, only needed for upload_to_app_store=true
+```
+
+To prepare these values locally without uploading them, run:
+
+```bash
+./script/prepare_github_actions_secrets.sh
+```
+
+The script writes sensitive files under `/tmp/peek-github-actions-secrets` by
+default. Do not commit that directory, and delete it after the repository secrets
+are configured.
+
 ## Screenshot Locales
 
 By default, `script/prepare_fastlane_screenshots.sh` copies the same screenshot set to `en-US`, `zh-Hans`, and `ja`.
