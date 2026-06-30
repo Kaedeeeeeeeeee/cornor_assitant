@@ -102,6 +102,7 @@ platform :mac do
       team_id: TEAM_ID,
       platform: "osx",
       pkg: File.expand_path(pkg_path),
+      skip_binary_upload: false,
       skip_metadata: true,
       skip_screenshots: true,
       submit_for_review: false,
