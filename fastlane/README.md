@@ -55,6 +55,14 @@ Upload generated App Store metadata and screenshots without touching binary
 
 Upload a signed macOS pkg to App Store Connect
 
+### mac submit_for_review
+
+```sh
+[bundle exec] fastlane mac submit_for_review
+```
+
+Submit the prepared macOS App Store version for review
+
 ----
 
 This README.md is auto-generated and will be re-generated every time [_fastlane_](https://fastlane.tools) is run.

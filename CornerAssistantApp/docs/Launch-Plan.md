@@ -1183,25 +1183,29 @@ curl -I https://kaedeeeeeeeeee.github.io/cornor_assitant/sitemap.xml
 
 ### Phase H: App Review 和发布
 
-状态：build 已上传并加入版本；App Store Connect 核心 metadata、隐私、价格、可售区域、年龄分级和 5 张截图已保存；待最终预览审校并提交审核。
+状态：build 2 已上传并加入版本；App Store Connect 核心 metadata、隐私、价格、可售区域、年龄分级和三语言截图已保存；2026-06-30 13:58 JST 已提交审核，当前状态为 `WAITING_FOR_REVIEW`，发布模式为 manual release。
 
 - [x] 上传 build。
   - 已上传导出包：`/tmp/peek-appstore/external-readiness-export/Corner Peek.pkg`
   - Delivery UUID：`1381454e-1354-4bf6-9ad9-b89482779afe`
+  - 2026-06-30 13:52 JST 已上传 build 2 导出包：`/tmp/peek-appstore/build2-export/Corner Peek.pkg`
 - [x] 等待 build processing 完成。
   - `build-status = VALID`
   - `import-status = VALID`
   - `buildAudienceType = APP_STORE_ELIGIBLE`
 - [x] 选择 build 加入版本 `1.0`。
+  - 2026-06-30 13:54 JST 已改选 build `1.0 (2)`，build id `a0244425-8bd8-4d59-86f4-a11b6a270cae`，processing state `VALID`。
 - [x] 填完 metadata、隐私、年龄分级、价格、可售区域。
+  - 2026-06-30 13:57 JST 已补齐 `en-US`、`zh-Hans`、`ja` 三个 App Info localization 的 `privacyPolicyUrl`，并在 `script/prepare_fastlane_metadata.sh` 固化 `privacy_url.txt` 生成。
 - [x] 上传 App Store screenshots。
   - 当前本地素材：`/tmp/peek-app-store-screenshots/01-hot-corner-panel-2880x1800.png` 至 `05-pinned-panel-2880x1800.png`。
-  - 2026-06-28 22:35 JST 已通过 Computer Use 和 macOS file picker 上传到 App Store Connect；页面显示 `5 of 10 Screenshots`。
-  - 2026-06-28 22:00 JST 本地截图素材已更新为新痛点型宣传图；App Store Connect 需要在用户确认后删除旧图并重新上传新图。
-  - 提交审核前仍需人工确认 App Store Connect 页面预览顺序和缩略图渲染。
+  - 2026-06-30 13:38 JST 已通过 App Store Connect API 读回确认 `en-US`、`zh-Hans`、`ja` 均有 5 张 `APP_DESKTOP` 截图。
+  - 提交审核前已用 API 确认截图数量；视觉顺序以后续 App Store Connect 页面预览为准。
 - [x] 检查所有链接都是公网 HTTPS 且返回 200。
   - `script/validate_app_store_urls.py --check-network` 已验证 App Store materials 中 Marketing / Privacy Policy / Support URL 均为 HTTPS 且返回 200。
-- [ ] Submit for Review。
+- [x] Submit for Review。
+  - 2026-06-30 13:58 JST `fastlane mac submit_for_review build_number:2` 成功。
+  - 2026-06-30 13:58 JST API 读回：version state `WAITING_FOR_REVIEW`，review submission id `846cc274-0b26-49f8-916e-fb95d2223bc0`，items `1`。
 - [ ] 监控 App Review 消息。
 - [ ] 如果被拒，复制完整 rejection text 到本项目文档或 issue，再做最小必要修复。
 - [ ] 审核通过后选择发布模式：

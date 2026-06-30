@@ -74,6 +74,7 @@ PEEK_BING_SITE_VERIFICATION=bing_token \
   - 2026-06-28 21:50 JST 已填写 English (U.S.) description、keywords、support URL、marketing URL、copyright、review contact、review notes。
   - 2026-06-28 21:52 JST 已添加并保存 Chinese (Simplified) 与 Japanese version metadata。
   - 2026-06-28 21:51 JST 已选择 build `1.0 (1)`，Delivery UUID `1381454e-1354-4bf6-9ad9-b89482779afe`。
+  - 2026-06-30 13:54 JST 已上传并改选 build `1.0 (2)`，build id `a0244425-8bd8-4d59-86f4-a11b6a270cae`，processing state `VALID`。
   - Release option 已保存为 manual release。
 - [x] App Information.
   - 2026-06-28 22:03 JST 已填写 English (U.S.)、Chinese (Simplified)、Japanese subtitles。
@@ -83,6 +84,7 @@ PEEK_BING_SITE_VERIFICATION=bing_token \
 - [x] App Privacy.
   - 2026-06-28 21:59 JST Privacy Policy URL 已保存为 `https://kaedeeeeeeeeee.github.io/cornor_assitant/privacy.html`。
   - Data Collection 已保存并发布为 `Data Not Collected`。
+  - 2026-06-30 13:57 JST 已通过 App Store Connect API 补齐 `en-US`、`zh-Hans`、`ja` 三个 App Info localization 的 `privacyPolicyUrl`。
 - [x] Pricing and availability.
   - 2026-06-28 22:00 JST base country/region 为 United States (USD)，current price 已设置为 `$5.99`，覆盖 175 countries or regions。
   - Availability 已设置为 All Countries or Regions。
@@ -105,6 +107,7 @@ PEEK_CHECK_EXPORT=1 ./script/check_external_readiness.py
   - Delivery UUID：`1381454e-1354-4bf6-9ad9-b89482779afe`。
   - `xcrun altool --build-status --delivery-id 1381454e-1354-4bf6-9ad9-b89482779afe` 返回 `build-status = VALID`、`import-status = VALID`、`buildAudienceType = APP_STORE_ELIGIBLE`。
   - App Store Connect 已可继续选择 build 加入版本 `1.0`。
+  - 2026-06-30 13:52 JST 已通过 fastlane 上传 build `1.0 (2)` 的 `/tmp/peek-appstore/build2-export/Corner Peek.pkg`；2026-06-30 13:54 JST 读回状态为 `VALID`。
   - 复查命令：
 
 ```bash
@@ -131,8 +134,8 @@ xcrun altool --build-status \
 - [x] Upload App Store screenshots.
   - 2026-06-28 21:49 JST 尝试用 Chrome browser connector 上传 5 张 PNG，但 `fileChooser.setFiles` 返回 `Not allowed`。
   - 2026-06-28 22:35 JST 改用 Computer Use 通过 macOS file picker 上传 5 张正式 PNG，App Store Connect 显示 `5 of 10 Screenshots`。
-  - 当前 App Store Connect 仍是 22:35 JST 上传的上一版截图；如果采用 22:00 JST 新痛点型素材，需要先删除旧截图再上传 `/tmp/peek-app-store-screenshots` 中的新 5 张。
-  - 截图上传完成；提交审核前仍需在 App Store Connect 中按最终页面预览做一次人工顺序审校。
+  - 2026-06-30 13:38 JST 已通过 App Store Connect API / fastlane direct uploader 确认 `en-US`、`zh-Hans`、`ja` 三个 locale 均有 5 张 `APP_DESKTOP` 截图。
+  - 截图上传完成；提交审核前已按 API 读回确认数量，视觉顺序以后续 App Store Connect 页面预览为准。
 
 ## Final Store URL
 
