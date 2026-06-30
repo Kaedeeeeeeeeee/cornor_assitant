@@ -75,7 +75,7 @@ jobs:
           if [[ -n "$BUILD_CERTIFICATE_BASE64" ]]; then
             certificate_path="$RUNNER_TEMP/signing-identities.p12"
             printf '%s' "$BUILD_CERTIFICATE_BASE64" | base64 --decode > "$certificate_path"
-            security import "$certificate_path" -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
+            security import "$certificate_path" -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH" >/dev/null
           else
             : "${APP_CERTIFICATE_BASE64:?Missing PEEK_APP_CERTIFICATE_BASE64 or PEEK_BUILD_CERTIFICATE_BASE64}"
             : "${INSTALLER_CERTIFICATE_BASE64:?Missing PEEK_INSTALLER_CERTIFICATE_BASE64 or PEEK_BUILD_CERTIFICATE_BASE64}"
@@ -83,11 +83,11 @@ jobs:
             installer_certificate_path="$RUNNER_TEMP/installer-certificate.p12"
             printf '%s' "$APP_CERTIFICATE_BASE64" | base64 --decode > "$app_certificate_path"
             printf '%s' "$INSTALLER_CERTIFICATE_BASE64" | base64 --decode > "$installer_certificate_path"
-            security import "$app_certificate_path" -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
-            security import "$installer_certificate_path" -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
+            security import "$app_certificate_path" -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH" >/dev/null
+            security import "$installer_certificate_path" -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH" >/dev/null
           fi
           security list-keychain -d user -s "$KEYCHAIN_PATH" login.keychain-db
-          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH" >/dev/null
 
           mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
           cp "$profile_path" "$HOME/Library/MobileDevice/Provisioning Profiles/Corner_Peek_Mac_App_Store.provisionprofile"
@@ -95,6 +95,7 @@ jobs:
       - name: Validate launch metadata
         run: |
           set -euo pipefail
+          ./script/export_app_store_metadata.py
           ./script/validate_export_options.py
           ./script/validate_app_store_metadata_export.py
           ./script/validate_privacy_alignment.py
