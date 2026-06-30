@@ -1183,7 +1183,7 @@ curl -I https://kaedeeeeeeeeee.github.io/cornor_assitant/sitemap.xml
 
 ### Phase H: App Review 和发布
 
-状态：build 2 已上传并加入版本；App Store Connect 核心 metadata、隐私、价格、可售区域、年龄分级和三语言截图已保存；2026-06-30 13:58 JST 已提交审核，当前状态为 `WAITING_FOR_REVIEW`，发布模式为 manual release。
+状态：build 2 已上传并加入版本；App Store Connect 核心 metadata、隐私、价格、可售区域、年龄分级和三语言截图已保存；2026-06-30 13:58 JST 初次提交审核后出现 `Invalid Binary` / `UNRESOLVED_ISSUES`，2026-06-30 16:35 JST 已补齐 App Sandbox Information 并重新提交，当前 review submission 为 `WAITING_FOR_REVIEW`，发布模式为 manual release。
 
 - [x] 上传 build。
   - 已上传导出包：`/tmp/peek-appstore/external-readiness-export/Corner Peek.pkg`
@@ -1197,6 +1197,9 @@ curl -I https://kaedeeeeeeeeee.github.io/cornor_assitant/sitemap.xml
   - 2026-06-30 13:54 JST 已改选 build `1.0 (2)`，build id `a0244425-8bd8-4d59-86f4-a11b6a270cae`，processing state `VALID`。
 - [x] 填完 metadata、隐私、年龄分级、价格、可售区域。
   - 2026-06-30 13:57 JST 已补齐 `en-US`、`zh-Hans`、`ja` 三个 App Info localization 的 `privacyPolicyUrl`，并在 `script/prepare_fastlane_metadata.sh` 固化 `privacy_url.txt` 生成。
+  - 2026-06-30 16:33 JST 已在 App Store Connect 版本页补齐 App Sandbox Information：
+    - `com.apple.security.network.client`: outbound network access for websites, web search, and pinned web apps in the built-in WebKit panel.
+    - `com.apple.security.device.audio-input`: user-opened websites may request microphone access for calls or voice input; Corner Peek itself does not record audio.
 - [x] 上传 App Store screenshots。
   - 当前本地素材：`/tmp/peek-app-store-screenshots/01-hot-corner-panel-2880x1800.png` 至 `05-pinned-panel-2880x1800.png`。
   - 2026-06-30 13:38 JST 已通过 App Store Connect API 读回确认 `en-US`、`zh-Hans`、`ja` 均有 5 张 `APP_DESKTOP` 截图。
@@ -1206,6 +1209,9 @@ curl -I https://kaedeeeeeeeeee.github.io/cornor_assitant/sitemap.xml
 - [x] Submit for Review。
   - 2026-06-30 13:58 JST `fastlane mac submit_for_review build_number:2` 成功。
   - 2026-06-30 13:58 JST API 读回：version state `WAITING_FOR_REVIEW`，review submission id `846cc274-0b26-49f8-916e-fb95d2223bc0`，items `1`。
+  - 2026-06-30 16:00 JST App Store Connect 显示 `Invalid Binary`，API 读回 version `INVALID_BINARY`、review submission `UNRESOLVED_ISSUES`、item `REJECTED`，Resolution Center thread 为空。
+  - 2026-06-30 16:35 JST 点击 `Update Review` 后 item 从 `Rejected` 变为 `Ready for Review`，随后 `Resubmit to App Review` 成功。
+  - 2026-06-30 16:37 JST API 读回：review submission `846cc274-0b26-49f8-916e-fb95d2223bc0` 为 `WAITING_FOR_REVIEW`，item 为 `READY_FOR_REVIEW`，build `1.0 (2)` 仍为 `VALID`；version/app list 仍暂显 `INVALID_BINARY`，按 review submission 状态继续监控。
 - [ ] 监控 App Review 消息。
 - [ ] 如果被拒，复制完整 rejection text 到本项目文档或 issue，再做最小必要修复。
 - [ ] 审核通过后选择发布模式：
