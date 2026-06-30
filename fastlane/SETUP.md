@@ -72,6 +72,12 @@ Upload a signed macOS package:
 PATH="/opt/homebrew/opt/ruby/bin:$PATH" bundle exec fastlane mac upload_pkg pkg:/absolute/path/to/CornerPeek.pkg
 ```
 
+Submit the prepared App Store version for review after the desired build is processed and selected:
+
+```bash
+PATH="/opt/homebrew/opt/ruby/bin:$PATH" bundle exec fastlane mac submit_for_review build_number:2
+```
+
 ## Screenshot Locales
 
 By default, `script/prepare_fastlane_screenshots.sh` copies the same screenshot set to `en-US`, `zh-Hans`, and `ja`.

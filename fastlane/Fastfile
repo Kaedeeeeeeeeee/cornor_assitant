@@ -110,4 +110,30 @@ platform :mac do
       force: true
     )
   end
+
+  desc "Submit the prepared macOS App Store version for review"
+  lane :submit_for_review do |options|
+    api_key = corner_peek_api_key
+    build_number = (options[:build_number] || ENV["ASC_BUILD_NUMBER"] || "2").to_s
+
+    deliver(
+      api_key: api_key,
+      app_identifier: APP_IDENTIFIER,
+      app: APP_STORE_ID,
+      team_id: TEAM_ID,
+      platform: "osx",
+      app_version: "1.0",
+      build_number: build_number,
+      skip_binary_upload: true,
+      skip_metadata: true,
+      skip_screenshots: true,
+      submit_for_review: true,
+      run_precheck_before_submit: false,
+      force: true,
+      submission_information: {
+        export_compliance_uses_encryption: false,
+        content_rights_contains_third_party_content: true
+      }
+    )
+  end
 end
