@@ -6,6 +6,7 @@ enum HotCorner: String, CaseIterable {
     case bottomLeft
     case bottomRight
 
+    @MainActor
     func localizedName(using localization: LocalizationManager) -> String {
         switch self {
         case .topLeft:
