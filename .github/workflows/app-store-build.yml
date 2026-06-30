@@ -51,6 +51,7 @@ jobs:
 
       - name: Install signing assets
         env:
+          BUILD_CERTIFICATE_BASE64: ${{ secrets.PEEK_BUILD_CERTIFICATE_BASE64 }}
           APP_CERTIFICATE_BASE64: ${{ secrets.PEEK_APP_CERTIFICATE_BASE64 }}
           INSTALLER_CERTIFICATE_BASE64: ${{ secrets.PEEK_INSTALLER_CERTIFICATE_BASE64 }}
           P12_PASSWORD: ${{ secrets.PEEK_P12_PASSWORD }}
@@ -58,25 +59,32 @@ jobs:
           KEYCHAIN_PASSWORD: ${{ secrets.PEEK_KEYCHAIN_PASSWORD }}
         run: |
           set -euo pipefail
-          : "${APP_CERTIFICATE_BASE64:?Missing PEEK_APP_CERTIFICATE_BASE64}"
-          : "${INSTALLER_CERTIFICATE_BASE64:?Missing PEEK_INSTALLER_CERTIFICATE_BASE64}"
           : "${P12_PASSWORD:?Missing PEEK_P12_PASSWORD}"
           : "${PROVISION_PROFILE_BASE64:?Missing PEEK_PROVISION_PROFILE_BASE64}"
           : "${KEYCHAIN_PASSWORD:?Missing PEEK_KEYCHAIN_PASSWORD}"
 
-          app_certificate_path="$RUNNER_TEMP/app-certificate.p12"
-          installer_certificate_path="$RUNNER_TEMP/installer-certificate.p12"
           profile_path="$RUNNER_TEMP/Corner_Peek_Mac_App_Store.provisionprofile"
 
-          printf '%s' "$APP_CERTIFICATE_BASE64" | base64 --decode > "$app_certificate_path"
-          printf '%s' "$INSTALLER_CERTIFICATE_BASE64" | base64 --decode > "$installer_certificate_path"
           printf '%s' "$PROVISION_PROFILE_BASE64" | base64 --decode > "$profile_path"
 
           security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
           security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
           security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
-          security import "$app_certificate_path" -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
-          security import "$installer_certificate_path" -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
+
+          if [[ -n "$BUILD_CERTIFICATE_BASE64" ]]; then
+            certificate_path="$RUNNER_TEMP/signing-identities.p12"
+            printf '%s' "$BUILD_CERTIFICATE_BASE64" | base64 --decode > "$certificate_path"
+            security import "$certificate_path" -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
+          else
+            : "${APP_CERTIFICATE_BASE64:?Missing PEEK_APP_CERTIFICATE_BASE64 or PEEK_BUILD_CERTIFICATE_BASE64}"
+            : "${INSTALLER_CERTIFICATE_BASE64:?Missing PEEK_INSTALLER_CERTIFICATE_BASE64 or PEEK_BUILD_CERTIFICATE_BASE64}"
+            app_certificate_path="$RUNNER_TEMP/app-certificate.p12"
+            installer_certificate_path="$RUNNER_TEMP/installer-certificate.p12"
+            printf '%s' "$APP_CERTIFICATE_BASE64" | base64 --decode > "$app_certificate_path"
+            printf '%s' "$INSTALLER_CERTIFICATE_BASE64" | base64 --decode > "$installer_certificate_path"
+            security import "$app_certificate_path" -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
+            security import "$installer_certificate_path" -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
+          fi
           security list-keychain -d user -s "$KEYCHAIN_PATH" login.keychain-db
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
 
