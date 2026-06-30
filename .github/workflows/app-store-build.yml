@@ -24,12 +24,12 @@ jobs:
     env:
       APP_PROJECT: CornerAssistantApp/CornerAssistantApp.xcodeproj
       APP_SCHEME: CornerAssistantApp
-      APP_ARCHIVE_PATH: ${{ runner.temp }}/CornerPeek.xcarchive
-      APP_EXPORT_PATH: ${{ runner.temp }}/CornerPeekExport
+      APP_ARCHIVE_PATH: /tmp/CornerPeek.xcarchive
+      APP_EXPORT_PATH: /tmp/CornerPeekExport
       APP_EXPORT_OPTIONS: CornerAssistantApp/export_options_app_store.plist
       APP_PROFILE_NAME: Corner Peek Mac App Store
       APP_TEAM_ID: Y4FV6WUU4V
-      KEYCHAIN_PATH: ${{ runner.temp }}/app-signing.keychain-db
+      KEYCHAIN_PATH: /tmp/app-signing.keychain-db
 
     steps:
       - name: Check out repository
