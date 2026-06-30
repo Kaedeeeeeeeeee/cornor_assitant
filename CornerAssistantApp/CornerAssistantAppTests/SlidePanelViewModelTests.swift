@@ -3,6 +3,15 @@ import XCTest
 
 @MainActor
 final class SlidePanelViewModelTests: XCTestCase {
+    func testDefaultPinnedSitesAreUsedWhenNoStoredSitesExist() {
+        let viewModel = SlidePanelViewModel(storedPinnedSites: [], savePinnedSites: { _ in })
+
+        XCTAssertEqual(viewModel.pinnedSites.map(\.name), ["ChatGPT", "Google Tasks", "Slack", "Notion"])
+        XCTAssertEqual(viewModel.tabs.count, 4)
+        XCTAssertTrue(viewModel.regularTabs.isEmpty)
+        XCTAssertFalse(viewModel.showingLauncher)
+    }
+
     func testInitialPinnedSitesCreatePinnedTabs() throws {
         let chat = PinnedSite(name: "Chat", url: "https://chat.example/")
         let docs = PinnedSite(name: "Docs", url: "https://docs.example/")

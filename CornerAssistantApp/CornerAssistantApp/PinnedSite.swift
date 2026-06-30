@@ -51,7 +51,8 @@ struct PinnedSite: Identifiable, Codable, Equatable {
 extension PinnedSite {
     static let defaults: [PinnedSite] = [
         PinnedSite(name: "ChatGPT", url: "https://chatgpt.com/"),
-        PinnedSite(name: "Notion", url: "https://www.notion.so/"),
-        PinnedSite(name: "Slack", url: "https://app.slack.com/client/")
+        PinnedSite(name: "Google Tasks", url: "https://tasks.google.com/"),
+        PinnedSite(name: "Slack", url: "https://app.slack.com/client/"),
+        PinnedSite(name: "Notion", url: "https://www.notion.so/")
     ]
 }

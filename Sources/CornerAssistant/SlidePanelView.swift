@@ -12,8 +12,9 @@ struct SlidePanelView: View {
     private let searchProvider: GoogleSearchProvider
     private let pinnedSites: [PinnedSite] = [
         PinnedSite(name: "ChatGPT", url: "https://chatgpt.com/"),
-        PinnedSite(name: "Notion", url: "https://www.notion.so/"),
-        PinnedSite(name: "Slack", url: "https://app.slack.com/client/")
+        PinnedSite(name: "Google Tasks", url: "https://tasks.google.com/"),
+        PinnedSite(name: "Slack", url: "https://app.slack.com/client/"),
+        PinnedSite(name: "Notion", url: "https://www.notion.so/")
     ]
 
     init(state: SlidePanelState) {

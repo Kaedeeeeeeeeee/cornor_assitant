@@ -44,7 +44,13 @@ final class PinnedSiteTests: XCTestCase {
     }
 
     func testDefaultPinnedSitesAreHTTPSWebDestinations() {
-        XCTAssertEqual(PinnedSite.defaults.map(\.name), ["ChatGPT", "Notion", "Slack"])
+        XCTAssertEqual(PinnedSite.defaults.map(\.name), ["ChatGPT", "Google Tasks", "Slack", "Notion"])
+        XCTAssertEqual(PinnedSite.defaults.map(\.url), [
+            "https://chatgpt.com/",
+            "https://tasks.google.com/",
+            "https://app.slack.com/client/",
+            "https://www.notion.so/"
+        ])
         for site in PinnedSite.defaults {
             let url = URL(string: site.url)
             XCTAssertEqual(url?.scheme, "https")
