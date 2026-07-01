@@ -27,6 +27,7 @@ final class KeyboardAwareWindow: NSWindow {
 
 private final class ResizeCursorOverlayView: NSView {
     var cursorRectProvider: (() -> [(CGRect, NSCursor)])?
+    var resizeDirectionProvider: ((CGPoint) -> ResizeDirection)?
 
     override func resetCursorRects() {
         discardCursorRects()
@@ -37,7 +38,12 @@ private final class ResizeCursorOverlayView: NSView {
     }
 
     override func hitTest(_ point: NSPoint) -> NSView? {
-        nil
+        let direction = resizeDirectionProvider?(point) ?? .none
+        guard bounds.contains(point),
+              direction != .none else {
+            return nil
+        }
+        return self
     }
 
     override var acceptsFirstResponder: Bool {
@@ -203,6 +209,7 @@ final class SlidePanelController {
     // 边缘拖拽相关
     private var localMouseMonitor: Any?
     private var isResizing = false
+    private var hoveredResizeDirection: ResizeDirection = .none
     private var resizeDirection: ResizeDirection = .none
     private var resizeStartLocation: CGPoint = .zero
     private var resizeStartFrame: CGRect = .zero
@@ -249,6 +256,14 @@ final class SlidePanelController {
             guard let self = self else { return [] }
             return self.makeResizeCursorRects(in: self.resizeCursorOverlay.bounds)
         }
+        resizeCursorOverlay.resizeDirectionProvider = { [weak self] point in
+            guard let self = self else { return .none }
+            return self.getResizeDirection(
+                in: self.resizeCursorOverlay.bounds,
+                at: point,
+                edgeWidth: SlidePanelLayout.resizeEdgeWidthExit
+            )
+        }
     }
     
     /// 根据 HotCorner 判断水平拖拽应该在哪一边
@@ -288,67 +303,17 @@ final class SlidePanelController {
         // 检查点是否在窗口内或边缘附近
         let expandedFrame = windowFrame.insetBy(dx: -5, dy: -5)
         guard expandedFrame.contains(screenPoint) else { return .none }
-        
-        // 首先检查角落区域（对角线拖拽）- 优先级最高
-        let cornerRect = getCornerResizeRect(for: windowFrame, size: edgeWidth)
-        if cornerRect.contains(screenPoint) {
-            return .diagonal
+
+        return getResizeDirection(in: windowFrame, at: screenPoint, edgeWidth: edgeWidth)
+    }
+
+    private func getResizeDirection(in rect: CGRect, at point: CGPoint, edgeWidth: CGFloat) -> ResizeDirection {
+        guard isExpanded else { return .none }
+
+        for (direction, resizeRect) in makeResizeRegions(in: rect, edgeWidth: edgeWidth) where resizeRect.contains(point) {
+            return direction
         }
-        
-        // 检查水平边缘（排除角落区域）
-        let horizontalEdgeRect: CGRect
-        if isHorizontalHandleOnRightEdge() {
-            // 右边缘，排除上下角落
-            let yOffset = isVerticalHandleOnTopEdge() ? 0 : edgeWidth
-            let heightReduction = edgeWidth  // 只减去一个角落的高度
-            horizontalEdgeRect = CGRect(
-                x: windowFrame.maxX - edgeWidth,
-                y: windowFrame.minY + yOffset,
-                width: edgeWidth,
-                height: windowFrame.height - heightReduction
-            )
-        } else {
-            // 左边缘，排除上下角落
-            let yOffset = isVerticalHandleOnTopEdge() ? 0 : edgeWidth
-            let heightReduction = edgeWidth
-            horizontalEdgeRect = CGRect(
-                x: windowFrame.minX,
-                y: windowFrame.minY + yOffset,
-                width: edgeWidth,
-                height: windowFrame.height - heightReduction
-            )
-        }
-        if horizontalEdgeRect.contains(screenPoint) {
-            return .horizontal
-        }
-        
-        // 检查垂直边缘（排除角落区域）
-        let verticalEdgeRect: CGRect
-        if isVerticalHandleOnTopEdge() {
-            // 上边缘，排除左右角落
-            let xOffset = isHorizontalHandleOnRightEdge() ? 0 : edgeWidth
-            let widthReduction = edgeWidth
-            verticalEdgeRect = CGRect(
-                x: windowFrame.minX + xOffset,
-                y: windowFrame.maxY - edgeWidth,
-                width: windowFrame.width - widthReduction,
-                height: edgeWidth
-            )
-        } else {
-            // 下边缘，排除左右角落
-            let xOffset = isHorizontalHandleOnRightEdge() ? 0 : edgeWidth
-            let widthReduction = edgeWidth
-            verticalEdgeRect = CGRect(
-                x: windowFrame.minX + xOffset,
-                y: windowFrame.minY,
-                width: windowFrame.width - widthReduction,
-                height: edgeWidth
-            )
-        }
-        if verticalEdgeRect.contains(screenPoint) {
-            return .vertical
-        }
-        
+
         return .none
     }
     
@@ -394,56 +359,64 @@ final class SlidePanelController {
         guard isExpanded else { return [] }
 
         let edgeWidth = SlidePanelLayout.resizeEdgeWidthExit
-        var rects: [(CGRect, NSCursor)] = []
+        return makeResizeRegions(in: bounds, edgeWidth: edgeWidth).map { region in
+            (region.1, cursorForDirection(region.0))
+        }
+    }
 
-        let cornerRect = getCornerResizeRect(for: bounds, size: edgeWidth)
-        rects.append((cornerRect, getDiagonalCursor()))
+    private func makeResizeRegions(in rect: CGRect, edgeWidth: CGFloat) -> [(ResizeDirection, CGRect)] {
+        var regions: [(ResizeDirection, CGRect)] = []
 
+        let cornerRect = getCornerResizeRect(for: rect, size: edgeWidth)
+        regions.append((.diagonal, cornerRect))
+
+        // 检查水平边缘（排除角落区域）
         let horizontalEdgeRect: CGRect
         if isHorizontalHandleOnRightEdge() {
             let yOffset = isVerticalHandleOnTopEdge() ? 0 : edgeWidth
             let heightReduction = edgeWidth
             horizontalEdgeRect = CGRect(
-                x: bounds.maxX - edgeWidth,
-                y: bounds.minY + yOffset,
+                x: rect.maxX - edgeWidth,
+                y: rect.minY + yOffset,
                 width: edgeWidth,
-                height: bounds.height - heightReduction
+                height: rect.height - heightReduction
             )
         } else {
             let yOffset = isVerticalHandleOnTopEdge() ? 0 : edgeWidth
             let heightReduction = edgeWidth
             horizontalEdgeRect = CGRect(
-                x: bounds.minX,
-                y: bounds.minY + yOffset,
+                x: rect.minX,
+                y: rect.minY + yOffset,
                 width: edgeWidth,
-                height: bounds.height - heightReduction
+                height: rect.height - heightReduction
             )
         }
-        rects.append((horizontalEdgeRect, .resizeLeftRight))
+        regions.append((.horizontal, horizontalEdgeRect))
 
+        // 检查垂直边缘（排除角落区域）
         let verticalEdgeRect: CGRect
         if isVerticalHandleOnTopEdge() {
             let xOffset = isHorizontalHandleOnRightEdge() ? 0 : edgeWidth
             let widthReduction = edgeWidth
             verticalEdgeRect = CGRect(
-                x: bounds.minX + xOffset,
-                y: bounds.maxY - edgeWidth,
-                width: bounds.width - widthReduction,
+                x: rect.minX + xOffset,
+                y: rect.maxY - edgeWidth,
+                width: rect.width - widthReduction,
                 height: edgeWidth
             )
         } else {
             let xOffset = isHorizontalHandleOnRightEdge() ? 0 : edgeWidth
             let widthReduction = edgeWidth
             verticalEdgeRect = CGRect(
-                x: bounds.minX + xOffset,
-                y: bounds.minY,
-                width: bounds.width - widthReduction,
+                x: rect.minX + xOffset,
+                y: rect.minY,
+                width: rect.width - widthReduction,
                 height: edgeWidth
             )
         }
-        rects.append((verticalEdgeRect, .resizeUpDown))
+        regions.append((.vertical, verticalEdgeRect))
 
-        return rects
+        return regions
     }
     
     /// 获取对应拖拽方向的光标
@@ -723,13 +696,20 @@ private extension SlidePanelController {
                 return event
             }
 
+            let direction = getResizeDirection(at: screenPoint, edgeWidth: SlidePanelLayout.resizeEdgeWidthExit)
+            if direction != hoveredResizeDirection {
+                hoveredResizeDirection = direction
+                updateResizeCursor(for: direction)
+            }
+
             return event  // 传递事件
             
         case .leftMouseDown:
-            let direction = getResizeDirection(at: screenPoint, edgeWidth: SlidePanelLayout.resizeEdgeWidth)
+            let direction = getResizeDirection(at: screenPoint, edgeWidth: SlidePanelLayout.resizeEdgeWidthExit)
             if direction != .none {
                 // 开始拖拽
                 isResizing = true
+                hoveredResizeDirection = direction
                 resizeDirection = direction
                 resizeStartLocation = screenPoint
                 resizeStartFrame = window.frame
@@ -748,6 +728,7 @@ private extension SlidePanelController {
         case .leftMouseUp:
             if isResizing {
                 isResizing = false
+                hoveredResizeDirection = .none
                 resizeDirection = .none
                 saveCurrentSize()
                 updateResizeCursor(for: .none)
@@ -931,6 +912,7 @@ private extension SlidePanelController {
         
         // 重置拖拽状态
         isResizing = false
+        hoveredResizeDirection = .none
         resizeDirection = .none
         updateResizeCursor(for: .none)
 
