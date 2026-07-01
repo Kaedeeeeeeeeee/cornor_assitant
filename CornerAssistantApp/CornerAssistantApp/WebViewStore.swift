@@ -4,8 +4,12 @@ import WebKit
 
 enum WebViewPolicy {
     static let slackHostMarker = "slack.com"
-    static let safariUserAgentSuffix = "Version/17.0 Safari/605.1.15"
-    static let browserUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 15_0) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15"
+    private static let fallbackSafariMarketingVersion = "26.0"
+    private static let safariApplicationURL = URL(fileURLWithPath: "/Applications/Safari.app")
+
+    static var safariUserAgentSuffix: String {
+        safariUserAgentSuffix(for: installedSafariMarketingVersion())
+    }
 
     static func configure(_ configuration: WKWebViewConfiguration) {
         configuration.preferences.javaScriptCanOpenWindowsAutomatically = true
@@ -15,6 +19,28 @@ enum WebViewPolicy {
     static func shouldOpenPopupInSameView(url: URL?) -> Bool {
         guard let host = url?.host?.lowercased() else { return false }
         return host.contains(slackHostMarker)
+    }
+
+    static func safariUserAgentSuffix(for safariMarketingVersion: String?) -> String {
+        let version = normalizedSafariMarketingVersion(from: safariMarketingVersion) ?? fallbackSafariMarketingVersion
+        return "Version/\(version) Safari/605.1.15"
+    }
+
+    private static func installedSafariMarketingVersion() -> String? {
+        Bundle(url: safariApplicationURL)?
+            .object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
+    }
+
+    private static func normalizedSafariMarketingVersion(from version: String?) -> String? {
+        guard let version = version?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !version.isEmpty else {
+            return nil
+        }
+        let allowedCharacters = CharacterSet(charactersIn: "0123456789.")
+        guard version.unicodeScalars.allSatisfy({ allowedCharacters.contains($0) }) else {
+            return nil
+        }
+        return version
     }
 }
 
@@ -39,7 +65,6 @@ final class WebViewStore: NSObject, ObservableObject, WKNavigationDelegate, WKUI
         webView.uiDelegate = self
         webView.allowsBackForwardNavigationGestures = true
         webView.underPageBackgroundColor = .clear
-        webView.customUserAgent = WebViewPolicy.browserUserAgent
         normalizeScrollView()
     }
 
@@ -109,7 +134,6 @@ final class WebViewStore: NSObject, ObservableObject, WKNavigationDelegate, WKUI
         popupWebView.uiDelegate = self
         popupWebView.allowsBackForwardNavigationGestures = true
         popupWebView.underPageBackgroundColor = .clear
-        popupWebView.customUserAgent = WebViewPolicy.browserUserAgent
 
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 960, height: 640),

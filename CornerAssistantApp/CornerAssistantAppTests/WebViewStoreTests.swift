@@ -10,19 +10,34 @@ final class WebViewStoreTests: XCTestCase {
         WebViewPolicy.configure(configuration)
 
         XCTAssertTrue(configuration.preferences.javaScriptCanOpenWindowsAutomatically)
-        XCTAssertEqual(configuration.applicationNameForUserAgent, "Version/17.0 Safari/605.1.15")
+        XCTAssertEqual(configuration.applicationNameForUserAgent, WebViewPolicy.safariUserAgentSuffix)
+        XCTAssertTrue(configuration.applicationNameForUserAgent?.hasPrefix("Version/") == true)
+        XCTAssertTrue(configuration.applicationNameForUserAgent?.hasSuffix(" Safari/605.1.15") == true)
     }
 
-    func testWebViewStoreUsesSafariLikeUserAgentAndDelegates() {
+    func testSafariUserAgentSuffixUsesInstalledMarketingVersion() {
+        XCTAssertEqual(
+            WebViewPolicy.safariUserAgentSuffix(for: "27.0"),
+            "Version/27.0 Safari/605.1.15"
+        )
+        XCTAssertEqual(
+            WebViewPolicy.safariUserAgentSuffix(for: " 26.1 "),
+            "Version/26.1 Safari/605.1.15"
+        )
+        XCTAssertEqual(
+            WebViewPolicy.safariUserAgentSuffix(for: "Safari 27"),
+            "Version/26.0 Safari/605.1.15"
+        )
+    }
+
+    func testWebViewStoreUsesSystemWebKitUserAgentAndDelegates() {
         let store = WebViewStore()
 
         XCTAssertTrue(store.webView.allowsBackForwardNavigationGestures)
         XCTAssertEqual(store.webView.navigationDelegate as? WebViewStore, store)
         XCTAssertEqual(store.webView.uiDelegate as? WebViewStore, store)
         XCTAssertEqual(store.webView.configuration.applicationNameForUserAgent, WebViewPolicy.safariUserAgentSuffix)
-        XCTAssertEqual(store.webView.customUserAgent, WebViewPolicy.browserUserAgent)
-        XCTAssertTrue(WebViewPolicy.browserUserAgent.contains("Mac OS X 15_0"))
-        XCTAssertTrue(WebViewPolicy.browserUserAgent.contains("Safari/605.1.15"))
+        XCTAssertTrue((store.webView.customUserAgent ?? "").isEmpty)
     }
 
     func testSlackPopupHostsOpenInSameWebView() {
