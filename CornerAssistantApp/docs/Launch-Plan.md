@@ -1220,11 +1220,16 @@ curl -I https://kaedeeeeeeeeee.github.io/cornor_assitant/sitemap.xml
   - 2026-06-30 21:19 JST App Store Connect 记录 build `1.0 (3)` 已提交审核，review submission id `3b08b660-7d17-470a-b1a6-343a040a3f49`。
   - 2026-07-07 16:50 JST Apple 邮件 `There's an issue with your Corner Peek (macOS) submission.`：review device 为 MacBook Air (15-inch, M3, 2024)，macOS `26.5`，Version reviewed `1.0 (3)`；拒审原因为 Guideline 2.1(a)，审核员认为菜单栏 extra App 无响应，没有打开可见界面。
   - 2026-07-07 17:10 JST API 读回：version `1.0` state `REJECTED`，selected build `3` processing `VALID`，latest review submission `3b08b660-7d17-470a-b1a6-343a040a3f49` state `UNRESOLVED_ISSUES`，item state `REJECTED`。
-- [x] 修复菜单栏 extra 的可见启动入口并准备 build 4。
+- [x] 修复菜单栏 extra 的可见启动入口并提交 build 4。
   - 当前实现中左键点击菜单栏图标会 toggle 角落滑出面板，而不是打开贴近菜单栏图标的 popover 或普通窗口；这和 App Review 对 menu bar extra 的首屏可见性预期存在风险。
   - `Manual-QA-Checklist.md` 已列出“菜单栏图标点击 -> 面板展开”人工验收项，但该路径没有自动化覆盖；重新提交前需要用干净用户会话验证 release/App Store candidate 的真实点击行为。
   - 2026-07-07 已增加启动后自动展开一次面板的 launch policy；clean install 默认热角为左下角，因此审核启动后无需移动鼠标也会看到左下角面板。
-  - 当前项目 build number 已升到 `4`，下一次 App Store Connect 上传应使用 `1.0 (4)`。
+  - 2026-07-07 20:29 JST 提交并推送 `db4b3a6`，build number 升到 `4`。
+  - 2026-07-07 20:29 JST 触发 GitHub Actions run `28862782283`，20:31 JST 成功完成 stable macOS build/export/upload。
+  - 2026-07-07 20:32 JST App Store Connect 读回 build `1.0 (4)`：build id `0760a7f8-f31f-4e90-9775-f985a49e99b1`，processing `VALID`，`APP_STORE_ELIGIBLE`。
+  - 2026-07-07 20:33 JST `fastlane mac submit_for_review build_number:4` 已成功选中 build 4，但旧 submission `3b08b660-7d17-470a-b1a6-343a040a3f49` 仍处于 `UNRESOLVED_ISSUES`，导致首次提交调用返回 `Cannot submit for review - A review submission is already in progress`。
+  - 2026-07-07 20:34 JST 已取消旧 unresolved submission；旧 submission 最终回到 `COMPLETE`，item `REMOVED`。
+  - 2026-07-07 20:35 JST 再次执行 `fastlane mac submit_for_review build_number:4` 成功；API 读回 version `1.0` state `WAITING_FOR_REVIEW`，selected build `4`，new review submission id `edce898c-98e0-4310-b175-923e326ec589`，item state `READY_FOR_REVIEW`。
 - [ ] 监控 App Review 消息。
 - [x] 如果被拒，复制完整 rejection text 到本项目文档或 issue，再做最小必要修复。
 - [ ] 审核通过后选择发布模式：
