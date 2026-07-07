@@ -27,7 +27,7 @@ REQUIRED_MARKERS = [
     "## 上架前人工证据",
     "## 当前已知人工阻塞",
     "macOS 15.0",
-    "1.0 (1)",
+    "1.0 (4)",
     "./script/capture_app_store_screenshot.sh",
     "GA4 Measurement ID",
     "Bing Webmaster Tools",

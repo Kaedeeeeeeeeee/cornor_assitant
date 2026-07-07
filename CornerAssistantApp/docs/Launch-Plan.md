@@ -1183,7 +1183,7 @@ curl -I https://kaedeeeeeeeeee.github.io/cornor_assitant/sitemap.xml
 
 ### Phase H: App Review 和发布
 
-状态：build 2 已上传并加入版本；App Store Connect 核心 metadata、隐私、价格、可售区域、年龄分级和三语言截图已保存。2026-06-30 13:58 JST 初次提交审核后出现 `Invalid Binary` / `UNRESOLVED_ISSUES`；2026-06-30 16:35 JST 补齐 App Sandbox Information 后重新提交，但同一 build 仍被自动打回。Apple 邮件给出的真实原因是 `ITMS-90301: This bundle is invalid - Apple is not currently accepting applications built with this version of the OS.` 当前本机为 macOS `27.0 (26A5368g)` + Xcode `26.6 (17F113)` + macOS SDK `26.5 (25F70)`，不能继续用于 App Store 提交包。下一步需要在 Apple 当前接受的稳定 macOS/Xcode 环境重新 archive/upload build 3，发布模式保持 manual release。
+状态：App Store Connect 核心 metadata、隐私、价格、可售区域、年龄分级和三语言截图已保存。2026-06-30 build 2 首次提交后因 `ITMS-90301: This bundle is invalid - Apple is not currently accepting applications built with this version of the OS.` 被自动打回；已改用 GitHub Actions `macos-15` + Xcode 16.4 重新上传并提交 build 3。2026-07-07 Apple App Review 人工审核 build `1.0 (3)` 未通过，当前版本状态为 `REJECTED`，latest review submission 为 `UNRESOLVED_ISSUES`。真实拒审点不是签名或工具链，而是 Guideline 2.1(a) App Completeness：审核员点击菜单栏 extra 后认为 App 无响应、没有打开可见界面。下一步需要修复或强化菜单栏入口的可见启动行为，并在干净 macOS 26.5 环境验证 build 4。
 
 - [x] 上传 build。
   - 已上传导出包：`/tmp/peek-appstore/external-readiness-export/Corner Peek.pkg`
@@ -1214,12 +1214,19 @@ curl -I https://kaedeeeeeeeeee.github.io/cornor_assitant/sitemap.xml
   - 2026-06-30 16:37 JST API 读回：review submission `846cc274-0b26-49f8-916e-fb95d2223bc0` 为 `WAITING_FOR_REVIEW`，item 为 `READY_FOR_REVIEW`，build `1.0 (2)` 仍为 `VALID`；version/app list 仍暂显 `INVALID_BINARY`。
   - 2026-06-30 20:04 JST API 和 App Store Connect 页面再次确认同一 submission 回到 `UNRESOLVED_ISSUES`，item `REJECTED`，Resolution Center thread 仍为空。
   - 2026-06-30 20:06 JST 读取 Apple 邮件 `Action needed: The uploaded build for Corner Peek has one or more issues.`，具体错误为 `ITMS-90301: This bundle is invalid - Apple is not currently accepting applications built with this version of the OS.` 结论：build 2 不可通过 resubmit 修复，必须用稳定/被接受的 macOS + Xcode 重新上传 build 3。
-- [ ] 在稳定/被 Apple 接受的 macOS + Xcode 环境重新 archive/upload build 3。
-  - 当前项目 build number 已升到 `3`。
-  - 不要使用当前 macOS `27.0 (26A5368g)` / Xcode `26.6 (17F113)` / SDK `26.5 (25F70)` 产出提交包。
-  - 推荐在 macOS 15.x + 稳定版 Xcode 16.x 环境运行 `./script/launch_verify.sh`，再导出/upload `1.0 (3)`。
+- [x] 在稳定/被 Apple 接受的 macOS + Xcode 环境重新 archive/upload build 3。
+  - 2026-06-30 21:12 JST GitHub Actions run `28443331658` 使用 macOS `15.7.7`、Xcode `16.4`、macOS SDK `15.5` 成功导出 `Corner Peek.pkg`。
+  - 2026-06-30 21:14 JST 同一 run 通过 `fastlane mac upload_pkg` 成功上传 package 到 App Store Connect。
+  - 2026-06-30 21:19 JST App Store Connect 记录 build `1.0 (3)` 已提交审核，review submission id `3b08b660-7d17-470a-b1a6-343a040a3f49`。
+  - 2026-07-07 16:50 JST Apple 邮件 `There's an issue with your Corner Peek (macOS) submission.`：review device 为 MacBook Air (15-inch, M3, 2024)，macOS `26.5`，Version reviewed `1.0 (3)`；拒审原因为 Guideline 2.1(a)，审核员认为菜单栏 extra App 无响应，没有打开可见界面。
+  - 2026-07-07 17:10 JST API 读回：version `1.0` state `REJECTED`，selected build `3` processing `VALID`，latest review submission `3b08b660-7d17-470a-b1a6-343a040a3f49` state `UNRESOLVED_ISSUES`，item state `REJECTED`。
+- [x] 修复菜单栏 extra 的可见启动入口并准备 build 4。
+  - 当前实现中左键点击菜单栏图标会 toggle 角落滑出面板，而不是打开贴近菜单栏图标的 popover 或普通窗口；这和 App Review 对 menu bar extra 的首屏可见性预期存在风险。
+  - `Manual-QA-Checklist.md` 已列出“菜单栏图标点击 -> 面板展开”人工验收项，但该路径没有自动化覆盖；重新提交前需要用干净用户会话验证 release/App Store candidate 的真实点击行为。
+  - 2026-07-07 已增加启动后自动展开一次面板的 launch policy；clean install 默认热角为左下角，因此审核启动后无需移动鼠标也会看到左下角面板。
+  - 当前项目 build number 已升到 `4`，下一次 App Store Connect 上传应使用 `1.0 (4)`。
 - [ ] 监控 App Review 消息。
-- [ ] 如果被拒，复制完整 rejection text 到本项目文档或 issue，再做最小必要修复。
+- [x] 如果被拒，复制完整 rejection text 到本项目文档或 issue，再做最小必要修复。
 - [ ] 审核通过后选择发布模式：
   - Manual release：建议首发用这个，方便先改 landing CTA。
   - Automatic release。

@@ -15,6 +15,10 @@ enum StatusMenuStructure {
     }
 }
 
+enum LaunchPresentationPolicy {
+    static let autoRevealDelay: TimeInterval = 0.35
+}
+
 @main
 struct CornerAssistantApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
@@ -64,6 +68,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             .sink { [weak self] _ in
                 self?.applyLocalization()
             }
+        scheduleInitialPanelReveal(for: controller)
     }
 
     func applicationWillTerminate(_ notification: Notification) {
@@ -107,6 +112,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
     #endif
+
+    private func scheduleInitialPanelReveal(for controller: SlidePanelController) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + LaunchPresentationPolicy.autoRevealDelay) { [weak controller] in
+            controller?.expandPanel()
+        }
+    }
 
     private func configureApplication() {
         NSApp.setActivationPolicy(.accessory)

@@ -107,7 +107,7 @@
 
 - [ ] 记录测试日期和 tester。
 - [ ] 记录 macOS 版本。
-- [ ] 记录 Corner Peek build 版本：`1.0 (1)`。
+- [ ] 记录 Corner Peek build 版本：`1.0 (4)`。
 - [ ] 记录使用的 build 来源：Release archive、App Store export 或 Xcode Archive/Organizer。
 - [ ] 记录截图目录。
 - [ ] 记录任何失败项和是否阻塞 App Store 提交。

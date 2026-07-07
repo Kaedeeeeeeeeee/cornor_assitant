@@ -109,7 +109,8 @@ PEEK_CHECK_EXPORT=1 ./script/check_external_readiness.py
   - `xcrun altool --build-status --delivery-id 1381454e-1354-4bf6-9ad9-b89482779afe` 返回 `build-status = VALID`、`import-status = VALID`、`buildAudienceType = APP_STORE_ELIGIBLE`。
   - App Store Connect 已可继续选择 build 加入版本 `1.0`。
   - 2026-06-30 13:52 JST 已通过 fastlane 上传 build `1.0 (2)` 的 `/tmp/peek-appstore/build2-export/Corner Peek.pkg`；2026-06-30 13:54 JST 读回状态为 `VALID`。
-  - 2026-06-30 20:06 JST 已确认当前本机 `macOS 27.0 (26A5368g)` / `Xcode 26.6 (17F113)` / `macOS SDK 26.5 (25F70)` 产出的 binary 会被 Apple 以 `ITMS-90301` 拒绝。下一次 upload 必须使用稳定/被 Apple 接受的构建环境，并上传 build `1.0 (3)`。
+  - 2026-06-30 20:06 JST 已确认当前本机 `macOS 27.0 (26A5368g)` / `Xcode 26.6 (17F113)` / `macOS SDK 26.5 (25F70)` 产出的 binary 会被 Apple 以 `ITMS-90301` 拒绝。后续 upload 必须使用稳定/被 Apple 接受的构建环境。
+  - 2026-07-07 build `1.0 (3)` 已通过稳定 GitHub Actions 构建环境上传并提交，但被 App Review 以 Guideline 2.1(a) 打回；下一次 upload 应使用 build `1.0 (4)`。
   - 复查命令：
 
 ```bash

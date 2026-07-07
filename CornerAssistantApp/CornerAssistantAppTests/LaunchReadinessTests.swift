@@ -133,6 +133,24 @@ final class LaunchReadinessTests: XCTestCase {
         )
     }
 
+    func testLaunchAutoRevealPolicyKeepsInitialPanelVisible() {
+        XCTAssertGreaterThan(LaunchPresentationPolicy.autoRevealDelay, 0)
+        XCTAssertLessThanOrEqual(LaunchPresentationPolicy.autoRevealDelay, 1)
+
+        let defaults = UserDefaults.standard
+        let previousValue = defaults.string(forKey: hotCornerDefaultsKey)
+        defer {
+            if let previousValue {
+                defaults.set(previousValue, forKey: hotCornerDefaultsKey)
+            } else {
+                defaults.removeObject(forKey: hotCornerDefaultsKey)
+            }
+        }
+
+        defaults.removeObject(forKey: hotCornerDefaultsKey)
+        XCTAssertEqual(HotCornerStore.current, .bottomLeft)
+    }
+
     func testHotCornerPreferenceDefaultsAndRejectsUnknownValues() {
         let defaults = UserDefaults.standard
         let previousValue = defaults.string(forKey: hotCornerDefaultsKey)
@@ -164,7 +182,7 @@ final class LaunchReadinessTests: XCTestCase {
         XCTAssertEqual(project.count(of: "ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;"), 2)
         XCTAssertEqual(project.count(of: "INFOPLIST_KEY_LSApplicationCategoryType = \"public.app-category.productivity\";"), 2)
         XCTAssertEqual(project.count(of: "MARKETING_VERSION = 1.0;"), 6)
-        XCTAssertEqual(project.count(of: "CURRENT_PROJECT_VERSION = 3;"), 6)
+        XCTAssertEqual(project.count(of: "CURRENT_PROJECT_VERSION = 4;"), 6)
         XCTAssertEqual(project.count(of: "MACOSX_DEPLOYMENT_TARGET = 15.0;"), 4)
     }
 
