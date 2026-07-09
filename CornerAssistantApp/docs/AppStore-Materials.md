@@ -1,8 +1,8 @@
 # Corner Peek App Store 上架材料
 
-最后更新：2026-06-28 JST
+最后更新：2026-07-09 JST
 
-本文件用于 App Store Connect 填写和上线前审校。公开文案必须和真实 v1 功能一致：不宣传选中文字搜索，不宣传搜索引擎可选，不宣传 macOS 14 兼容，不宣传 App 内 analytics。
+本文件用于 App Store Connect 填写和上线前审校。公开文案必须和真实 v1.0.1 功能一致：不宣传选中文字搜索，不宣传搜索引擎可选，不宣传 macOS 14 兼容，不宣传 App 内 analytics。
 
 ## 基础信息
 
@@ -33,22 +33,23 @@ Corner Peek
 副标题：
 
 ```text
-屏幕边缘的快捷助手
+屏幕边缘的快捷窗口
 ```
 
 描述：
 
 ```text
-Corner Peek 是一款 macOS 菜单栏工具，让你从屏幕边缘快速打开搜索、网页和常用网站。
+Corner Peek 是一款 macOS 菜单栏工具，把搜索、网页和常用网站收进屏幕边缘。需要时轻轻唤出，用完后自动收起，让桌面保持清爽。
 
 核心功能：
 
-• 边缘滑出面板：把鼠标移到你设置的热角，Corner Peek 会从屏幕边缘滑出，用完后自动收起。
-• 快捷搜索：在面板中输入关键词或网址，快速搜索或直接打开网页。
-• 多标签浏览：内置轻量 WebKit 浏览器，支持新建、关闭和切换标签页。
-• 常用网站：固定每天会打开的网站，一键回到 AI 工具、文档、团队沟通和工作页面。
+• 边缘滑出面板：把鼠标移到你设置的热角，面板会从屏幕边缘出现，离开后自动隐藏。
+• 快捷搜索：在面板中输入关键词或网址，直接搜索或打开网页。
+• 多标签浏览：在同一个侧边窗口里新建、关闭和切换多个网页。
+• 常用网站：把每天要看的网页固定在侧边栏，一键回到工作页面。
+• 自由调整大小：小窗适合快速查看，大窗适合认真阅读或处理网页任务。
 
-Corner Peek 的设计初衷是“隐于无形，触手可及”。平时它安静地待在菜单栏，需要时只需将鼠标移到屏幕边缘，就能完成一次临时搜索或短时间浏览，然后继续专注于当前工作。
+Corner Peek 的设计初衷是“隐于无形，触手可及”。平时它安静地待在菜单栏，需要时只需移动到屏幕边缘，就能完成一次临时搜索、短时间浏览或固定网站切换，然后继续专注于当前工作。
 
 隐私说明：
 
@@ -66,16 +67,14 @@ Corner Peek 的设计初衷是“隐于无形，触手可及”。平时它安�
 屏幕助手,快捷搜索,效率工具,菜单栏,生产力,侧边栏,快捷窗口,浏览器,网页
 ```
 
-新功能（版本 1.0）：
+新功能（版本 1.0.1）：
 
 ```text
-首次发布：
+本次更新：
 
-• 屏幕边缘滑出面板
-• 快捷搜索和网址打开
-• 多标签浏览
-• 常用网站固定
-• 支持简体中文、英语、日语
+• 更新简体中文、英语和日语的商店展示内容
+• 更清晰地说明边缘面板、快捷搜索、多标签和固定网站能力
+• 保持现有功能稳定
 ```
 
 ### English
@@ -122,16 +121,14 @@ Keywords:
 screen assistant,quick search,productivity,menu bar,edge gesture,sidebar,quick window,browser
 ```
 
-What's New (Version 1.0):
+What's New (Version 1.0.1):
 
 ```text
-Initial release:
+This update refreshes the App Store presentation for Corner Peek:
 
-• Edge-triggered slide panel
-• Quick search and URL opening
-• Tabbed browsing
-• Pinned sites
-• English, Simplified Chinese, and Japanese support
+• Updated localized product page materials
+• Clearer screenshots for edge access, quick search, tabs, pinned sites, and resizing
+• Stability-focused release with the existing privacy-first behavior
 ```
 
 ### 日本語
@@ -151,16 +148,17 @@ Corner Peek
 説明：
 
 ```text
-Corner Peek は、画面端から検索、Web ページ、固定サイトをすばやく開ける macOS メニューバーユーティリティです。
+Corner Peek は、検索、Web ページ、よく使うサイトを画面端にまとめる macOS メニューバーユーティリティです。必要なときだけ開き、使い終わると自動的に隠れます。
 
 主な機能：
 
-• エッジパネル：設定したホットコーナーにカーソルを移動すると、Corner Peek が画面端から表示され、使い終わると自動的にしまわれます。
-• クイック検索：パネルにキーワードや URL を入力して、検索またはページを直接開けます。
-• タブブラウズ：軽量な WebKit ブラウザで、短いブラウズ作業向けにタブを使えます。
-• 固定サイト：毎日使う AI ツール、ドキュメント、チームチャット、作業ページへすばやく戻れます。
+• エッジパネル：設定したホットコーナーにカーソルを移動すると、画面端からパネルが表示され、離れると自動的に隠れます。
+• クイック検索：キーワードや URL を入力して、検索またはページを直接開けます。
+• タブブラウズ：同じサイドウィンドウ内で複数のページを新規作成、切り替え、閉じられます。
+• 固定サイト：毎日見る Web ページをサイドバーに固定し、すばやく戻れます。
+• サイズ調整：小さく表示して確認したり、大きく広げてじっくり閲覧したりできます。
 
-Corner Peek は「必要なときだけ現れる」ことを目指して設計されています。普段はメニューバーに静かに待機し、画面端にカーソルを移動するだけで、一時的な検索や短いブラウズをすぐに始められます。
+Corner Peek は「必要なときだけ現れる」ことを目指して設計されています。普段はメニューバーに静かに待機し、画面端にカーソルを移動するだけで、一時的な検索、短いブラウズ、固定サイトの切り替えをすぐに始められます。
 
 プライバシー：
 
@@ -178,16 +176,14 @@ Corner Peek は「必要なときだけ現れる」ことを目指して設計�
 画面端,検索,生産性,メニューバー,サイドバー,ブラウザ,固定サイト
 ```
 
-新機能（バージョン 1.0）：
+新機能（バージョン 1.0.1）：
 
 ```text
-初回リリース：
+今回の更新：
 
-• 画面端から表示されるスライドパネル
-• クイック検索と URL 表示
-• タブブラウズ
-• 固定サイト
-• 英語、中国語（簡体字）、日本語に対応
+• 日本語、中国語（簡体字）、英語のストア表示を更新
+• エッジパネル、クイック検索、タブ、固定サイト、サイズ調整をより分かりやすく紹介
+• 既存機能の安定性を維持
 ```
 
 ## Privacy Policy 摘要
@@ -352,13 +348,13 @@ Support contact: f.shera.09@gmail.com
 
 ## 截图计划
 
-建议首发 5 张改为痛点型宣传截图：每张都包含真实 Corner Peek 面板截图、短标题、说明文案和蓝色重点标注，不直接使用第三方品牌名称或 logo。
+建议使用 5 张痛点型宣传截图：每张都包含真实 Corner Peek 面板截图、短标题、说明文案和蓝色重点标注，并为 English (U.S.)、Chinese (Simplified)、Japanese 分别准备本地化版本。
 
-1. Pinned daily tools：表达 AI、docs、team chat、trackers 可以从屏幕边缘快速打开。
-2. AI at the edge：表达写作、总结、改写等 AI 工作流不用切换主窗口。
-3. Docs and messages：表达临时查看 brief、note、team update 等短任务。
-4. Trackers and sheets：表达查看表格、dashboard、status tracker 等轻量查询。
-5. Your web workflow：表达把常用 web 工具固定在侧边栏。
+1. Hide-away edge panel：表达需要时滑出、用完自动隐藏。
+2. All your web apps：表达常用 Web App 同时待命。
+3. Any size you like：表达窗口可从小窗速查调整到大窗浏览。
+4. Fast search and prompts：表达边缘唤出后马上搜索、提问或打开网址。
+5. Pinned favorite sites：表达常用网站固定在侧边栏。
 
 截图要求：
 
@@ -367,11 +363,10 @@ Support contact: f.shera.09@gmail.com
 - 不展示 selected-text search、搜索引擎选择、macOS 14 兼容等未发布能力。
 - Mac App Store 官方接受 16:10 截图：1280x800、1440x900、2560x1600、2880x1800。
 - 推荐首发使用 2880x1800 或 2560x1600。
-- 可复跑采集入口：`./script/capture_app_store_screenshot.sh`。
-  - 默认输出到 `/tmp/peek-app-store-screenshots`。
-  - 成功时会生成 `01-hot-corner-panel-2880x1800.png`、`02-quick-search-2880x1800.png`、`03-web-page-2880x1800.png`、`04-tabs-and-pinned-sites-2880x1800.png`、`05-pinned-panel-2880x1800.png`。
-  - 2026-06-28 15:45 JST 当前 Codex/shell 会话已成功生成 5 张 2880x1800 候选截图，输出位于 `/tmp/peek-app-store-screenshots`。
-  - 2026-06-28 22:00 JST 已把截图生成器改为痛点型宣传截图：左侧为文案和蓝色重点标注，右侧为真实 Corner Peek 面板；侧边栏使用无品牌 demo pinned sites，避免第三方 logo 出现在 App Store 素材里。
+- 可复跑生成入口：`python3 script/create_store_screenshots.py`。
+  - 输出到 `screenshots/store/<locale>/`。
+  - 成功时每个 locale 会生成 `01_edge_hidden_2880x1800.png`、`02_multi_webapps_2880x1800.png`、`03_resizable_2880x1800.png`、`04_quick_search_2880x1800.png`、`05_pinned_sites_2880x1800.png`。
+  - `./script/prepare_fastlane_screenshots.sh` 会把这些本地化截图复制到 `fastlane/screenshots/<locale>/`，供 App Store Connect 上传使用。
 
 ## 上架前核对
 

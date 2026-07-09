@@ -181,8 +181,8 @@ final class LaunchReadinessTests: XCTestCase {
         XCTAssertEqual(project.count(of: "INFOPLIST_KEY_CFBundleDisplayName = \"Corner Peek\";"), 2)
         XCTAssertEqual(project.count(of: "ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;"), 2)
         XCTAssertEqual(project.count(of: "INFOPLIST_KEY_LSApplicationCategoryType = \"public.app-category.productivity\";"), 2)
-        XCTAssertEqual(project.count(of: "MARKETING_VERSION = 1.0;"), 6)
-        XCTAssertEqual(project.count(of: "CURRENT_PROJECT_VERSION = 4;"), 6)
+        XCTAssertEqual(project.count(of: "MARKETING_VERSION = 1.0.1;"), 6)
+        XCTAssertEqual(project.count(of: "CURRENT_PROJECT_VERSION = 5;"), 6)
         XCTAssertEqual(project.count(of: "MACOSX_DEPLOYMENT_TARGET = 15.0;"), 4)
     }
 

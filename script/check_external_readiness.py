@@ -112,8 +112,8 @@ def validate_app_bundle(app_path: Path) -> str:
     info = read_plist(info_plist)
     expected_info = {
         "CFBundleIdentifier": BUNDLE_ID,
-        "CFBundleShortVersionString": "1.0",
-        "CFBundleVersion": "1",
+        "CFBundleShortVersionString": "1.0.1",
+        "CFBundleVersion": "5",
         "LSMinimumSystemVersion": "15.0",
         "LSApplicationCategoryType": "public.app-category.productivity",
     }
